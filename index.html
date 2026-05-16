@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PrintFlow">
+<title>PrintFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;600;700&family=Space+Grotesk:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+[data-theme="dark"]{--bg:#0e0f11;--surface:#161820;--surface2:#1e2028;--surface3:#262830;--border:#2e3040;--border2:#3a3d52;--accent:#6c63ff;--accent2:#a78bfa;--accent3:#38bdf8;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--orange:#fb923c;--text:#e8eaf0;--text2:#9ca3b8;--text3:#5a607a;--font-display:'Syne',sans-serif;--font-mono:'DM Mono',monospace;}
+[data-theme="light"]{--bg:#f4f5f7;--surface:#ffffff;--surface2:#f0f1f5;--surface3:#e4e6ed;--border:#d8dae8;--border2:#bfc3d8;--accent:#5b52e8;--accent2:#7c6fe0;--accent3:#0284c7;--green:#059669;--yellow:#d97706;--red:#dc2626;--orange:#ea580c;--text:#1a1d2e;--text2:#4b5268;--text3:#8b92b0;--font-display:'Outfit',sans-serif;--font-mono:'DM Mono',monospace;}
+[data-theme="warm"]{--bg:#1c1714;--surface:#252019;--surface2:#2e281f;--surface3:#38312a;--border:#453d30;--border2:#5a5040;--accent:#e8963a;--accent2:#f5b56b;--accent3:#7dd3a8;--green:#6db87a;--yellow:#e8c43a;--red:#e07070;--orange:#e8963a;--text:#f0ead8;--text2:#b5a888;--text3:#6e6048;--font-display:'Playfair Display',serif;--font-mono:'DM Mono',monospace;}
+[data-theme="slate"]{--bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--surface3:#252d3d;--border:#30363d;--border2:#434d5d;--accent:#58a6ff;--accent2:#79c0ff;--accent3:#56d364;--green:#3fb950;--yellow:#e3b341;--red:#f85149;--orange:#f0883e;--text:#c9d1d9;--text2:#8b949e;--text3:#484f58;--font-display:'Space Grotesk',sans-serif;--font-mono:'DM Mono',monospace;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-display);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+#app{display:flex;flex-direction:column;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);gap:12px}
+.logo{font-size:1.3rem;font-weight:800;letter-spacing:-.03em;flex-shrink:0;background:linear-gradient(135deg,var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo span{font-weight:400;opacity:.6}
+nav{display:flex;gap:4px;background:var(--surface2);border-radius:999px;padding:4px;border:1px solid var(--border);flex-wrap:wrap}
+nav button{background:none;border:none;color:var(--text2);font-family:var(--font-display);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .2s;letter-spacing:.02em;text-transform:uppercase}
+nav button.active{background:var(--accent);color:white}
+nav button:hover:not(.active){color:var(--text);background:var(--surface3)}
+.theme-switcher{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.theme-btn{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .2s;flex-shrink:0}
+.theme-btn.active{border-color:var(--text);transform:scale(1.15)}
+.theme-btn[data-t="dark"]{background:linear-gradient(135deg,#1e2028,#6c63ff)}
+.theme-btn[data-t="light"]{background:linear-gradient(135deg,#f0f1f5,#5b52e8)}
+.theme-btn[data-t="warm"]{background:linear-gradient(135deg,#252019,#e8963a)}
+.theme-btn[data-t="slate"]{background:linear-gradient(135deg,#161b22,#58a6ff)}
+/* sync indicator */
+.sync-badge{font-size:.65rem;font-family:var(--font-mono);padding:3px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;gap:5px;flex-shrink:0;cursor:pointer;transition:all .2s}
+.sync-badge:hover{background:var(--surface3)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.err{background:var(--red)}
+.sync-dot.spin{background:var(--yellow);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+main{flex:1;padding:24px 20px;max-width:1300px;margin:0 auto;width:100%}
+.page{display:none;animation:fadeIn .25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:1.8rem;font-weight:800;letter-spacing:-.04em}
+.page-sub{font-size:.8rem;color:var(--text3);font-family:var(--font-mono);margin-top:3px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-sm{padding:14px 16px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-mono)}
+.stat-value{font-size:1.5rem;font-weight:800;margin-top:4px;letter-spacing:-.04em}
+.stat-value.green{color:var(--green)}.stat-value.yellow{color:var(--yellow)}.stat-value.red{color:var(--red)}.stat-value.accent{color:var(--accent2)}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--surface2);color:var(--text3);font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-mono);padding:10px 13px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+td{padding:10px 13px;color:var(--text);vertical-align:middle}
+.mono{font-family:var(--font-mono)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.67rem;font-family:var(--font-mono);font-weight:500}
+.badge-green{background:rgba(52,211,153,.12);color:var(--green)}.badge-yellow{background:rgba(251,191,36,.12);color:var(--yellow)}.badge-red{background:rgba(248,113,113,.12);color:var(--red)}.badge-blue{background:rgba(56,189,248,.12);color:var(--accent3)}.badge-purple{background:rgba(108,99,255,.15);color:var(--accent2)}.badge-orange{background:rgba(251,146,60,.12);color:var(--orange)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:var(--font-display);font-size:.82rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:white}.btn-primary:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.btn-ghost{background:none;color:var(--text2);border:1px solid var(--border2)}.btn-ghost:hover{background:var(--surface3);color:var(--text)}
+.btn-warn{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}.btn-warn:hover{background:rgba(251,191,36,.22)}
+.btn-danger{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.2)}.btn-danger:hover{background:rgba(248,113,113,.22)}
+.btn-sm{padding:5px 11px;font-size:.73rem}.btn-xs{padding:3px 8px;font-size:.68rem}
+.actions-cell{display:flex;gap:5px}
+.form-row{display:grid;gap:14px}.form-row.cols-2{grid-template-columns:1fr 1fr}.form-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:var(--font-mono)}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-display);font-size:.88rem;padding:9px 12px;outline:none;transition:border .2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--surface2)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;transform:scale(.95);transition:transform .2s}
+.modal-backdrop.open .modal{transform:scale(1)}
+.modal-title{font-size:1.2rem;font-weight:700;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap input{padding-left:34px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.9rem}
+.color-swatch{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,.15);flex-shrink:0}
+.progress-bar{height:6px;background:var(--surface3);border-radius:999px;overflow:hidden;min-width:60px}
+.progress-fill{height:100%;border-radius:999px;transition:width .4s ease}
+.section-title{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-mono);margin:24px 0 12px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.tab-btn{background:none;border:none;color:var(--text3);font-family:var(--font-display);font-size:.82rem;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+.tab-btn:hover:not(.active){color:var(--text)}
+.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:8px;font-size:.83rem;margin-bottom:10px}
+.alert-yellow{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);color:var(--yellow)}
+.alert-red{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:var(--red)}
+.alert-blue{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);color:var(--accent3)}
+.profit-pos{color:var(--green)}.profit-neg{color:var(--red)}
+.channel-tiktok{background:rgba(0,0,0,.4);color:#fff;border:1px solid #333}
+.channel-person{background:rgba(56,189,248,.1);color:var(--accent3);border:1px solid rgba(56,189,248,.2)}
+.build-needed{color:var(--orange);font-weight:700}.build-ok{color:var(--text3)}
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:2.5rem;margin-bottom:12px}
+.empty p{font-size:.88rem}
+/* Setup banner */
+.setup-banner{background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:flex-start;gap:16px}
+.setup-banner h3{font-size:1rem;font-weight:700;color:var(--accent3);margin-bottom:6px}
+.setup-banner p{font-size:.83rem;color:var(--text2);line-height:1.5}
+.setup-banner code{background:var(--surface3);padding:2px 7px;border-radius:4px;font-family:var(--font-mono);font-size:.78rem;color:var(--accent2)}
+.url-input-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.url-input-row input{flex:1;min-width:200px}
+/* Queue cards */
+.queue-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:16px;margin-bottom:10px;transition:border-color .2s}
+.queue-card:hover{border-color:var(--border2)}
+.queue-card.priority-high{border-left:3px solid var(--red)}
+.queue-card.priority-med{border-left:3px solid var(--yellow)}
+.queue-card.priority-low{border-left:3px solid var(--green)}
+.queue-card.completed{opacity:.4}
+.queue-num{font-size:1.4rem;font-weight:800;color:var(--text3);min-width:32px;font-family:var(--font-mono)}
+.queue-info{flex:1}
+.queue-name{font-weight:700;font-size:.95rem}
+.queue-meta{font-size:.78rem;color:var(--text2);margin-top:3px;font-family:var(--font-mono)}
+.queue-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:999px;font-size:.83rem;opacity:0;pointer-events:none;transition:all .3s;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:768px){header{padding:0 12px;gap:8px}.logo{font-size:1rem}nav button{padding:5px 9px;font-size:.62rem}main{padding:14px 12px}.form-row.cols-2,.form-row.cols-3{grid-template-columns:1fr}.page-title{font-size:1.3rem}.theme-switcher{display:none}}
+</style>
+</head>
+<body data-theme="dark">
+<div id="app">
+  <header>
+    <div class="logo">Print<span>Flow</span></div>
+    <nav id="main-nav">
+      <button class="active" onclick="showPage('filament')">Filament</button>
+      <button onclick="showPage('supplies')">Supplies</button>
+      <button onclick="showPage('products')">Products</button>
+      <button onclick="showPage('inventory')">Inventory</button>
+      <button onclick="showPage('queue')">Queue</button>
+      <button onclick="showPage('sales')">Sales</button>
+    </nav>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="sync-badge" onclick="showPage('filament')" id="sync-badge">
+        <div class="sync-dot spin" id="sync-dot"></div>
+        <span id="sync-label">Connecting…</span>
+      </div>
+      <div class="theme-switcher">
+        <button class="theme-btn active" data-t="dark" title="Dark" onclick="setTheme('dark',this)"></button>
+        <button class="theme-btn" data-t="light" title="Light" onclick="setTheme('light',this)"></button>
+        <button class="theme-btn" data-t="warm" title="Warm" onclick="setTheme('warm',this)"></button>
+        <button class="theme-btn" data-t="slate" title="Slate" onclick="setTheme('slate',this)"></button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Setup banner (shown until URL is saved) -->
+    <div id="setup-banner" class="setup-banner" style="display:none;">
+      <div style="font-size:1.8rem;">🔗</div>
+      <div style="flex:1;">
+        <h3>Connect to Google Sheets</h3>
+        <p>Paste your Apps Script Web App URL below to sync all data across your devices. Get this URL from <strong>Extensions → Apps Script → Deploy → Manage deployments</strong> in your PrintFlow DB spreadsheet.</p>
+        <div class="url-input-row">
+          <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/…/exec">
+          <button class="btn btn-primary" onclick="saveApiUrl()">Connect</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILAMENT -->
+    <div class="page active" id="page-filament">
+      <div class="page-header">
+        <div><div class="page-title">Filament</div><div class="page-sub">Stock · Cost · Reorder tracking</div></div>
+        <button class="btn btn-primary" onclick="openFilamentModal()">＋ Add Filament</button>
+      </div>
+      <div class="stats-row" id="filament-stats"></div>
+      <div id="filament-alerts"></div>
+      <div class="filter-bar">
+        <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="filament-search" placeholder="Search color or type…" oninput="renderFilamentTable()"></div>
+        <select id="filament-type-filter" onchange="renderFilamentTable()"><option value="">All Types</option></select>
+        <select id="filament-status-filter" onchange="renderFilamentTable()">
+          <option value="">All</option><option value="ok">In Stock</option>
+          <option value="low">Low</option><option value="out">Out</option><option value="ordered">Ordered</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Color</th><th>Type</th><th>On Hand</th><th>Cost/Spool</th><th>$/g</th><th>Build To</th><th>Status</th><th>Vendor</th><th></th></tr></thead>
+        <tbody id="filament-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- SUPPLIES -->
+    <div class="page" id="page-supplies">
+      <div class="page-header">
+        <div><div class="page-title">Supplies</div><div class="page-sub">Hardware · Consumables · Hotends · Bed Plates</div></div>
+        <button class="btn btn-primary" onclick="openSupplyModal()">＋ Add Supply</button>
+      </div>
+      <div class="stats-row" id="supply-stats"></div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="setSupplyTab('all',this)">All</button>
+        <button class="tab-btn" onclick="setSupplyTab('Hardware',this)">Hardware</button>
+        <button class="tab-btn" onclick="setSupplyTab('Hotends',this)">Hotends</button>
+        <button class="tab-btn" onclick="setSupplyTab('Bed Plates',this)">Bed Plates</button>
+        <button class="tab-btn" onclick="setSupplyTab('Consumables',this)">Consumables</button>
+        <button class="tab-btn" onclick="setSupplyTab('Printers',this)">Printers</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Item</th><th>Category</th><th>Qty</th><th>Cost</th><th>Extended</th><th>Printer</th><th>Status</th><th></th></tr></thead>
+        <tbody id="supply-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="page" id="page-products">
+      <div class="page-header">
+        <div><div class="page-title">Products</div><div class="page-sub">Catalog · Cost · Pricing · Profit</div></div>
+        <button class="btn btn-primary" onclick="openProductModal()">＋ Add Product</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Product</th><th>Dimensions</th><th>Filament</th><th>Time</th><th>Fil. Cost</th><th>Elec.</th><th>Total Cost</th><th>Price</th><th>TikTok</th><th>Profit</th><th>Margin</th><th></th></tr></thead>
+        <tbody id="product-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="page" id="page-inventory">
+      <div class="page-header">
+        <div><div class="page-title">Inventory</div><div class="page-sub">Stock · Build-to · Velocity</div></div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <div class="field" style="flex-direction:row;align-items:center;gap:8px;margin:0;">
+            <label style="white-space:nowrap;margin:0;">Velocity:</label>
+            <select id="velocity-window" onchange="renderInventory()" style="width:auto;">
+              <option value="7">7 days</option><option value="14">14 days</option>
+              <option value="30" selected>30 days</option><option value="60">60 days</option><option value="90">90 days</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="openInventoryModal()">＋ Add Stock</button>
+        </div>
+      </div>
+      <div id="inventory-alerts" style="margin-bottom:16px;"></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Product</th><th>Filament / Color</th><th>Stock</th><th>Sold</th><th>Loan</th><th>Vel/day</th><th>Days Left</th><th>Build To</th><th>Print</th><th>Time</th><th></th></tr></thead>
+        <tbody id="inventory-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- QUEUE -->
+    <div class="page" id="page-queue">
+      <div class="page-header">
+        <div><div class="page-title">Print Queue</div><div class="page-sub">What to print · Priority order</div></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" onclick="openManualQueueModal()">＋ Manual Job</button>
+          <button class="btn btn-primary" onclick="buildQueueFromInventory()">↻ Refresh from Inventory</button>
+        </div>
+      </div>
+      <div class="stats-row" id="queue-stats"></div>
+      <div id="queue-list"></div>
+    </div>
+
+    <!-- SALES -->
+    <div class="page" id="page-sales">
+      <div class="page-header">
+        <div><div class="page-title">Sales</div><div class="page-sub">Orders · Revenue · Profit</div></div>
+        <button class="btn btn-primary" onclick="openSaleModal()">＋ Record Sale</button>
+      </div>
+      <div class="stats-row" id="sales-stats"></div>
+      <div class="filter-bar">
+        <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="sales-search" placeholder="Search…" oninput="renderSalesTable()"></div>
+        <select id="sales-channel-filter" onchange="renderSalesTable()"><option value="">All Channels</option><option value="TikTok">TikTok</option><option value="In-Person">In-Person</option></select>
+        <select id="sales-period-filter" onchange="renderSalesTable()"><option value="">All Time</option><option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option></select>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Date</th><th>Order #</th><th>Channel</th><th>Product</th><th>Color</th><th>Qty</th><th>Price</th><th>Subtotal</th><th>Payout</th><th>Cost</th><th>Profit</th><th>Status</th><th></th></tr></thead>
+        <tbody id="sales-tbody"></tbody></table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="modal-backdrop" id="modal-filament">
+  <div class="modal">
+    <div class="modal-title" id="filament-modal-title">Add Filament</div>
+    <input type="hidden" id="f-edit-id">
+    <div class="form-row cols-2">
+      <div class="field"><label>Type</label><select id="f-type"><option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option><option>PLA Translucent</option><option>PLA Wood</option><option>PETG HF</option><option>PETG, SunLu</option><option>ABS</option><option>TPU for AMS</option><option>Elegoo</option><option>Other</option></select></div>
+      <div class="field"><label>Color Name</label><input type="text" id="f-color" placeholder="e.g. Basic Black (10101)"></div>
+      <div class="field"><label>On Hand (kg)</label><input type="number" id="f-qty" step="0.1" min="0" value="1.0"></div>
+      <div class="field"><label>Cost/Spool ($)</label><input type="number" id="f-cost" step="0.01" value="12.99"></div>
+      <div class="field"><label>Build To (spools)</label><input type="number" id="f-buildto" step="1" min="0" value="1"></div>
+      <div class="field"><label>Vendor</label><select id="f-vendor"><option>Bambu</option><option>Amazon</option><option>Eric</option><option>Other</option></select></div>
+      <div class="field"><label>Status</label><select id="f-status"><option>Up to date</option><option>Ordered</option><option>Low</option><option>Backorder</option></select></div>
+      <div class="field"><label>Swatch Color</label><input type="color" id="f-hex" value="#888888" style="height:40px;padding:4px;"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-filament')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFilament()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-supply">
+  <div class="modal">
+    <div class="modal-title" id="supply-modal-title">Add Supply</div>
+    <input type="hidden" id="s-edit-id">
+    <div class="form-row cols-2">
+      <div class="field" style="grid-column:1/-1;"><label>Item Name</label><input type="text" id="s-name"></div>
+      <div class="field"><label>Category</label><select id="s-cat"><option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option><option>Printers</option></select></div>
+      <div class="field"><label>Qty</label><input type="number" id="s-qty" value="1"></div>
+      <div class="field"><label>Unit Cost ($)</label><input type="number" id="s-cost" step="0.01"></div>
+      <div class="field"><label>Printer</label><select id="s-printer"><option>All</option><option>H2C</option><option>P1S</option><option>P2S</option></select></div>
+      <div class="field"><label>Status</label><select id="s-status"><option>Received</option><option>Ordered</option><option>Shipped</option><option>Delivered</option></select></div>
+      <div class="field"><label>Order Date</label><input type="date" id="s-date"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-supply')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSupply()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-product">
+  <div class="modal">
+    <div class="modal-title" id="product-modal-title">Add Product</div>
+    <input type="hidden" id="p-edit-id">
+    <div class="form-row cols-2">
+      <div class="field" style="grid-column:1/-1;"><label>Product Name</label><input type="text" id="p-name"></div>
+      <div class="field"><label>Width (in)</label><input type="number" id="p-w" step="0.1"></div>
+      <div class="field"><label>Depth (in)</label><input type="number" id="p-d" step="0.1"></div>
+      <div class="field"><label>Height (in)</label><input type="number" id="p-h" step="0.1"></div>
+      <div class="field"><label>Weight (lb)</label><input type="number" id="p-weight" step="0.01"></div>
+      <div class="field"><label>Filament (kg)</label><input type="number" id="p-filament" step="0.001" oninput="calcProductPreview()"></div>
+      <div class="field"><label>Print Time (hr)</label><input type="number" id="p-time" step="0.05" oninput="calcProductPreview()"></div>
+      <div class="field"><label>Filament Type</label><select id="p-filtype" onchange="calcProductPreview()"><option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option><option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option></select></div>
+      <div class="field"><label>Sale Price ($)</label><input type="number" id="p-price" step="0.01" oninput="calcProductPreview()"></div>
+      <div class="field"><label>TikTok Fee %</label><input type="number" id="p-tiktok" value="10" step="0.1" oninput="calcProductPreview()"></div>
+    </div>
+    <div id="product-cost-preview" style="display:none;margin-top:16px;" class="card card-sm">
+      <div class="section-title" style="margin-top:0;">Cost Preview</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div><div class="stat-label">Fil. Cost</div><div class="mono" id="prev-fil">—</div></div>
+        <div><div class="stat-label">Electricity</div><div class="mono" id="prev-elec">—</div></div>
+        <div><div class="stat-label">Total Cost</div><div class="mono" id="prev-cost">—</div></div>
+        <div><div class="stat-label">TikTok Fee</div><div class="mono" id="prev-tiktok">—</div></div>
+        <div><div class="stat-label">Net Profit</div><div class="mono" id="prev-profit" style="font-weight:700;">—</div></div>
+        <div><div class="stat-label">Margin</div><div class="mono" id="prev-margin">—</div></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-product')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-inventory">
+  <div class="modal">
+    <div class="modal-title" id="inventory-modal-title">Add Stock</div>
+    <input type="hidden" id="inv-edit-id">
+    <div class="form-row cols-2">
+      <div class="field"><label>Product</label><select id="inv-product"></select></div>
+      <div class="field"><label>Filament Type</label><select id="inv-filtype" onchange="updateInvColors()"></select></div>
+      <div class="field" style="grid-column:1/-1;"><label>Color</label><select id="inv-color"></select></div>
+      <div class="field"><label>Qty Available</label><input type="number" id="inv-qty" value="1"></div>
+      <div class="field"><label>Qty Sold</label><input type="number" id="inv-sold" value="0"></div>
+      <div class="field"><label>On Loan</label><input type="number" id="inv-loan" value="0"></div>
+      <div class="field"><label>Build To</label><input type="number" id="inv-buildto" value="2"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-inventory')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInventory()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-sale">
+  <div class="modal">
+    <div class="modal-title" id="sale-modal-title">Record Sale</div>
+    <input type="hidden" id="sale-edit-id">
+    <div class="form-row cols-2">
+      <div class="field"><label>Date</label><input type="date" id="sale-date"></div>
+      <div class="field"><label>Channel</label><select id="sale-channel" onchange="calcSale()"><option>TikTok</option><option>In-Person</option></select></div>
+      <div class="field"><label>Order / Ref #</label><input type="text" id="sale-order"></div>
+      <div class="field"><label>Product</label><select id="sale-product" onchange="updateSaleFilaments()"></select></div>
+      <div class="field"><label>Filament Type</label><select id="sale-filtype" onchange="updateSaleColors()"></select></div>
+      <div class="field"><label>Color</label><select id="sale-color"></select></div>
+      <div class="field"><label>Qty</label><input type="number" id="sale-qty" value="1" oninput="calcSale()"></div>
+      <div class="field"><label>Sale Price ($)</label><input type="number" id="sale-price" step="0.01" oninput="calcSale()"></div>
+      <div class="field"><label>Payout (auto)</label><input type="number" id="sale-payout" readonly style="opacity:.6;"></div>
+      <div class="field"><label>Status</label><select id="sale-status"><option>Paid</option><option>Shipped</option><option>Delivered</option><option>Pending</option></select></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-sale')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSale()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-queue-job">
+  <div class="modal">
+    <div class="modal-title">Add Manual Print Job</div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Product</label><select id="qj-product"></select></div>
+      <div class="field"><label>Qty to Print</label><input type="number" id="qj-qty" value="1" min="1"></div>
+      <div class="field"><label>Filament Type</label><select id="qj-filtype" onchange="updateQJColors()"></select></div>
+      <div class="field"><label>Color</label><select id="qj-color"></select></div>
+      <div class="field"><label>Priority</label><select id="qj-priority"><option value="high">🔴 High</option><option value="med" selected>🟡 Medium</option><option value="low">🟢 Low</option></select></div>
+      <div class="field"><label>Notes</label><input type="text" id="qj-notes" placeholder="Optional…"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-queue-job')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveQueueJob()">Add to Queue</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══ THEME ═══
+function setTheme(t,el){document.body.setAttribute('data-theme',t);document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');localStorage.setItem('pf_theme',t);}
+(()=>{const t=localStorage.getItem('pf_theme')||'dark';document.body.setAttribute('data-theme',t);const b=document.querySelector('.theme-btn[data-t="'+t+'"]');if(b){document.querySelectorAll('.theme-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}})();
+
+// ═══ API / SYNC ═══
+let API_URL = localStorage.getItem('pf_api_url') || '';
+
+// In-memory cache so the UI never blocks
+const CACHE = { Filament:[], Supplies:[], Products:[], Inventory:[], Sales:[], Queue:[] };
+
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+async function apiCall(params) {
+  if (!API_URL) throw new Error('No API URL configured');
+  // Apps Script requires GET for reads; we use a GET with JSON-encoded body for writes
+  const url = API_URL + '?' + new URLSearchParams(params).toString();
+  const resp = await fetch(url, { redirect: 'follow' });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  return await resp.json();
+}
+
+async function apiPost(body) {
+  if (!API_URL) throw new Error('No API URL configured');
+  // Apps Script GET with all params works best for CORS
+  const params = Object.fromEntries(
+    Object.entries(body).map(([k,v]) => [k, typeof v === 'object' ? JSON.stringify(v) : v])
+  );
+  const url = API_URL + '?' + new URLSearchParams(params).toString();
+  const resp = await fetch(url, { redirect: 'follow' });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  return await resp.json();
+}
+
+async function loadTab(tab) {
+  const data = await apiCall({ action: 'read', tab });
+  if (data.error) throw new Error(data.error);
+  // Convert array of column-keyed objects to our internal format
+  CACHE[tab] = data.rows.map(row => sheetRowToObj(tab, row));
+  return CACHE[tab];
+}
+
+// Map sheet column names → internal object keys
+function sheetRowToObj(tab, row) {
+  if (tab === 'Filament') return {
+    id: row['ID'], type: row['Type'], color: row['Color'],
+    qty: +row['On Hand (kg)'] || 0, cost: +row['Cost per Spool ($)'] || 0,
+    buildTo: +row['Build To (spools)'] || 0, vendor: row['Vendor'],
+    status: row['Status'], hex: row['Swatch Hex'] || '#888888'
+  };
+  if (tab === 'Supplies') return {
+    id: row['ID'], name: row['Item Name'], category: row['Category'],
+    qty: +row['Qty'] || 0, cost: +row['Unit Cost ($)'] || 0,
+    printer: row['Printer'], status: row['Status'], date: row['Order Date'] || ''
+  };
+  if (tab === 'Products') return {
+    id: row['ID'], name: row['Product Name'],
+    w: +row['Width (in)'] || 0, d: +row['Depth (in)'] || 0, h: +row['Height (in)'] || 0,
+    weight: +row['Weight (lb)'] || 0, filament: +row['Filament (kg)'] || 0,
+    filtype: row['Filament Type'], time: +row['Print Time (hr)'] || 0,
+    price: +row['Sale Price ($)'] || 0, tiktokPct: +row['TikTok Fee (%)'] || 10
+  };
+  if (tab === 'Inventory') return {
+    id: row['ID'], productName: row['Product Name'], filtype: row['Filament Type'],
+    color: row['Color'], qty: +row['Qty Available'] || 0,
+    sold: +row['Qty Sold'] || 0, loan: +row['On Loan'] || 0,
+    buildTo: +row['Build To'] || 0
+  };
+  if (tab === 'Sales') return {
+    id: row['ID'], date: row['Date'], order: row['Order / Ref #'],
+    channel: row['Channel'], productName: row['Product Name'],
+    filtype: row['Filament Type'], color: row['Color'],
+    qty: +row['Qty'] || 0, price: +row['Sale Price ($)'] || 0,
+    status: row['Status']
+  };
+  if (tab === 'Queue') return {
+    id: row['ID'], productName: row['Product Name'], filtype: row['Filament Type'],
+    color: row['Color'], qty: +row['Qty'] || 0,
+    estTime: +row['Est. Print Time (hr)'] || 0, priority: row['Priority'] || 'med',
+    status: row['Status'] || 'pending', notes: row['Notes'] || '',
+    added: row['Date Added'] || '', auto: row['Auto Generated'] === 'true' || row['Auto Generated'] === true
+  };
+  return row;
+}
+
+// Convert internal obj → sheet column map
+function objToSheetRow(tab, obj) {
+  if (tab === 'Filament') return {
+    'ID': obj.id, 'Type': obj.type, 'Color': obj.color,
+    'On Hand (kg)': obj.qty, 'Cost per Spool ($)': obj.cost,
+    'Build To (spools)': obj.buildTo, 'Vendor': obj.vendor,
+    'Status': obj.status, 'Swatch Hex': obj.hex
+  };
+  if (tab === 'Supplies') return {
+    'ID': obj.id, 'Item Name': obj.name, 'Category': obj.category,
+    'Qty': obj.qty, 'Unit Cost ($)': obj.cost,
+    'Extended ($)': (obj.cost * obj.qty).toFixed(2),
+    'Printer': obj.printer, 'Status': obj.status, 'Order Date': obj.date || ''
+  };
+  if (tab === 'Products') return {
+    'ID': obj.id, 'Product Name': obj.name,
+    'Width (in)': obj.w, 'Depth (in)': obj.d, 'Height (in)': obj.h,
+    'Weight (lb)': obj.weight, 'Filament (kg)': obj.filament,
+    'Filament Type': obj.filtype, 'Print Time (hr)': obj.time,
+    'Sale Price ($)': obj.price, 'TikTok Fee (%)': obj.tiktokPct
+  };
+  if (tab === 'Inventory') return {
+    'ID': obj.id, 'Product Name': obj.productName, 'Filament Type': obj.filtype,
+    'Color': obj.color, 'Qty Available': obj.qty, 'Qty Sold': obj.sold,
+    'On Loan': obj.loan, 'Build To': obj.buildTo
+  };
+  if (tab === 'Sales') return {
+    'ID': obj.id, 'Date': obj.date, 'Order / Ref #': obj.order,
+    'Channel': obj.channel, 'Product Name': obj.productName,
+    'Filament Type': obj.filtype, 'Color': obj.color, 'Qty': obj.qty,
+    'Sale Price ($)': obj.price,
+    'Subtotal ($)': (obj.price * obj.qty).toFixed(2),
+    'Payout ($)': calcPayout(obj).toFixed(2),
+    'Status': obj.status
+  };
+  if (tab === 'Queue') return {
+    'ID': obj.id, 'Product Name': obj.productName, 'Filament Type': obj.filtype,
+    'Color': obj.color, 'Qty': obj.qty,
+    'Est. Print Time (hr)': obj.estTime, 'Priority': obj.priority,
+    'Status': obj.status, 'Notes': obj.notes || '',
+    'Date Added': obj.added || new Date().toISOString().slice(0,10),
+    'Auto Generated': obj.auto ? 'true' : 'false'
+  };
+  return obj;
+}
+
+function calcPayout(sale) {
+  const prod = CACHE.Products.find(p => p.name === sale.productName);
+  const subtotal = sale.price * sale.qty;
+  if (sale.channel === 'TikTok' && prod) return subtotal - subtotal * (prod.tiktokPct / 100);
+  return subtotal;
+}
+
+async function writeToSheet(tab, obj) {
+  const row = objToSheetRow(tab, obj);
+  const editId = obj._isEdit;
+  if (editId) {
+    return await apiPost({ action: 'update', tab, row: JSON.stringify(row) });
+  } else {
+    return await apiPost({ action: 'write', tab, row: JSON.stringify(row) });
+  }
+}
+
+async function deleteFromSheet(tab, id) {
+  return await apiPost({ action: 'delete', tab, id });
+}
+
+// ═══ SETUP ═══
+function saveApiUrl() {
+  const url = document.getElementById('api-url-input').value.trim();
+  if (!url.startsWith('https://script.google.com')) {
+    toast('Please paste a valid Apps Script URL'); return;
+  }
+  API_URL = url;
+  localStorage.setItem('pf_api_url', url);
+  document.getElementById('setup-banner').style.display = 'none';
+  initApp();
+}
+
+// ═══ INIT ═══
+async function initApp() {
+  if (!API_URL) {
+    document.getElementById('setup-banner').style.display = 'flex';
+    setSyncStatus('err', 'Not connected');
+    // Load empty state so UI renders
+    renderPage('filament');
+    return;
+  }
+  setSyncStatus('spin', 'Loading…');
+  try {
+    // Init sheets first (creates tabs if missing)
+    await apiCall({ action: 'init' });
+    // Load all tabs in parallel
+    await Promise.all(['Filament','Supplies','Products','Inventory','Sales','Queue'].map(t => loadTab(t)));
+    setSyncStatus('ok', 'Synced');
+    renderPage('filament');
+  } catch(e) {
+    setSyncStatus('err', 'Offline');
+    toast('Could not reach Google Sheets — check your URL');
+    renderPage('filament');
+  }
+}
+
+async function refreshTab(tab) {
+  setSyncStatus('spin', 'Syncing…');
+  try {
+    await loadTab(tab);
+    setSyncStatus('ok', 'Synced');
+  } catch(e) {
+    setSyncStatus('err', 'Sync error');
+  }
+}
+
+// ═══ UTILS ═══
+function uid(){return'pf_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);}
+function $(id){return document.getElementById(id);}
+function fmt$(n){return'$'+(+(n||0)).toFixed(2);}
+function fmtKg(n){return(+(n||0)).toFixed(2)+' kg';}
+function toast(msg,dur=3000){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function openModal(id){$(id).classList.add('open');}
+function closeModal(id){$(id).classList.remove('open');}
+document.querySelectorAll('.modal-backdrop').forEach(b=>{b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');});});
+
+// ═══ NAV ═══
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active'));
+  $('page-'+name).classList.add('active');
+  [...document.querySelectorAll('#main-nav button')].find(b=>b.textContent.toLowerCase()===name)?.classList.add('active');
+  renderPage(name);
+}
+function renderPage(name){
+  if(name==='filament'){renderFilamentStats();renderFilamentTable();renderFilamentAlerts();}
+  if(name==='supplies'){renderSupplyStats();renderSupplyTable();}
+  if(name==='products'){renderProductTable();}
+  if(name==='inventory'){renderInventory();}
+  if(name==='queue'){renderQueue();}
+  if(name==='sales'){renderSalesStats();renderSalesTable();}
+}
+
+// ═══ COST CALC ═══
+const ELEC = 0.50;
+function avgCostPerKg(type){
+  const f=CACHE.Filament.filter(x=>x.type===type);
+  return f.length ? f.reduce((s,x)=>s+x.cost,0)/f.length : 12.99;
+}
+function calcProduct(p){
+  const filCost=p.filament*avgCostPerKg(p.filtype);
+  const elecCost=p.time*ELEC;
+  const totalCost=filCost+elecCost;
+  const tiktokFee=p.price*(p.tiktokPct/100);
+  const netProfit=p.price-tiktokFee-totalCost;
+  const margin=p.price>0?(netProfit/p.price*100):0;
+  return{filCost,elecCost,totalCost,tiktokFee,netProfit,margin};
+}
+
+function getFilamentTypes(){return[...new Set(CACHE.Filament.map(f=>f.type))].sort();}
+function getColorsByType(type){return CACHE.Filament.filter(f=>f.type===type).map(f=>f.color);}
+function getFilamentHex(color){return CACHE.Filament.find(f=>f.color===color)?.hex||null;}
+
+// ═══ FILAMENT ═══
+function openFilamentModal(id){
+  $('f-edit-id').value=id||'';
+  if(id){
+    const f=CACHE.Filament.find(x=>x.id===id);if(!f)return;
+    $('filament-modal-title').textContent='Edit Filament';
+    $('f-type').value=f.type;$('f-color').value=f.color;$('f-qty').value=f.qty;
+    $('f-cost').value=f.cost;$('f-buildto').value=f.buildTo;$('f-vendor').value=f.vendor;
+    $('f-status').value=f.status;$('f-hex').value=f.hex||'#888888';
+  } else {
+    $('filament-modal-title').textContent='Add Filament';
+    $('f-color').value='';$('f-qty').value='1.0';$('f-cost').value='12.99';$('f-buildto').value='1';
+    $('f-vendor').value='Bambu';$('f-status').value='Up to date';$('f-hex').value='#888888';
+  }
+  openModal('modal-filament');
+}
+async function saveFilament(){
+  const color=$('f-color').value.trim();if(!color){toast('Enter a color name');return;}
+  const editId=$('f-edit-id').value;
+  const obj={id:editId||uid(),type:$('f-type').value,color,qty:+$('f-qty').value,cost:+$('f-cost').value,buildTo:+$('f-buildto').value,vendor:$('f-vendor').value,status:$('f-status').value,hex:$('f-hex').value};
+  if(editId) obj._isEdit=editId;
+  // Update cache immediately for snappy UI
+  if(editId){const i=CACHE.Filament.findIndex(x=>x.id===editId);if(i>-1)CACHE.Filament[i]=obj;}
+  else CACHE.Filament.push(obj);
+  closeModal('modal-filament');renderPage('filament');
+  try{await writeToSheet('Filament',obj);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Added ✓');}
+  catch(e){setSyncStatus('err','Sync error');toast('Saved locally — sync failed');}
+}
+async function deleteFilament(id){
+  if(!confirm('Remove this filament?'))return;
+  CACHE.Filament=CACHE.Filament.filter(f=>f.id!==id);renderPage('filament');
+  try{await deleteFromSheet('Filament',id);setSyncStatus('ok','Synced');toast('Removed');}
+  catch(e){setSyncStatus('err','Sync error');}
+}
+function renderFilamentStats(){
+  const f=CACHE.Filament;
+  const totalKg=f.reduce((s,x)=>s+(+x.qty),0);
+  const totalVal=f.reduce((s,x)=>s+x.cost*Math.ceil(x.qty),0);
+  const low=f.filter(x=>x.qty<x.buildTo).length;
+  const ordered=f.filter(x=>x.status==='Ordered').length;
+  $('filament-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Colors</div><div class="stat-value accent">${f.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Stock</div><div class="stat-value">${totalKg.toFixed(1)} kg</div></div>
+    <div class="stat-card"><div class="stat-label">Inv. Value</div><div class="stat-value green">${fmt$(totalVal)}</div></div>
+    <div class="stat-card"><div class="stat-label">Below Build-To</div><div class="stat-value ${low?'yellow':'green'}">${low}</div></div>
+    <div class="stat-card"><div class="stat-label">On Order</div><div class="stat-value accent">${ordered}</div></div>`;
+  const types=[...new Set(f.map(x=>x.type))].sort();
+  const tf=$('filament-type-filter');const cur=tf.value;
+  tf.innerHTML='<option value="">All Types</option>'+types.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('');
+}
+function renderFilamentAlerts(){
+  const low=CACHE.Filament.filter(f=>f.qty<f.buildTo&&f.status!=='Ordered');
+  const el=$('filament-alerts');
+  if(!low.length){el.innerHTML='';return;}
+  el.innerHTML=low.slice(0,3).map(f=>`<div class="alert alert-yellow">⚠ <strong>${f.color}</strong> — ${fmtKg(f.qty)} on hand, build-to: ${f.buildTo} spool${f.buildTo!==1?'s':''}.</div>`).join('')
+    +(low.length>3?`<div class="alert alert-yellow">+${low.length-3} more below build-to</div>`:'');
+}
+function renderFilamentTable(){
+  const search=$('filament-search').value.toLowerCase();
+  const typeF=$('filament-type-filter').value;
+  const statusF=$('filament-status-filter').value;
+  let fils=CACHE.Filament;
+  if(search)fils=fils.filter(f=>f.color.toLowerCase().includes(search)||f.type.toLowerCase().includes(search));
+  if(typeF)fils=fils.filter(f=>f.type===typeF);
+  if(statusF==='ok')fils=fils.filter(f=>f.qty>=f.buildTo);
+  else if(statusF==='low')fils=fils.filter(f=>f.qty>0&&f.qty<f.buildTo);
+  else if(statusF==='out')fils=fils.filter(f=>f.qty<=0);
+  else if(statusF==='ordered')fils=fils.filter(f=>f.status==='Ordered');
+  const tbody=$('filament-tbody');
+  if(!fils.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty"><div class="empty-icon">🧵</div><p>No filaments match</p></div></td></tr>';return;}
+  tbody.innerHTML=fils.map(f=>{
+    const pct=Math.min(100,f.buildTo>0?(f.qty/f.buildTo)*100:100);
+    const bc=pct>=100?'#34d399':pct>=50?'#fbbf24':'#f87171';
+    const badge=f.status==='Ordered'?'badge-blue':f.qty<=0?'badge-red':f.qty<f.buildTo?'badge-yellow':'badge-green';
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px;"><span class="color-swatch" style="background:${f.hex||'#888'}"></span>${f.color}</div></td>
+      <td><span class="badge badge-purple">${f.type}</span></td>
+      <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:${pct}%;background:${bc}"></div></div><span class="mono" style="min-width:48px;">${fmtKg(f.qty)}</span></div></td>
+      <td class="mono">${fmt$(f.cost)}</td>
+      <td class="mono">${(f.cost/1000).toFixed(4)}</td>
+      <td class="mono">${f.buildTo}</td>
+      <td><span class="badge ${badge}">${f.status}</span></td>
+      <td>${f.vendor}</td>
+      <td><div class="actions-cell">
+        <button class="btn btn-warn btn-xs" onclick="openFilamentModal('${f.id}')">Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteFilament('${f.id}')">✕</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+// ═══ SUPPLIES ═══
+let supplyTab='all';
+function setSupplyTab(tab,el){supplyTab=tab;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderSupplyTable();}
+function openSupplyModal(id){
+  $('s-edit-id').value=id||'';
+  if(id){const s=CACHE.Supplies.find(x=>x.id===id);if(!s)return;
+    $('supply-modal-title').textContent='Edit Supply';
+    $('s-name').value=s.name;$('s-cat').value=s.category;$('s-qty').value=s.qty;
+    $('s-cost').value=s.cost;$('s-printer').value=s.printer;$('s-status').value=s.status;$('s-date').value=s.date||'';
+  }else{$('supply-modal-title').textContent='Add Supply';$('s-name').value='';$('s-cat').value='Hardware';$('s-qty').value='1';$('s-cost').value='';$('s-printer').value='All';$('s-status').value='Received';$('s-date').value='';}
+  openModal('modal-supply');
+}
+async function saveSupply(){
+  const name=$('s-name').value.trim();if(!name){toast('Enter item name');return;}
+  const editId=$('s-edit-id').value;
+  const obj={id:editId||uid(),name,category:$('s-cat').value,qty:+$('s-qty').value,cost:+$('s-cost').value,printer:$('s-printer').value,status:$('s-status').value,date:$('s-date').value};
+  if(editId){obj._isEdit=editId;const i=CACHE.Supplies.findIndex(x=>x.id===editId);if(i>-1)CACHE.Supplies[i]=obj;}
+  else CACHE.Supplies.push(obj);
+  closeModal('modal-supply');renderPage('supplies');
+  try{await writeToSheet('Supplies',obj);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Added ✓');}
+  catch(e){setSyncStatus('err','Sync error');}
+}
+async function deleteSupply(id){
+  if(!confirm('Remove?'))return;
+  CACHE.Supplies=CACHE.Supplies.filter(s=>s.id!==id);renderPage('supplies');
+  try{await deleteFromSheet('Supplies',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
+}
+function renderSupplyStats(){
+  const s=CACHE.Supplies;
+  const tv=s.reduce((x,y)=>x+y.cost*y.qty,0);
+  const ord=s.filter(x=>x.status==='Ordered').length;
+  const pr=s.filter(x=>x.category==='Printers').reduce((x,y)=>x+y.cost*y.qty,0);
+  $('supply-stats').innerHTML=`<div class="stat-card"><div class="stat-label">Items</div><div class="stat-value accent">${s.length}</div></div><div class="stat-card"><div class="stat-label">Total Value</div><div class="stat-value green">${fmt$(tv)}</div></div><div class="stat-card"><div class="stat-label">Printers</div><div class="stat-value yellow">${fmt$(pr)}</div></div><div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value ${ord?'accent':'green'}">${ord}</div></div>`;
+}
+function renderSupplyTable(){
+  let sups=CACHE.Supplies;
+  if(supplyTab!=='all')sups=sups.filter(s=>s.category===supplyTab);
+  const tbody=$('supply-tbody');
+  if(!sups.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔧</div><p>No supplies</p></div></td></tr>';return;}
+  const cb={Hardware:'badge-orange',Hotends:'badge-red','Bed Plates':'badge-purple',Consumables:'badge-blue',Printers:'badge-green'};
+  tbody.innerHTML=sups.map(s=>{
+    const bstat=s.status==='Received'?'badge-green':s.status==='Ordered'?'badge-blue':s.status==='Shipped'?'badge-yellow':'badge-purple';
+    return`<tr><td style="font-weight:600;">${s.name}</td><td><span class="badge ${cb[s.category]||'badge-purple'}">${s.category}</span></td><td class="mono">${s.qty}</td><td class="mono">${fmt$(s.cost)}</td><td class="mono">${fmt$(s.cost*s.qty)}</td><td>${s.printer}</td><td><span class="badge ${bstat}">${s.status}</span></td>
+    <td><div class="actions-cell"><button class="btn btn-warn btn-xs" onclick="openSupplyModal('${s.id}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteSupply('${s.id}')">✕</button></div></td></tr>`;
+  }).join('');
+}
+
+// ═══ PRODUCTS ═══
+function openProductModal(id){
+  $('p-edit-id').value=id||'';
+  if(id){const p=CACHE.Products.find(x=>x.id===id);if(!p)return;
+    $('product-modal-title').textContent='Edit Product';
+    $('p-name').value=p.name;$('p-w').value=p.w;$('p-d').value=p.d;$('p-h').value=p.h;
+    $('p-weight').value=p.weight;$('p-filament').value=p.filament;$('p-filtype').value=p.filtype;
+    $('p-time').value=p.time;$('p-price').value=p.price;$('p-tiktok').value=p.tiktokPct;
+  }else{$('product-modal-title').textContent='Add Product';
+    ['p-name','p-w','p-d','p-h','p-weight','p-filament','p-time','p-price'].forEach(i=>$(i).value='');
+    $('p-filtype').value='PLA Basic';$('p-tiktok').value='10';}
+  $('product-cost-preview').style.display='none';openModal('modal-product');
+}
+function calcProductPreview(){
+  const fil=+$('p-filament').value||0,time=+$('p-time').value||0,price=+$('p-price').value||0,pct=+$('p-tiktok').value||10;
+  if(!fil&&!time&&!price){$('product-cost-preview').style.display='none';return;}
+  const c=calcProduct({filament:fil,time,price,tiktokPct:pct,filtype:$('p-filtype').value});
+  $('product-cost-preview').style.display='block';
+  $('prev-fil').textContent=fmt$(c.filCost);$('prev-elec').textContent=fmt$(c.elecCost);
+  $('prev-cost').textContent=fmt$(c.totalCost);$('prev-tiktok').textContent=fmt$(c.tiktokFee);
+  $('prev-profit').textContent=fmt$(c.netProfit);$('prev-profit').style.color=c.netProfit>=0?'var(--green)':'var(--red)';
+  $('prev-margin').textContent=c.margin.toFixed(1)+'%';
+}
+async function saveProduct(){
+  const name=$('p-name').value.trim();if(!name){toast('Enter product name');return;}
+  const editId=$('p-edit-id').value;
+  const obj={id:editId||uid(),name,w:+$('p-w').value,d:+$('p-d').value,h:+$('p-h').value,weight:+$('p-weight').value,filament:+$('p-filament').value,filtype:$('p-filtype').value,time:+$('p-time').value,price:+$('p-price').value,tiktokPct:+$('p-tiktok').value};
+  if(editId){obj._isEdit=editId;const i=CACHE.Products.findIndex(x=>x.id===editId);if(i>-1)CACHE.Products[i]=obj;}
+  else CACHE.Products.push(obj);
+  closeModal('modal-product');renderPage('products');
+  try{await writeToSheet('Products',obj);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Added ✓');}
+  catch(e){setSyncStatus('err','Sync error');}
+}
+async function deleteProduct(id){
+  if(!confirm('Remove?'))return;
+  CACHE.Products=CACHE.Products.filter(p=>p.id!==id);renderPage('products');
+  try{await deleteFromSheet('Products',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
+}
+function renderProductTable(){
+  const prods=CACHE.Products;const tbody=$('product-tbody');
+  if(!prods.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty"><div class="empty-icon">🖨️</div><p>No products</p></div></td></tr>';return;}
+  tbody.innerHTML=prods.map(p=>{
+    const c=calcProduct(p);const dims=[p.w,p.d,p.h].filter(Boolean).join('×')||'—';
+    return`<tr><td style="font-weight:600;">${p.name}</td><td class="mono" style="font-size:.78rem;">${dims}"</td><td class="mono">${p.filament}kg</td><td class="mono">${p.time}hr</td><td class="mono">${fmt$(c.filCost)}</td><td class="mono">${fmt$(c.elecCost)}</td><td class="mono" style="font-weight:600;">${fmt$(c.totalCost)}</td><td class="mono">${fmt$(p.price)}</td><td class="mono">${p.tiktokPct}%</td><td class="mono ${c.netProfit>=0?'profit-pos':'profit-neg'}" style="font-weight:700;">${fmt$(c.netProfit)}</td><td class="mono">${c.margin.toFixed(1)}%</td>
+    <td><div class="actions-cell"><button class="btn btn-warn btn-xs" onclick="openProductModal('${p.id}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteProduct('${p.id}')">✕</button></div></td></tr>`;
+  }).join('');
+}
+
+// ═══ INVENTORY ═══
+function openInventoryModal(id){
+  $('inv-product').innerHTML=CACHE.Products.map(p=>`<option>${p.name}</option>`).join('');
+  const types=getFilamentTypes();
+  $('inv-filtype').innerHTML=types.map(t=>`<option>${t}</option>`).join('');
+  $('inv-edit-id').value=id||'';
+  if(id){const item=CACHE.Inventory.find(x=>x.id===id);if(!item)return;
+    $('inventory-modal-title').textContent='Edit Inventory';
+    $('inv-product').value=item.productName;
+    if(item.filtype)$('inv-filtype').value=item.filtype;
+    updateInvColors();if(item.color)$('inv-color').value=item.color;
+    $('inv-qty').value=item.qty;$('inv-sold').value=item.sold||0;$('inv-loan').value=item.loan||0;$('inv-buildto').value=item.buildTo||2;
+  }else{$('inventory-modal-title').textContent='Add Stock';
+    $('inv-qty').value='1';$('inv-sold').value='0';$('inv-loan').value='0';$('inv-buildto').value='2';updateInvColors();}
+  openModal('modal-inventory');
+}
+function updateInvColors(){$('inv-color').innerHTML=getColorsByType($('inv-filtype').value).map(c=>`<option>${c}</option>`).join('');}
+async function saveInventory(){
+  const editId=$('inv-edit-id').value;
+  const obj={id:editId||uid(),productName:$('inv-product').value,filtype:$('inv-filtype').value,color:$('inv-color').value,qty:+$('inv-qty').value,sold:+$('inv-sold').value,loan:+$('inv-loan').value,buildTo:+$('inv-buildto').value};
+  if(editId){obj._isEdit=editId;const i=CACHE.Inventory.findIndex(x=>x.id===editId);if(i>-1)CACHE.Inventory[i]=obj;}
+  else CACHE.Inventory.push(obj);
+  closeModal('modal-inventory');renderPage('inventory');
+  try{await writeToSheet('Inventory',obj);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Added ✓');}
+  catch(e){setSyncStatus('err','Sync error');}
+}
+async function deleteInventory(id){
+  if(!confirm('Remove?'))return;
+  CACHE.Inventory=CACHE.Inventory.filter(i=>i.id!==id);renderPage('inventory');
+  try{await deleteFromSheet('Inventory',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
+}
+function salesVelocity(productName,color,days){
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);
+  const s=CACHE.Sales.filter(x=>x.productName===productName&&x.color===color&&new Date(x.date)>=cutoff);
+  return s.reduce((sum,x)=>sum+(+x.qty||1),0)/days;
+}
+function renderInventory(){
+  const inv=CACHE.Inventory;const days=+$('velocity-window').value;const prods=CACHE.Products;
+  const tbody=$('inventory-tbody');const alerts=[];
+  if(!inv.length){tbody.innerHTML='<tr><td colspan="11"><div class="empty"><div class="empty-icon">📦</div><p>No inventory tracked</p></div></td></tr>';$('inventory-alerts').innerHTML='';return;}
+  tbody.innerHTML=inv.map(item=>{
+    const prod=prods.find(p=>p.name===item.productName);
+    const vel=salesVelocity(item.productName,item.color,days);
+    const daysLeft=vel>0?Math.floor(item.qty/vel):null;
+    const ptd=prod?(prod.time/8):0;
+    const sbt=Math.max(item.buildTo,vel>0?Math.ceil(vel*30+ptd*2):item.buildTo);
+    const needPrint=Math.max(0,sbt-item.qty);
+    const estTime=prod?(needPrint*prod.time).toFixed(1)+' hr':'—';
+    if(needPrint>0)alerts.push(`<div class="alert alert-yellow">🖨 Print <strong>${needPrint}×</strong> ${item.productName} — ${item.color} (${estTime})</div>`);
+    if(daysLeft!==null&&daysLeft<7)alerts.push(`<div class="alert alert-red">⚡ <strong>${item.productName}</strong> (${item.color}) — ${daysLeft}d stock left</div>`);
+    const hex=getFilamentHex(item.color);
+    return`<tr>
+      <td style="font-weight:600;">${item.productName}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">${hex?`<span class="color-swatch" style="background:${hex}"></span>`:''}<span style="font-size:.8rem;">${item.color}</span></div></td>
+      <td class="mono" style="font-weight:700;">${item.qty}</td><td class="mono">${item.sold||0}</td><td class="mono">${item.loan||0}</td>
+      <td class="mono">${vel>0?vel.toFixed(3)+'/d':'<span style="color:var(--text3)">—</span>'}</td>
+      <td class="mono">${daysLeft!==null?`<span style="color:${daysLeft<7?'var(--red)':daysLeft<14?'var(--yellow)':'var(--green)'}">${daysLeft}d</span>`:'—'}</td>
+      <td class="mono">${sbt}</td>
+      <td class="mono ${needPrint>0?'build-needed':'build-ok'}">${needPrint>0?'🖨 '+needPrint:'✓ 0'}</td>
+      <td class="mono">${estTime}</td>
+      <td><div class="actions-cell"><button class="btn btn-warn btn-xs" onclick="openInventoryModal('${item.id}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteInventory('${item.id}')">✕</button></div></td></tr>`;
+  }).join('');
+  const seen=new Set();
+  $('inventory-alerts').innerHTML=alerts.filter(a=>{if(seen.has(a))return false;seen.add(a);return true;}).slice(0,5).join('');
+}
+
+// ═══ QUEUE ═══
+async function buildQueueFromInventory(){
+  const inv=CACHE.Inventory;const prods=CACHE.Products;const days=30;const existing=CACHE.Queue;
+  const generated=[];
+  inv.forEach(item=>{
+    const prod=prods.find(p=>p.name===item.productName);
+    const vel=salesVelocity(item.productName,item.color,days);
+    const ptd=prod?(prod.time/8):0;
+    const sbt=Math.max(item.buildTo,vel>0?Math.ceil(vel*30+ptd*2):item.buildTo);
+    const needPrint=Math.max(0,sbt-item.qty);
+    if(needPrint>0){
+      const exists=existing.find(q=>q.auto&&q.productName===item.productName&&q.color===item.color&&q.status!=='done');
+      if(!exists){
+        const dl=vel>0?Math.floor(item.qty/vel):999;
+        const job={id:uid(),auto:true,productName:item.productName,filtype:item.filtype||'',color:item.color,qty:needPrint,estTime:prod?(needPrint*prod.time).toFixed(1):0,priority:dl<7?'high':dl<14?'med':'low',status:'pending',notes:'Auto from inventory',added:new Date().toISOString().slice(0,10)};
+        generated.push(job);
+        CACHE.Queue.push(job);
+      }
+    }
+  });
+  if(!generated.length){toast('Queue is up to date ✓');renderQueue();return;}
+  renderQueue();toast(`Added ${generated.length} job${generated.length>1?'s':''} ✓`);
+  // Write to sheet in background
+  try{for(const j of generated){await writeToSheet('Queue',j);}setSyncStatus('ok','Synced');}
+  catch(e){setSyncStatus('err','Sync error');}
+}
+function openManualQueueModal(){
+  $('qj-product').innerHTML=CACHE.Products.map(p=>`<option>${p.name}</option>`).join('');
+  const types=getFilamentTypes();
+  $('qj-filtype').innerHTML=types.map(t=>`<option>${t}</option>`).join('');
+  updateQJColors();openModal('modal-queue-job');
+}
+function updateQJColors(){$('qj-color').innerHTML=getColorsByType($('qj-filtype').value).map(c=>`<option>${c}</option>`).join('');}
+async function saveQueueJob(){
+  const productName=$('qj-product').value;
+  const prod=CACHE.Products.find(p=>p.name===productName);
+  const qty=+$('qj-qty').value||1;
+  const job={id:uid(),auto:false,productName,filtype:$('qj-filtype').value,color:$('qj-color').value,qty,estTime:prod?(qty*prod.time).toFixed(1):0,priority:$('qj-priority').value,status:'pending',notes:$('qj-notes').value,added:new Date().toISOString().slice(0,10)};
+  CACHE.Queue.push(job);closeModal('modal-queue-job');renderQueue();toast('Job added ✓');
+  try{await writeToSheet('Queue',job);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
+}
+async function markQueueDone(id){
+  const item=CACHE.Queue.find(x=>x.id===id);if(!item)return;
+  item.status=item.status==='done'?'pending':'done';
+  item._isEdit=id;renderQueue();
+  try{await writeToSheet('Queue',item);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
+}
+async function deleteQueueItem(id){
+  CACHE.Queue=CACHE.Queue.filter(x=>x.id!==id);renderQueue();
+  try{await deleteFromSheet('Queue',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
+}
+function renderQueue(){
+  const pending=CACHE.Queue.filter(x=>x.status!=='done');
+  const done=CACHE.Queue.filter(x=>x.status==='done');
+  const totalHrs=pending.reduce((s,x)=>s+(+x.estTime||0),0);
+  const highCt=pending.filter(x=>x.priority==='high').length;
+  $('queue-stats').innerHTML=`<div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value accent">${pending.length}</div></div><div class="stat-card"><div class="stat-label">High Priority</div><div class="stat-value ${highCt?'red':'green'}">${highCt}</div></div><div class="stat-card"><div class="stat-label">Est. Time</div><div class="stat-value yellow">${totalHrs.toFixed(1)} hr</div></div><div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value green">${done.length}</div></div>`;
+  const sorted=[...pending].sort((a,b)=>{const p={high:0,med:1,low:2};return p[a.priority]-p[b.priority];});
+  const all=[...sorted,...done];
+  if(!all.length){$('queue-list').innerHTML='<div class="empty"><div class="empty-icon">✅</div><p>Queue empty — hit "Refresh from Inventory" to auto-generate jobs.</p></div>';return;}
+  let html='';
+  if(sorted.length)html+='<div class="section-title">To Print</div>';
+  sorted.forEach((job,i)=>{
+    const hex=getFilamentHex(job.color);
+    const pl={high:'🔴 Urgent',med:'🟡 Medium',low:'🟢 Low'}[job.priority];
+    html+=`<div class="queue-card priority-${job.priority}">
+      <div class="queue-num">${String(i+1).padStart(2,'0')}</div>
+      <div style="width:28px;height:28px;border-radius:50%;background:${hex||'#888'};border:2px solid var(--border2);flex-shrink:0;"></div>
+      <div class="queue-info"><div class="queue-name">${job.qty}× ${job.productName}</div><div class="queue-meta">${job.color} · ${job.filtype} · ${job.estTime} hr · ${pl}${job.notes?' · '+job.notes:''}</div></div>
+      <div class="queue-actions"><button class="btn btn-ghost btn-sm" onclick="markQueueDone('${job.id}')">✓ Done</button><button class="btn btn-danger btn-xs" onclick="deleteQueueItem('${job.id}')">✕</button></div>
+    </div>`;
+  });
+  if(done.length){
+    html+='<div class="section-title" style="margin-top:28px;">Completed</div>';
+    done.forEach(job=>{
+      const hex=getFilamentHex(job.color);
+      html+=`<div class="queue-card completed">
+        <div class="queue-num">✓</div>
+        <div style="width:28px;height:28px;border-radius:50%;background:${hex||'#888'};border:2px solid var(--border2);flex-shrink:0;"></div>
+        <div class="queue-info"><div class="queue-name" style="text-decoration:line-through;">${job.qty}× ${job.productName}</div><div class="queue-meta">${job.color}</div></div>
+        <div class="queue-actions"><button class="btn btn-ghost btn-xs" onclick="markQueueDone('${job.id}')">Undo</button><button class="btn btn-danger btn-xs" onclick="deleteQueueItem('${job.id}')">✕</button></div>
+      </div>`;
+    });
+  }
+  $('queue-list').innerHTML=html;
+}
+
+// ═══ SALES ═══
+function openSaleModal(id){
+  $('sale-product').innerHTML=CACHE.Products.map(p=>`<option>${p.name}</option>`).join('');
+  $('sale-edit-id').value=id||'';
+  if(id){const s=CACHE.Sales.find(x=>x.id===id);if(!s)return;
+    $('sale-modal-title').textContent='Edit Sale';
+    $('sale-date').value=s.date;$('sale-channel').value=s.channel;$('sale-order').value=s.order;
+    $('sale-product').value=s.productName;updateSaleFilaments();
+    if(s.filtype)$('sale-filtype').value=s.filtype;updateSaleColors();
+    if(s.color)$('sale-color').value=s.color;
+    $('sale-qty').value=s.qty;$('sale-price').value=s.price;$('sale-status').value=s.status;calcSale();
+  }else{$('sale-modal-title').textContent='Record Sale';
+    $('sale-date').value=new Date().toISOString().slice(0,10);$('sale-channel').value='TikTok';$('sale-order').value='';$('sale-qty').value='1';$('sale-status').value='Paid';
+    updateSaleFilaments();}
+  openModal('modal-sale');
+}
+function updateSaleFilaments(){
+  const types=getFilamentTypes();$('sale-filtype').innerHTML=types.map(t=>`<option>${t}</option>`).join('');
+  const prod=CACHE.Products.find(p=>p.name===$('sale-product').value);
+  if(prod&&prod.filtype)$('sale-filtype').value=prod.filtype;
+  updateSaleColors();if(prod)$('sale-price').value=prod.price;calcSale();
+}
+function updateSaleColors(){$('sale-color').innerHTML=getColorsByType($('sale-filtype').value).map(c=>`<option>${c}</option>`).join('');calcSale();}
+function calcSale(){
+  const price=+$('sale-price').value||0,qty=+$('sale-qty').value||1,ch=$('sale-channel').value;
+  const prod=CACHE.Products.find(p=>p.name===$('sale-product').value);
+  const fee=ch==='TikTok'&&prod?price*qty*(prod.tiktokPct/100):0;
+  $('sale-payout').value=(price*qty-fee).toFixed(2);
+}
+async function saveSale(){
+  const date=$('sale-date').value,productName=$('sale-product').value;
+  if(!date||!productName){toast('Fill date and product');return;}
+  const editId=$('sale-edit-id').value;
+  const s={id:editId||uid(),date,order:$('sale-order').value,channel:$('sale-channel').value,productName,filtype:$('sale-filtype').value,color:$('sale-color').value,qty:+$('sale-qty').value,price:+$('sale-price').value,status:$('sale-status').value};
+  if(editId){s._isEdit=editId;const i=CACHE.Sales.findIndex(x=>x.id===editId);if(i>-1)CACHE.Sales[i]=s;}
+  else{
+    // deduct inventory
+    const inv=CACHE.Inventory.find(i=>i.productName===s.productName&&i.color===s.color);
+    if(inv){inv.qty=Math.max(0,inv.qty-s.qty);inv.sold=(inv.sold||0)+s.qty;inv._isEdit=inv.id;try{await writeToSheet('Inventory',inv);}catch(e){}}
+    // deduct filament
+    const prod=CACHE.Products.find(p=>p.name===s.productName);
+    if(prod){const fil=CACHE.Filament.find(f=>f.color===s.color&&f.type===s.filtype);if(fil){fil.qty=Math.max(0,fil.qty-prod.filament*s.qty);fil._isEdit=fil.id;try{await writeToSheet('Filament',fil);}catch(e){}}}
+    CACHE.Sales.push(s);
+  }
+  closeModal('modal-sale');renderPage('sales');
+  try{await writeToSheet('Sales',s);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Sale recorded ✓');}
+  catch(e){setSyncStatus('err','Sync error');}
+}
+async function deleteSale(id){
+  if(!confirm('Delete sale?'))return;
+  CACHE.Sales=CACHE.Sales.filter(s=>s.id!==id);renderPage('sales');
+  try{await deleteFromSheet('Sales',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
+}
+function renderSalesStats(){
+  const s=CACHE.Sales;const prods=CACHE.Products;
+  const rev=s.reduce((x,y)=>x+y.price*y.qty,0);
+  let profit=0;s.forEach(x=>{const p=prods.find(q=>q.name===x.productName);if(p){const c=calcProduct(p);const f=x.channel==='TikTok'?x.price*(p.tiktokPct/100):0;profit+=(x.price-f-c.totalCost)*x.qty;}});
+  const tt=s.filter(x=>x.channel==='TikTok').length,ip=s.filter(x=>x.channel==='In-Person').length;
+  $('sales-stats').innerHTML=`<div class="stat-card"><div class="stat-label">Orders</div><div class="stat-value accent">${s.length}</div></div><div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-value green">${fmt$(rev)}</div></div><div class="stat-card"><div class="stat-label">Net Profit</div><div class="stat-value ${profit>=0?'green':'red'}">${fmt$(profit)}</div></div><div class="stat-card"><div class="stat-label">TikTok</div><div class="stat-value accent">${tt}</div></div><div class="stat-card"><div class="stat-label">In-Person</div><div class="stat-value yellow">${ip}</div></div>`;
+}
+function renderSalesTable(){
+  const search=$('sales-search').value.toLowerCase();
+  const chF=$('sales-channel-filter').value,pdF=+$('sales-period-filter').value;
+  const prods=CACHE.Products;
+  let sales=CACHE.Sales;
+  if(search)sales=sales.filter(s=>s.order.toLowerCase().includes(search)||s.productName.toLowerCase().includes(search)||s.color.toLowerCase().includes(search));
+  if(chF)sales=sales.filter(s=>s.channel===chF);
+  if(pdF){const c=new Date();c.setDate(c.getDate()-pdF);sales=sales.filter(s=>new Date(s.date)>=c);}
+  sales=[...sales].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const tbody=$('sales-tbody');
+  if(!sales.length){tbody.innerHTML='<tr><td colspan="13"><div class="empty"><div class="empty-icon">💰</div><p>No sales match</p></div></td></tr>';return;}
+  tbody.innerHTML=sales.map(s=>{
+    const sub=s.price*s.qty;const prod=prods.find(p=>p.name===s.productName);
+    let profit=0,payout=sub;
+    if(prod){const c=calcProduct(prod);const fee=s.channel==='TikTok'?sub*(prod.tiktokPct/100):0;payout=sub-fee;profit=(payout-c.totalCost)*s.qty;}
+    const cc=s.channel==='TikTok'?'channel-tiktok':'channel-person';
+    const sb=s.status==='Paid'||s.status==='Delivered'?'badge-green':s.status==='Shipped'?'badge-blue':'badge-yellow';
+    const hex=getFilamentHex(s.color);
+    return`<tr><td class="mono" style="font-size:.79rem;">${s.date}</td><td class="mono" style="font-size:.74rem;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.order}</td><td><span class="badge ${cc}">${s.channel}</span></td><td style="font-size:.82rem;font-weight:600;">${s.productName}</td>
+    <td><div style="display:flex;align-items:center;gap:5px;">${hex?`<span class="color-swatch" style="background:${hex}"></span>`:''}<span style="font-size:.79rem;">${s.color}</span></div></td>
+    <td class="mono">${s.qty}</td><td class="mono">${fmt$(s.price)}</td><td class="mono">${fmt$(sub)}</td><td class="mono">${fmt$(payout)}</td><td class="mono">${prod?fmt$(calcProduct(prod).totalCost):'—'}</td><td class="mono ${profit>=0?'profit-pos':'profit-neg'}" style="font-weight:700;">${fmt$(profit)}</td><td><span class="badge ${sb}">${s.status}</span></td>
+    <td><div class="actions-cell"><button class="btn btn-warn btn-xs" onclick="openSaleModal('${s.id}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteSale('${s.id}')">✕</button></div></td></tr>`;
+  }).join('');
+}
+
+// ═══ BOOT ═══
+initApp();
+</script>
+</body>
+</html>
