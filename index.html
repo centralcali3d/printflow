@@ -6,1090 +6,1384 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PrintFlow">
-<title>PrintFlow</title>
+<title>PrintFlow — 3D Print Business Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;600;700&family=Space+Grotesk:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-[data-theme="dark"]{--bg:#0e0f11;--surface:#161820;--surface2:#1e2028;--surface3:#262830;--border:#2e3040;--border2:#3a3d52;--accent:#6c63ff;--accent2:#a78bfa;--accent3:#38bdf8;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--orange:#fb923c;--text:#e8eaf0;--text2:#9ca3b8;--text3:#5a607a;--font-display:'Syne',sans-serif;--font-mono:'DM Mono',monospace;}
-[data-theme="light"]{--bg:#f4f5f7;--surface:#ffffff;--surface2:#f0f1f5;--surface3:#e4e6ed;--border:#d8dae8;--border2:#bfc3d8;--accent:#5b52e8;--accent2:#7c6fe0;--accent3:#0284c7;--green:#059669;--yellow:#d97706;--red:#dc2626;--orange:#ea580c;--text:#1a1d2e;--text2:#4b5268;--text3:#8b92b0;--font-display:'Outfit',sans-serif;--font-mono:'DM Mono',monospace;}
-[data-theme="warm"]{--bg:#1c1714;--surface:#252019;--surface2:#2e281f;--surface3:#38312a;--border:#453d30;--border2:#5a5040;--accent:#e8963a;--accent2:#f5b56b;--accent3:#7dd3a8;--green:#6db87a;--yellow:#e8c43a;--red:#e07070;--orange:#e8963a;--text:#f0ead8;--text2:#b5a888;--text3:#6e6048;--font-display:'Playfair Display',serif;--font-mono:'DM Mono',monospace;}
-[data-theme="slate"]{--bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--surface3:#252d3d;--border:#30363d;--border2:#434d5d;--accent:#58a6ff;--accent2:#79c0ff;--accent3:#56d364;--green:#3fb950;--yellow:#e3b341;--red:#f85149;--orange:#f0883e;--text:#c9d1d9;--text2:#8b949e;--text3:#484f58;--font-display:'Space Grotesk',sans-serif;--font-mono:'DM Mono',monospace;}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-display);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
-#app{display:flex;flex-direction:column;min-height:100vh}
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);gap:12px}
-.logo{font-size:1.3rem;font-weight:800;letter-spacing:-.03em;flex-shrink:0;background:linear-gradient(135deg,var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo span{font-weight:400;opacity:.6}
-nav{display:flex;gap:4px;background:var(--surface2);border-radius:999px;padding:4px;border:1px solid var(--border);flex-wrap:wrap}
-nav button{background:none;border:none;color:var(--text2);font-family:var(--font-display);font-size:.72rem;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:all .2s;letter-spacing:.02em;text-transform:uppercase}
-nav button.active{background:var(--accent);color:white}
-nav button:hover:not(.active){color:var(--text);background:var(--surface3)}
-.theme-switcher{display:flex;gap:6px;align-items:center;flex-shrink:0}
-.theme-btn{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .2s;flex-shrink:0}
-.theme-btn.active{border-color:var(--text);transform:scale(1.15)}
-.theme-btn[data-t="dark"]{background:linear-gradient(135deg,#1e2028,#6c63ff)}
-.theme-btn[data-t="light"]{background:linear-gradient(135deg,#f0f1f5,#5b52e8)}
-.theme-btn[data-t="warm"]{background:linear-gradient(135deg,#252019,#e8963a)}
-.theme-btn[data-t="slate"]{background:linear-gradient(135deg,#161b22,#58a6ff)}
-/* sync indicator */
-.sync-badge{font-size:.65rem;font-family:var(--font-mono);padding:3px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;gap:5px;flex-shrink:0;cursor:pointer;transition:all .2s}
-.sync-badge:hover{background:var(--surface3)}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0}
-.sync-dot.ok{background:var(--green)}
-.sync-dot.err{background:var(--red)}
-.sync-dot.spin{background:var(--yellow);animation:pulse .8s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-main{flex:1;padding:24px 20px;max-width:1300px;margin:0 auto;width:100%}
-.page{display:none;animation:fadeIn .25s ease}
-.page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.page-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-.page-title{font-size:1.8rem;font-weight:800;letter-spacing:-.04em}
-.page-sub{font-size:.8rem;color:var(--text3);font-family:var(--font-mono);margin-top:3px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
-.card-sm{padding:14px 16px}
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
-.stat-label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-mono)}
-.stat-value{font-size:1.5rem;font-weight:800;margin-top:4px;letter-spacing:-.04em}
-.stat-value.green{color:var(--green)}.stat-value.yellow{color:var(--yellow)}.stat-value.red{color:var(--red)}.stat-value.accent{color:var(--accent2)}
-.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:.84rem}
-thead th{background:var(--surface2);color:var(--text3);font-size:.67rem;text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-mono);padding:10px 13px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
-tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
-tbody tr:last-child{border-bottom:none}
-tbody tr:hover{background:var(--surface2)}
-td{padding:10px 13px;color:var(--text);vertical-align:middle}
-.mono{font-family:var(--font-mono)}
-.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.67rem;font-family:var(--font-mono);font-weight:500}
-.badge-green{background:rgba(52,211,153,.12);color:var(--green)}.badge-yellow{background:rgba(251,191,36,.12);color:var(--yellow)}.badge-red{background:rgba(248,113,113,.12);color:var(--red)}.badge-blue{background:rgba(56,189,248,.12);color:var(--accent3)}.badge-purple{background:rgba(108,99,255,.15);color:var(--accent2)}.badge-orange{background:rgba(251,146,60,.12);color:var(--orange)}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:var(--font-display);font-size:.82rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
-.btn-primary{background:var(--accent);color:white}.btn-primary:hover{filter:brightness(1.15);transform:translateY(-1px)}
-.btn-ghost{background:none;color:var(--text2);border:1px solid var(--border2)}.btn-ghost:hover{background:var(--surface3);color:var(--text)}
-.btn-warn{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}.btn-warn:hover{background:rgba(251,191,36,.22)}
-.btn-danger{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.2)}.btn-danger:hover{background:rgba(248,113,113,.22)}
-.btn-sm{padding:5px 11px;font-size:.73rem}.btn-xs{padding:3px 8px;font-size:.68rem}
-.actions-cell{display:flex;gap:5px}
-.form-row{display:grid;gap:14px}.form-row.cols-2{grid-template-columns:1fr 1fr}.form-row.cols-3{grid-template-columns:1fr 1fr 1fr}
-.field{display:flex;flex-direction:column;gap:6px}
-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:var(--font-mono)}
-input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-display);font-size:.88rem;padding:9px 12px;outline:none;transition:border .2s;width:100%}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-select option{background:var(--surface2)}
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-backdrop.open{opacity:1;pointer-events:all}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;transform:scale(.95);transition:transform .2s}
-.modal-backdrop.open .modal{transform:scale(1)}
-.modal-title{font-size:1.2rem;font-weight:700;margin-bottom:20px}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
-.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.search-wrap{position:relative;flex:1;min-width:200px}
-.search-wrap input{padding-left:34px}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.9rem}
-.color-swatch{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,.15);flex-shrink:0}
-.progress-bar{height:6px;background:var(--surface3);border-radius:999px;overflow:hidden;min-width:60px}
-.progress-fill{height:100%;border-radius:999px;transition:width .4s ease}
-.section-title{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-mono);margin:24px 0 12px;display:flex;align-items:center;gap:10px}
-.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
-.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
-.tab-btn{background:none;border:none;color:var(--text3);font-family:var(--font-display);font-size:.82rem;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap}
-.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2)}
-.tab-btn:hover:not(.active){color:var(--text)}
-.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:8px;font-size:.83rem;margin-bottom:10px}
-.alert-yellow{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);color:var(--yellow)}
-.alert-red{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:var(--red)}
-.alert-blue{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);color:var(--accent3)}
-.profit-pos{color:var(--green)}.profit-neg{color:var(--red)}
-.channel-tiktok{background:rgba(0,0,0,.4);color:#fff;border:1px solid #333}
-.channel-person{background:rgba(56,189,248,.1);color:var(--accent3);border:1px solid rgba(56,189,248,.2)}
-.build-needed{color:var(--orange);font-weight:700}.build-ok{color:var(--text3)}
-.empty{text-align:center;padding:48px 20px;color:var(--text3)}
-.empty-icon{font-size:2.5rem;margin-bottom:12px}
-.empty p{font-size:.88rem}
-/* Setup banner */
-.setup-banner{background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.25);border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:flex-start;gap:16px}
-.setup-banner h3{font-size:1rem;font-weight:700;color:var(--accent3);margin-bottom:6px}
-.setup-banner p{font-size:.83rem;color:var(--text2);line-height:1.5}
-.setup-banner code{background:var(--surface3);padding:2px 7px;border-radius:4px;font-family:var(--font-mono);font-size:.78rem;color:var(--accent2)}
-.url-input-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-.url-input-row input{flex:1;min-width:200px}
-/* Queue cards */
-.queue-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:16px;margin-bottom:10px;transition:border-color .2s}
-.queue-card:hover{border-color:var(--border2)}
-.queue-card.priority-high{border-left:3px solid var(--red)}
-.queue-card.priority-med{border-left:3px solid var(--yellow)}
-.queue-card.priority-low{border-left:3px solid var(--green)}
-.queue-card.completed{opacity:.4}
-.queue-num{font-size:1.4rem;font-weight:800;color:var(--text3);min-width:32px;font-family:var(--font-mono)}
-.queue-info{flex:1}
-.queue-name{font-weight:700;font-size:.95rem}
-.queue-meta{font-size:.78rem;color:var(--text2);margin-top:3px;font-family:var(--font-mono)}
-.queue-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:999px;font-size:.83rem;opacity:0;pointer-events:none;transition:all .3s;z-index:999;white-space:nowrap}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:768px){header{padding:0 12px;gap:8px}.logo{font-size:1rem}nav button{padding:5px 9px;font-size:.62rem}main{padding:14px 12px}.form-row.cols-2,.form-row.cols-3{grid-template-columns:1fr}.page-title{font-size:1.3rem}.theme-switcher{display:none}}
+  :root {
+    --bg: #0e0f11;
+    --surface: #161820;
+    --surface2: #1e2028;
+    --surface3: #262830;
+    --border: #2e3040;
+    --border2: #3a3d52;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --accent3: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --text: #e8eaf0;
+    --text2: #9ca3b8;
+    --text3: #5a607a;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-display); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  #app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 20px; height: 60px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .logo span { -webkit-text-fill-color: var(--text3); font-weight: 400; font-size: 0.8rem; margin-left: 6px; }
+  .sync-status { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-family: var(--font-mono); }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); }
+  .sync-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .sync-dot.err { background: var(--red); }
+  .sync-dot.loading { background: var(--yellow); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Setup Banner ── */
+  #setup-banner {
+    background: linear-gradient(135deg, #1a1060, #0f1a3a);
+    border-bottom: 1px solid var(--accent); padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  #setup-banner.hidden { display: none; }
+  #setup-banner label { font-size: 0.85rem; color: var(--accent2); white-space: nowrap; }
+  #script-url-input {
+    flex: 1; min-width: 240px; background: rgba(255,255,255,0.07);
+    border: 1px solid var(--accent); border-radius: var(--radius-sm);
+    padding: 8px 12px; color: var(--text); font-family: var(--font-mono);
+    font-size: 0.8rem; outline: none;
+  }
+  #script-url-input:focus { border-color: var(--accent2); }
+
+  /* ── Nav ── */
+  nav {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; overflow-x: auto; padding: 0 12px;
+    position: sticky; top: 60px; z-index: 99;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    padding: 14px 16px; font-family: var(--font-display); font-size: 0.8rem;
+    font-weight: 600; color: var(--text3); background: none; border: none;
+    border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: all .2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-btn:hover { color: var(--text2); }
+  .nav-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  /* ── Main ── */
+  main { flex: 1; padding: 24px 20px; max-width: 1400px; margin: 0 auto; width: 100%; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Page Header ── */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .page-title { font-size: 1.4rem; font-weight: 800; }
+  .page-subtitle { font-size: 0.8rem; color: var(--text3); margin-top: 2px; }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  /* ── KPI Cards ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .kpi { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .kpi-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .kpi-value { font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); }
+  .kpi-value.green { color: var(--green); }
+  .kpi-value.yellow { color: var(--yellow); }
+  .kpi-value.red { color: var(--red); }
+  .kpi-value.blue { color: var(--accent3); }
+
+  /* ── Buttons ── */
+  .btn { padding: 8px 16px; border-radius: var(--radius-sm); border: none; font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all .2s; letter-spacing: 0.03em; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #5a52e0; }
+  .btn-secondary { background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-warn { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+  .btn-danger { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .btn-xs { padding: 4px 10px; font-size: 0.72rem; }
+  .btn-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+
+  /* ── Filters ── */
+  .filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-input {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 7px 12px; color: var(--text); font-family: var(--font-display); font-size: 0.82rem;
+    outline: none; min-width: 160px;
+  }
+  .filter-input:focus { border-color: var(--accent); }
+  select.filter-input { cursor: pointer; }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead th { background: var(--surface2); color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; font-size: 0.7rem; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 10px 12px; color: var(--text); vertical-align: middle; }
+  .mono { font-family: var(--font-mono); }
+  .actions-cell { display: flex; gap: 6px; }
+
+  /* ── Badge ── */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
+  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-blue { background: rgba(56,189,248,0.15); color: var(--accent3); }
+  .badge-purple { background: rgba(167,139,250,0.15); color: var(--accent2); }
+  .badge-gray { background: rgba(156,163,184,0.1); color: var(--text3); }
+
+  /* ── Profit ── */
+  .profit-pos { color: var(--green); }
+  .profit-neg { color: var(--red); }
+
+  /* ── Color swatch ── */
+  .swatch { width: 18px; height: 18px; border-radius: 50%; display: inline-block; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+
+  /* ── Modal ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+  .form-group input, .form-group select, .form-group textarea {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 9px 12px;
+    color: var(--text); font-family: var(--font-display); font-size: 0.85rem; outline: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+  .cost-preview { background: var(--surface3); border-radius: var(--radius-sm); padding: 14px; margin-top: 4px; }
+  .cost-preview-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 3px 0; }
+  .cost-preview-row.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-weight: 700; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+  /* ── Settings ── */
+  .settings-section { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+  .settings-section h3 { font-size: 0.85rem; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+  .setting-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-info { flex: 1; }
+  .setting-name { font-size: 0.85rem; font-weight: 600; }
+  .setting-desc { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
+  .setting-control { display: flex; align-items: center; gap: 8px; }
+  .setting-input {
+    background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    padding: 7px 12px; color: var(--green); font-family: var(--font-mono); font-size: 0.9rem;
+    outline: none; width: 100px; text-align: right;
+  }
+  .setting-input:focus { border-color: var(--accent); }
+  .setting-unit { font-size: 0.78rem; color: var(--text3); }
+
+  /* ── Queue ── */
+  .queue-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
+  .queue-priority { font-size: 1.1rem; flex-shrink: 0; }
+  .queue-info { flex: 1; }
+  .queue-name { font-weight: 700; font-size: 0.9rem; }
+  .queue-meta { font-size: 0.75rem; color: var(--text3); margin-top: 3px; }
+  .queue-actions { display: flex; gap: 6px; }
+
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* ── Velocity dot ── */
+  .vel-bar { display: flex; align-items: center; gap: 6px; }
+  .vel-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    main { padding: 16px; }
+  }
 </style>
 </head>
-<body data-theme="dark">
+<body>
 <div id="app">
+
   <header>
-    <div class="logo">Print<span>Flow</span></div>
-    <nav id="main-nav">
-      <button class="active" onclick="showPage('filament')">Filament</button>
-      <button onclick="showPage('supplies')">Supplies</button>
-      <button onclick="showPage('products')">Products</button>
-      <button onclick="showPage('inventory')">Inventory</button>
-      <button onclick="showPage('queue')">Queue</button>
-      <button onclick="showPage('sales')">Sales</button>
-    </nav>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <div class="sync-badge" onclick="showPage('filament')" id="sync-badge">
-        <div class="sync-dot spin" id="sync-dot"></div>
-        <span id="sync-label">Connecting…</span>
-      </div>
-      <div class="theme-switcher">
-        <button class="theme-btn active" data-t="dark" title="Dark" onclick="setTheme('dark',this)"></button>
-        <button class="theme-btn" data-t="light" title="Light" onclick="setTheme('light',this)"></button>
-        <button class="theme-btn" data-t="warm" title="Warm" onclick="setTheme('warm',this)"></button>
-        <button class="theme-btn" data-t="slate" title="Slate" onclick="setTheme('slate',this)"></button>
-      </div>
+    <div>
+      <div class="logo">PrintFlow<span>3D Business Manager</span></div>
+    </div>
+    <div class="sync-status">
+      <div class="sync-dot loading" id="sync-dot"></div>
+      <span id="sync-label">Connecting…</span>
+      <button class="btn btn-secondary btn-xs" onclick="toggleSetup()" style="margin-left:4px;">🔗</button>
     </div>
   </header>
 
+  <div id="setup-banner">
+    <label>Apps Script URL</label>
+    <input type="url" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec">
+    <button class="btn btn-primary" onclick="connectScript()">Connect</button>
+    <button class="btn btn-secondary btn-xs" onclick="toggleSetup()">✕</button>
+  </div>
+
+  <nav>
+    <button class="nav-btn active" onclick="showTab('filament', this)">Filament</button>
+    <button class="nav-btn" onclick="showTab('supplies', this)">Supplies</button>
+    <button class="nav-btn" onclick="showTab('products', this)">Products</button>
+    <button class="nav-btn" onclick="showTab('inventory', this)">Inventory</button>
+    <button class="nav-btn" onclick="showTab('queue', this)">Queue</button>
+    <button class="nav-btn" onclick="showTab('sales', this)">Sales</button>
+    <button class="nav-btn" onclick="showTab('settings', this)">Settings</button>
+  </nav>
+
   <main>
-    <!-- Setup banner (shown until URL is saved) -->
-    <div id="setup-banner" class="setup-banner" style="display:none;">
-      <div style="font-size:1.8rem;">🔗</div>
-      <div style="flex:1;">
-        <h3>Connect to Google Sheets</h3>
-        <p>Paste your Apps Script Web App URL below to sync all data across your devices. Get this URL from <strong>Extensions → Apps Script → Deploy → Manage deployments</strong> in your PrintFlow DB spreadsheet.</p>
-        <div class="url-input-row">
-          <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/…/exec">
-          <button class="btn btn-primary" onclick="saveApiUrl()">Connect</button>
+
+    <!-- ═══ FILAMENT ═══ -->
+    <div class="tab-panel active" id="tab-filament">
+      <div class="page-header">
+        <div><div class="page-title">Filament</div><div class="page-subtitle">Stock · Cost · Reorder tracking</div></div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="openFilamentModal()">＋ Add Filament</button>
         </div>
       </div>
-    </div>
-
-    <!-- FILAMENT -->
-    <div class="page active" id="page-filament">
-      <div class="page-header">
-        <div><div class="page-title">Filament</div><div class="page-sub">Stock · Cost · Reorder tracking</div></div>
-        <button class="btn btn-primary" onclick="openFilamentModal()">＋ Add Filament</button>
-      </div>
-      <div class="stats-row" id="filament-stats"></div>
-      <div id="filament-alerts"></div>
-      <div class="filter-bar">
-        <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="filament-search" placeholder="Search color or type…" oninput="renderFilamentTable()"></div>
-        <select id="filament-type-filter" onchange="renderFilamentTable()"><option value="">All Types</option></select>
-        <select id="filament-status-filter" onchange="renderFilamentTable()">
-          <option value="">All</option><option value="ok">In Stock</option>
-          <option value="low">Low</option><option value="out">Out</option><option value="ordered">Ordered</option>
+      <div class="filters">
+        <input class="filter-input" type="text" id="fil-search" placeholder="⌕" oninput="renderFilament()" style="max-width:180px;">
+        <select class="filter-input" id="fil-type-filter" onchange="renderFilament()">
+          <option value="">All Types</option>
+          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
+          <option>PLA Translucent</option><option>PLA Wood</option>
+          <option>PETG HF</option><option>PETG, SunLu</option><option>ABS</option>
+          <option>TPU for AMS</option><option>Elegoo</option>
+        </select>
+        <select class="filter-input" id="fil-status-filter" onchange="renderFilament()">
+          <option value="">All</option>
+          <option>In Stock</option><option>Low</option><option>Out</option><option>Ordered</option>
         </select>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Color</th><th>Type</th><th>On Hand</th><th>Cost/Spool</th><th>$/g</th><th>Build To</th><th>Status</th><th>Vendor</th><th></th></tr></thead>
-        <tbody id="filament-tbody"></tbody></table>
+        <table>
+          <thead><tr>
+            <th>Color</th><th>Type</th><th>On Hand</th><th>Cost/Spool</th>
+            <th>$/g</th><th>Build To</th><th>Status</th><th>Vendor</th><th></th>
+          </tr></thead>
+          <tbody id="filament-tbody"></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- SUPPLIES -->
-    <div class="page" id="page-supplies">
+    <!-- ═══ SUPPLIES ═══ -->
+    <div class="tab-panel" id="tab-supplies">
       <div class="page-header">
-        <div><div class="page-title">Supplies</div><div class="page-sub">Hardware · Consumables · Hotends · Bed Plates</div></div>
-        <button class="btn btn-primary" onclick="openSupplyModal()">＋ Add Supply</button>
+        <div><div class="page-title">Supplies</div><div class="page-subtitle">Hardware · Consumables · Hotends · Bed Plates</div></div>
+        <div class="header-actions">
+          <button class="btn btn-primary" onclick="openSupplyModal()">＋ Add Supply</button>
+        </div>
       </div>
-      <div class="stats-row" id="supply-stats"></div>
-      <div class="tabs">
-        <button class="tab-btn active" onclick="setSupplyTab('all',this)">All</button>
-        <button class="tab-btn" onclick="setSupplyTab('Hardware',this)">Hardware</button>
-        <button class="tab-btn" onclick="setSupplyTab('Hotends',this)">Hotends</button>
-        <button class="tab-btn" onclick="setSupplyTab('Bed Plates',this)">Bed Plates</button>
-        <button class="tab-btn" onclick="setSupplyTab('Consumables',this)">Consumables</button>
-        <button class="tab-btn" onclick="setSupplyTab('Printers',this)">Printers</button>
+      <div class="filters">
+        <select class="filter-input" id="sup-cat-filter" onchange="renderSupplies()">
+          <option value="">All</option>
+          <option>Hardware</option><option>Hotends</option><option>Bed Plates</option>
+          <option>Consumables</option><option>Printers</option>
+        </select>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Item</th><th>Category</th><th>Qty</th><th>Cost</th><th>Extended</th><th>Printer</th><th>Status</th><th></th></tr></thead>
-        <tbody id="supply-tbody"></tbody></table>
+        <table>
+          <thead><tr>
+            <th>Item</th><th>Category</th><th>Qty</th><th>Cost</th>
+            <th>Extended</th><th>Printer</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="supplies-tbody"></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- PRODUCTS -->
-    <div class="page" id="page-products">
+    <!-- ═══ PRODUCTS ═══ -->
+    <div class="tab-panel" id="tab-products">
       <div class="page-header">
-        <div><div class="page-title">Products</div><div class="page-sub">Catalog · Cost · Pricing · Profit</div></div>
+        <div><div class="page-title">Products</div><div class="page-subtitle">Catalog · Cost · Pricing · Profit</div></div>
         <button class="btn btn-primary" onclick="openProductModal()">＋ Add Product</button>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Product</th><th>Dimensions</th><th>Filament</th><th>Time</th><th>Fil. Cost</th><th>Elec.</th><th>Total Cost</th><th>Price</th><th>TikTok</th><th>Profit</th><th>Margin</th><th></th></tr></thead>
-        <tbody id="product-tbody"></tbody></table>
+        <table>
+          <thead><tr>
+            <th>Product</th><th>Dimensions</th><th>Filament</th><th>Time</th>
+            <th>Fil. Cost</th><th>Elec.</th><th>Total Cost</th><th>Price</th>
+            <th>TikTok</th><th>Profit</th><th>Margin</th><th></th>
+          </tr></thead>
+          <tbody id="products-tbody"></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- INVENTORY -->
-    <div class="page" id="page-inventory">
+    <!-- ═══ INVENTORY ═══ -->
+    <div class="tab-panel" id="tab-inventory">
       <div class="page-header">
-        <div><div class="page-title">Inventory</div><div class="page-sub">Stock · Build-to · Velocity</div></div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          <div class="field" style="flex-direction:row;align-items:center;gap:8px;margin:0;">
-            <label style="white-space:nowrap;margin:0;">Velocity:</label>
-            <select id="velocity-window" onchange="renderInventory()" style="width:auto;">
-              <option value="7">7 days</option><option value="14">14 days</option>
-              <option value="30" selected>30 days</option><option value="60">60 days</option><option value="90">90 days</option>
-            </select>
-          </div>
+        <div><div class="page-title">Inventory</div><div class="page-subtitle">Stock · Build-to · Velocity</div></div>
+        <div class="header-actions">
+          <label style="font-size:.78rem;color:var(--text3);">Velocity:</label>
+          <select class="filter-input" id="vel-days" onchange="renderInventory()" style="width:auto;">
+            <option value="7">7 days</option><option value="14">14 days</option>
+            <option value="30" selected>30 days</option><option value="60">60 days</option>
+            <option value="90">90 days</option>
+          </select>
           <button class="btn btn-primary" onclick="openInventoryModal()">＋ Add Stock</button>
         </div>
       </div>
-      <div id="inventory-alerts" style="margin-bottom:16px;"></div>
       <div class="table-wrap">
-        <table><thead><tr><th>Product</th><th>Filament / Color</th><th>Stock</th><th>Sold</th><th>Loan</th><th>Vel/day</th><th>Days Left</th><th>Build To</th><th>Print</th><th>Time</th><th></th></tr></thead>
-        <tbody id="inventory-tbody"></tbody></table>
+        <table>
+          <thead><tr>
+            <th>Product</th><th>Filament / Color</th><th>Stock</th><th>Sold</th>
+            <th>Loan</th><th>Vel/day</th><th>Days Left</th><th>Build To</th>
+            <th>Print</th><th>Time</th><th></th>
+          </tr></thead>
+          <tbody id="inventory-tbody"></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- QUEUE -->
-    <div class="page" id="page-queue">
+    <!-- ═══ QUEUE ═══ -->
+    <div class="tab-panel" id="tab-queue">
       <div class="page-header">
-        <div><div class="page-title">Print Queue</div><div class="page-sub">What to print · Priority order</div></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn btn-ghost" onclick="openManualQueueModal()">＋ Manual Job</button>
-          <button class="btn btn-primary" onclick="buildQueueFromInventory()">↻ Refresh from Inventory</button>
+        <div><div class="page-title">Print Queue</div><div class="page-subtitle">What to print · Priority order</div></div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="openManualQueueModal()">＋ Manual Job</button>
+          <button class="btn btn-primary" onclick="refreshQueue()">↻ Refresh from Inventory</button>
         </div>
       </div>
-      <div class="stats-row" id="queue-stats"></div>
       <div id="queue-list"></div>
     </div>
 
-    <!-- SALES -->
-    <div class="page" id="page-sales">
+    <!-- ═══ SALES ═══ -->
+    <div class="tab-panel" id="tab-sales">
       <div class="page-header">
-        <div><div class="page-title">Sales</div><div class="page-sub">Orders · Revenue · Profit</div></div>
+        <div><div class="page-title">Sales</div><div class="page-subtitle">Orders · Revenue · Profit</div></div>
         <button class="btn btn-primary" onclick="openSaleModal()">＋ Record Sale</button>
       </div>
-      <div class="stats-row" id="sales-stats"></div>
-      <div class="filter-bar">
-        <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="sales-search" placeholder="Search…" oninput="renderSalesTable()"></div>
-        <select id="sales-channel-filter" onchange="renderSalesTable()"><option value="">All Channels</option><option value="TikTok">TikTok</option><option value="In-Person">In-Person</option></select>
-        <select id="sales-period-filter" onchange="renderSalesTable()"><option value="">All Time</option><option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option></select>
+      <div class="kpi-row" id="sales-kpis"></div>
+      <div class="filters">
+        <input class="filter-input" type="text" id="sale-search" placeholder="⌕" oninput="renderSales()" style="max-width:180px;">
+        <select class="filter-input" id="sale-channel-filter" onchange="renderSales()">
+          <option value="">All Channels</option><option>TikTok</option><option>In-Person</option>
+        </select>
+        <select class="filter-input" id="sale-period-filter" onchange="renderSales()">
+          <option value="">All Time</option>
+          <option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option>
+        </select>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Date</th><th>Order #</th><th>Channel</th><th>Product</th><th>Color</th><th>Qty</th><th>Price</th><th>Subtotal</th><th>Payout</th><th>Cost</th><th>Profit</th><th>Status</th><th></th></tr></thead>
-        <tbody id="sales-tbody"></tbody></table>
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Order #</th><th>Channel</th><th>Product</th><th>Color</th>
+            <th>Qty</th><th>Price</th><th>Subtotal</th><th>Payout</th>
+            <th>Cost</th><th>Profit</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="sales-tbody"></tbody>
+        </table>
       </div>
     </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="page-header">
+        <div><div class="page-title">Settings</div><div class="page-subtitle">App configuration · Pricing defaults</div></div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+      </div>
+      <div class="settings-section">
+        <h3>⚡ Electricity &amp; Costs</h3>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Electricity Rate</div>
+            <div class="setting-desc">Cost per hour of printing. Check your electric bill — US average is ~$0.12–$0.16/hr per printer.</div>
+          </div>
+          <div class="setting-control">
+            <span class="setting-unit">$</span>
+            <input class="setting-input" id="setting-electricity-rate" type="number" step="0.01" min="0" value="0.12">
+            <span class="setting-unit">/ hr</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>🔗 Connection</h3>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Apps Script URL</div>
+            <div class="setting-desc">The Google Apps Script Web App URL used to sync data with your PrintFlow DB spreadsheet.</div>
+          </div>
+          <div class="setting-control" style="flex-direction:column;align-items:flex-end;gap:6px;">
+            <input class="setting-input" id="setting-script-url" type="url" placeholder="https://script.google.com/…" style="width:300px;text-align:left;font-size:0.72rem;">
+            <button class="btn btn-secondary btn-xs" onclick="reconnectFromSettings()">Reconnect</button>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:0.75rem;color:var(--text3);margin-top:12px;">
+        💡 You can also edit <strong>electricity_rate_per_hr</strong> directly in the <em>Settings</em> tab of your PrintFlow DB spreadsheet — the app reads from there on every load.
+      </p>
+    </div>
+
   </main>
 </div>
 
-<!-- MODALS -->
-<div class="modal-backdrop" id="modal-filament">
+<!-- ══ MODALS ══ -->
+
+<!-- Filament Modal -->
+<div class="modal-overlay" id="filament-modal">
   <div class="modal">
-    <div class="modal-title" id="filament-modal-title">Add Filament</div>
-    <input type="hidden" id="f-edit-id">
-    <div class="form-row cols-2">
-      <div class="field"><label>Type</label><select id="f-type"><option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option><option>PLA Translucent</option><option>PLA Wood</option><option>PETG HF</option><option>PETG, SunLu</option><option>ABS</option><option>TPU for AMS</option><option>Elegoo</option><option>Other</option></select></div>
-      <div class="field"><label>Color Name</label><input type="text" id="f-color" placeholder="e.g. Basic Black (10101)"></div>
-      <div class="field"><label>On Hand (kg)</label><input type="number" id="f-qty" step="0.1" min="0" value="1.0"></div>
-      <div class="field"><label>Cost/Spool ($)</label><input type="number" id="f-cost" step="0.01" value="12.99"></div>
-      <div class="field"><label>Build To (spools)</label><input type="number" id="f-buildto" step="1" min="0" value="1"></div>
-      <div class="field"><label>Vendor</label><select id="f-vendor"><option>Bambu</option><option>Amazon</option><option>Eric</option><option>Other</option></select></div>
-      <div class="field"><label>Status</label><select id="f-status"><option>Up to date</option><option>Ordered</option><option>Low</option><option>Backorder</option></select></div>
-      <div class="field"><label>Swatch Color</label><input type="color" id="f-hex" value="#888888" style="height:40px;padding:4px;"></div>
+    <h2 id="filament-modal-title">Add Filament</h2>
+    <input type="hidden" id="fil-edit-id">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Type</label>
+        <select id="fil-type">
+          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
+          <option>PLA Translucent</option><option>PLA Wood</option><option>PETG HF</option>
+          <option>PETG, SunLu</option><option>ABS</option><option>TPU for AMS</option>
+          <option>Elegoo</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Color Name</label><input type="text" id="fil-color"></div>
+      <div class="form-group"><label>On Hand (kg)</label><input type="number" step="0.1" id="fil-onhand"></div>
+      <div class="form-group"><label>Cost/Spool ($)</label><input type="number" step="0.01" id="fil-cost"></div>
+      <div class="form-group"><label>Build To (spools)</label><input type="number" id="fil-buildto" value="1"></div>
+      <div class="form-group">
+        <label>Vendor</label>
+        <select id="fil-vendor"><option>Bambu</option><option>Amazon</option><option>Eric</option><option>Other</option></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="fil-status"><option>Up to date</option><option>Ordered</option><option>Low</option><option>Backorder</option></select>
+      </div>
+      <div class="form-group"><label>Swatch Color</label><input type="color" id="fil-swatch" value="#ffffff"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-filament')">Cancel</button>
+      <button class="btn btn-secondary" onclick="closeModal('filament-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveFilament()">Save</button>
     </div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="modal-supply">
+<!-- Supply Modal -->
+<div class="modal-overlay" id="supply-modal">
   <div class="modal">
-    <div class="modal-title" id="supply-modal-title">Add Supply</div>
-    <input type="hidden" id="s-edit-id">
-    <div class="form-row cols-2">
-      <div class="field" style="grid-column:1/-1;"><label>Item Name</label><input type="text" id="s-name"></div>
-      <div class="field"><label>Category</label><select id="s-cat"><option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option><option>Printers</option></select></div>
-      <div class="field"><label>Qty</label><input type="number" id="s-qty" value="1"></div>
-      <div class="field"><label>Unit Cost ($)</label><input type="number" id="s-cost" step="0.01"></div>
-      <div class="field"><label>Printer</label><select id="s-printer"><option>All</option><option>H2C</option><option>P1S</option><option>P2S</option></select></div>
-      <div class="field"><label>Status</label><select id="s-status"><option>Received</option><option>Ordered</option><option>Shipped</option><option>Delivered</option></select></div>
-      <div class="field"><label>Order Date</label><input type="date" id="s-date"></div>
+    <h2 id="supply-modal-title">Add Supply</h2>
+    <input type="hidden" id="sup-edit-id">
+    <div class="form-grid">
+      <div class="form-group full"><label>Item Name</label><input type="text" id="sup-name"></div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="sup-cat"><option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option><option>Printers</option></select>
+      </div>
+      <div class="form-group"><label>Qty</label><input type="number" id="sup-qty" value="1"></div>
+      <div class="form-group"><label>Unit Cost ($)</label><input type="number" step="0.01" id="sup-cost"></div>
+      <div class="form-group">
+        <label>Printer</label>
+        <select id="sup-printer"><option>All</option><option>H2C</option><option>P1S</option><option>P2S</option></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="sup-status"><option>Received</option><option>Ordered</option><option>Shipped</option><option>Delivered</option></select>
+      </div>
+      <div class="form-group full"><label>Order Date</label><input type="date" id="sup-date"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-supply')">Cancel</button>
+      <button class="btn btn-secondary" onclick="closeModal('supply-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveSupply()">Save</button>
     </div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="modal-product">
+<!-- Product Modal -->
+<div class="modal-overlay" id="product-modal">
   <div class="modal">
-    <div class="modal-title" id="product-modal-title">Add Product</div>
-    <input type="hidden" id="p-edit-id">
-    <div class="form-row cols-2">
-      <div class="field" style="grid-column:1/-1;"><label>Product Name</label><input type="text" id="p-name"></div>
-      <div class="field"><label>Width (in)</label><input type="number" id="p-w" step="0.1"></div>
-      <div class="field"><label>Depth (in)</label><input type="number" id="p-d" step="0.1"></div>
-      <div class="field"><label>Height (in)</label><input type="number" id="p-h" step="0.1"></div>
-      <div class="field"><label>Weight (lb)</label><input type="number" id="p-weight" step="0.01"></div>
-      <div class="field"><label>Filament (kg)</label><input type="number" id="p-filament" step="0.001" oninput="calcProductPreview()"></div>
-      <div class="field"><label>Print Time (hr)</label><input type="number" id="p-time" step="0.05" oninput="calcProductPreview()"></div>
-      <div class="field"><label>Filament Type</label><select id="p-filtype" onchange="calcProductPreview()"><option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option><option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option></select></div>
-      <div class="field"><label>Sale Price ($)</label><input type="number" id="p-price" step="0.01" oninput="calcProductPreview()"></div>
-      <div class="field"><label>TikTok Fee %</label><input type="number" id="p-tiktok" value="10" step="0.1" oninput="calcProductPreview()"></div>
-    </div>
-    <div id="product-cost-preview" style="display:none;margin-top:16px;" class="card card-sm">
-      <div class="section-title" style="margin-top:0;">Cost Preview</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-        <div><div class="stat-label">Fil. Cost</div><div class="mono" id="prev-fil">—</div></div>
-        <div><div class="stat-label">Electricity</div><div class="mono" id="prev-elec">—</div></div>
-        <div><div class="stat-label">Total Cost</div><div class="mono" id="prev-cost">—</div></div>
-        <div><div class="stat-label">TikTok Fee</div><div class="mono" id="prev-tiktok">—</div></div>
-        <div><div class="stat-label">Net Profit</div><div class="mono" id="prev-profit" style="font-weight:700;">—</div></div>
-        <div><div class="stat-label">Margin</div><div class="mono" id="prev-margin">—</div></div>
+    <h2 id="product-modal-title">Add Product</h2>
+    <input type="hidden" id="prod-edit-id">
+    <div class="form-grid">
+      <div class="form-group full"><label>Product Name</label><input type="text" id="prod-name"></div>
+      <div class="form-group"><label>Width (in)</label><input type="number" step="0.01" id="prod-w"></div>
+      <div class="form-group"><label>Depth (in)</label><input type="number" step="0.01" id="prod-d"></div>
+      <div class="form-group"><label>Height (in)</label><input type="number" step="0.01" id="prod-h"></div>
+      <div class="form-group"><label>Weight (lb)</label><input type="number" step="0.01" id="prod-wt"></div>
+      <div class="form-group"><label>Filament (kg)</label><input type="number" step="0.01" id="prod-fil-kg" oninput="updateCostPreview()"></div>
+      <div class="form-group"><label>Print Time (hr)</label><input type="number" step="0.01" id="prod-time" oninput="updateCostPreview()"></div>
+      <div class="form-group">
+        <label>Filament Type</label>
+        <select id="prod-fil-type" onchange="updateCostPreview()">
+          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
+          <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Sale Price ($)</label><input type="number" step="0.01" id="prod-price" oninput="updateCostPreview()"></div>
+      <div class="form-group"><label>TikTok Fee %</label><input type="number" step="0.1" id="prod-tiktok" value="10" oninput="updateCostPreview()"></div>
+      <div class="form-group full">
+        <label>Cost Preview</label>
+        <div class="cost-preview">
+          <div class="cost-preview-row"><span>Fil. Cost</span><span id="prev-fil">—</span></div>
+          <div class="cost-preview-row"><span>Electricity</span><span id="prev-elec">—</span></div>
+          <div class="cost-preview-row total"><span>Total Cost</span><span id="prev-total">—</span></div>
+          <div class="cost-preview-row"><span style="color:var(--text3)">TikTok Fee</span><span id="prev-ttfee" style="color:var(--red)">—</span></div>
+          <div class="cost-preview-row"><span style="font-weight:700">Net Profit</span><span id="prev-profit" style="color:var(--green)">—</span></div>
+          <div class="cost-preview-row"><span style="color:var(--text3)">Margin</span><span id="prev-margin" style="color:var(--accent3)">—</span></div>
+        </div>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-product')">Cancel</button>
+      <button class="btn btn-secondary" onclick="closeModal('product-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveProduct()">Save</button>
     </div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="modal-inventory">
+<!-- Inventory Modal -->
+<div class="modal-overlay" id="inventory-modal">
   <div class="modal">
-    <div class="modal-title" id="inventory-modal-title">Add Stock</div>
+    <h2 id="inventory-modal-title">Add Stock</h2>
     <input type="hidden" id="inv-edit-id">
-    <div class="form-row cols-2">
-      <div class="field"><label>Product</label><select id="inv-product"></select></div>
-      <div class="field"><label>Filament Type</label><select id="inv-filtype" onchange="updateInvColors()"></select></div>
-      <div class="field" style="grid-column:1/-1;"><label>Color</label><select id="inv-color"></select></div>
-      <div class="field"><label>Qty Available</label><input type="number" id="inv-qty" value="1"></div>
-      <div class="field"><label>Qty Sold</label><input type="number" id="inv-sold" value="0"></div>
-      <div class="field"><label>On Loan</label><input type="number" id="inv-loan" value="0"></div>
-      <div class="field"><label>Build To</label><input type="number" id="inv-buildto" value="2"></div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Product</label>
+        <select id="inv-product"></select>
+      </div>
+      <div class="form-group">
+        <label>Filament Type</label>
+        <select id="inv-fil-type">
+          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
+          <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Color</label><input type="text" id="inv-color"></div>
+      <div class="form-group"><label>Qty Available</label><input type="number" id="inv-qty" value="0"></div>
+      <div class="form-group"><label>Qty Sold</label><input type="number" id="inv-sold" value="0"></div>
+      <div class="form-group"><label>On Loan</label><input type="number" id="inv-loan" value="0"></div>
+      <div class="form-group"><label>Build To</label><input type="number" id="inv-buildto" value="2"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-inventory')">Cancel</button>
+      <button class="btn btn-secondary" onclick="closeModal('inventory-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveInventory()">Save</button>
     </div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="modal-sale">
+<!-- Sale Modal -->
+<div class="modal-overlay" id="sale-modal">
   <div class="modal">
-    <div class="modal-title" id="sale-modal-title">Record Sale</div>
+    <h2 id="sale-modal-title">Record Sale</h2>
     <input type="hidden" id="sale-edit-id">
-    <div class="form-row cols-2">
-      <div class="field"><label>Date</label><input type="date" id="sale-date"></div>
-      <div class="field"><label>Channel</label><select id="sale-channel" onchange="calcSale()"><option>TikTok</option><option>In-Person</option></select></div>
-      <div class="field"><label>Order / Ref #</label><input type="text" id="sale-order"></div>
-      <div class="field"><label>Product</label><select id="sale-product" onchange="updateSaleFilaments()"></select></div>
-      <div class="field"><label>Filament Type</label><select id="sale-filtype" onchange="updateSaleColors()"></select></div>
-      <div class="field"><label>Color</label><select id="sale-color"></select></div>
-      <div class="field"><label>Qty</label><input type="number" id="sale-qty" value="1" oninput="calcSale()"></div>
-      <div class="field"><label>Sale Price ($)</label><input type="number" id="sale-price" step="0.01" oninput="calcSale()"></div>
-      <div class="field"><label>Payout (auto)</label><input type="number" id="sale-payout" readonly style="opacity:.6;"></div>
-      <div class="field"><label>Status</label><select id="sale-status"><option>Paid</option><option>Shipped</option><option>Delivered</option><option>Pending</option></select></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input type="date" id="sale-date"></div>
+      <div class="form-group">
+        <label>Channel</label>
+        <select id="sale-channel" onchange="updatePayoutPreview()">
+          <option>TikTok</option><option>In-Person</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Order / Ref #</label><input type="text" id="sale-order"></div>
+      <div class="form-group full">
+        <label>Product</label>
+        <select id="sale-product" onchange="onSaleProductChange()"></select>
+      </div>
+      <div class="form-group"><label>Filament Type</label><input type="text" id="sale-filtype"></div>
+      <div class="form-group"><label>Color</label><input type="text" id="sale-color"></div>
+      <div class="form-group"><label>Qty</label><input type="number" id="sale-qty" value="1" oninput="updatePayoutPreview()"></div>
+      <div class="form-group"><label>Sale Price ($)</label><input type="number" step="0.01" id="sale-price" oninput="updatePayoutPreview()"></div>
+      <div class="form-group"><label>Payout (auto)</label><input type="number" step="0.01" id="sale-payout" placeholder="Auto-calculated"></div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="sale-status"><option>Paid</option><option>Shipped</option><option>Delivered</option><option>Pending</option></select>
+      </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-sale')">Cancel</button>
+      <button class="btn btn-secondary" onclick="closeModal('sale-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveSale()">Save</button>
     </div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="modal-queue-job">
+<!-- Manual Queue Modal -->
+<div class="modal-overlay" id="queue-modal">
   <div class="modal">
-    <div class="modal-title">Add Manual Print Job</div>
-    <div class="form-row cols-2">
-      <div class="field"><label>Product</label><select id="qj-product"></select></div>
-      <div class="field"><label>Qty to Print</label><input type="number" id="qj-qty" value="1" min="1"></div>
-      <div class="field"><label>Filament Type</label><select id="qj-filtype" onchange="updateQJColors()"></select></div>
-      <div class="field"><label>Color</label><select id="qj-color"></select></div>
-      <div class="field"><label>Priority</label><select id="qj-priority"><option value="high">🔴 High</option><option value="med" selected>🟡 Medium</option><option value="low">🟢 Low</option></select></div>
-      <div class="field"><label>Notes</label><input type="text" id="qj-notes" placeholder="Optional…"></div>
+    <h2>Add Manual Print Job</h2>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Product</label>
+        <select id="q-product"></select>
+      </div>
+      <div class="form-group"><label>Qty to Print</label><input type="number" id="q-qty" value="1"></div>
+      <div class="form-group">
+        <label>Filament Type</label>
+        <select id="q-filtype">
+          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
+          <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Color</label><input type="text" id="q-color"></div>
+      <div class="form-group full">
+        <label>Priority</label>
+        <select id="q-priority"><option value="High">🔴 High</option><option value="Medium" selected>🟡 Medium</option><option value="Low">🟢 Low</option></select>
+      </div>
+      <div class="form-group full"><label>Notes</label><input type="text" id="q-notes"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-queue-job')">Cancel</button>
+      <button class="btn btn-secondary" onclick="closeModal('queue-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveQueueJob()">Add to Queue</button>
     </div>
   </div>
 </div>
 
-<div id="toast"></div>
-
 <script>
-// ═══ THEME ═══
-function setTheme(t,el){document.body.setAttribute('data-theme',t);document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');localStorage.setItem('pf_theme',t);}
-(()=>{const t=localStorage.getItem('pf_theme')||'dark';document.body.setAttribute('data-theme',t);const b=document.querySelector('.theme-btn[data-t="'+t+'"]');if(b){document.querySelectorAll('.theme-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}})();
+// ═══ STATE ═══
+const DB = { filament:[], supplies:[], products:[], inventory:[], sales:[], queue:[] };
+let SCRIPT_URL = localStorage.getItem('pf_script_url') || '';
 
-// ═══ API / SYNC ═══
-let API_URL = localStorage.getItem('pf_api_url') || '';
-
-// In-memory cache so the UI never blocks
-const CACHE = { Filament:[], Supplies:[], Products:[], Inventory:[], Sales:[], Queue:[] };
-
-function setSyncStatus(state, label) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-label');
-  dot.className = 'sync-dot ' + state;
-  lbl.textContent = label;
-}
-
-async function apiCall(params) {
-  if (!API_URL) throw new Error('No API URL configured');
-  // Apps Script requires GET for reads; we use a GET with JSON-encoded body for writes
-  const url = API_URL + '?' + new URLSearchParams(params).toString();
-  const resp = await fetch(url, { redirect: 'follow' });
-  if (!resp.ok) throw new Error('HTTP ' + resp.status);
-  return await resp.json();
-}
-
-async function apiPost(body) {
-  if (!API_URL) throw new Error('No API URL configured');
-  // Apps Script GET with all params works best for CORS
-  const params = Object.fromEntries(
-    Object.entries(body).map(([k,v]) => [k, typeof v === 'object' ? JSON.stringify(v) : v])
-  );
-  const url = API_URL + '?' + new URLSearchParams(params).toString();
-  const resp = await fetch(url, { redirect: 'follow' });
-  if (!resp.ok) throw new Error('HTTP ' + resp.status);
-  return await resp.json();
-}
-
-async function loadTab(tab) {
-  const data = await apiCall({ action: 'read', tab });
-  if (data.error) throw new Error(data.error);
-  // Convert array of column-keyed objects to our internal format
-  CACHE[tab] = data.rows.map(row => sheetRowToObj(tab, row));
-  return CACHE[tab];
-}
-
-// Map sheet column names → internal object keys
-function sheetRowToObj(tab, row) {
-  if (tab === 'Filament') return {
-    id: row['ID'], type: row['Type'], color: row['Color'],
-    qty: +row['On Hand (kg)'] || 0, cost: +row['Cost per Spool ($)'] || 0,
-    buildTo: +row['Build To (spools)'] || 0, vendor: row['Vendor'],
-    status: row['Status'], hex: row['Swatch Hex'] || '#888888'
-  };
-  if (tab === 'Supplies') return {
-    id: row['ID'], name: row['Item Name'], category: row['Category'],
-    qty: +row['Qty'] || 0, cost: +row['Unit Cost ($)'] || 0,
-    printer: row['Printer'], status: row['Status'], date: row['Order Date'] || ''
-  };
-  if (tab === 'Products') return {
-    id: row['ID'], name: row['Product Name'],
-    w: +row['Width (in)'] || 0, d: +row['Depth (in)'] || 0, h: +row['Height (in)'] || 0,
-    weight: +row['Weight (lb)'] || 0, filament: +row['Filament (kg)'] || 0,
-    filtype: row['Filament Type'], time: +row['Print Time (hr)'] || 0,
-    price: +row['Sale Price ($)'] || 0, tiktokPct: +row['TikTok Fee (%)'] || 10
-  };
-  if (tab === 'Inventory') return {
-    id: row['ID'], productName: row['Product Name'], filtype: row['Filament Type'],
-    color: row['Color'], qty: +row['Qty Available'] || 0,
-    sold: +row['Qty Sold'] || 0, loan: +row['On Loan'] || 0,
-    buildTo: +row['Build To'] || 0
-  };
-  if (tab === 'Sales') return {
-    id: row['ID'], date: row['Date'], order: row['Order / Ref #'],
-    channel: row['Channel'], productName: row['Product Name'],
-    filtype: row['Filament Type'], color: row['Color'],
-    qty: +row['Qty'] || 0, price: +row['Sale Price ($)'] || 0,
-    status: row['Status']
-  };
-  if (tab === 'Queue') return {
-    id: row['ID'], productName: row['Product Name'], filtype: row['Filament Type'],
-    color: row['Color'], qty: +row['Qty'] || 0,
-    estTime: +row['Est. Print Time (hr)'] || 0, priority: row['Priority'] || 'med',
-    status: row['Status'] || 'pending', notes: row['Notes'] || '',
-    added: row['Date Added'] || '', auto: row['Auto Generated'] === 'true' || row['Auto Generated'] === true
-  };
-  return row;
-}
-
-// Convert internal obj → sheet column map
-function objToSheetRow(tab, obj) {
-  if (tab === 'Filament') return {
-    'ID': obj.id, 'Type': obj.type, 'Color': obj.color,
-    'On Hand (kg)': obj.qty, 'Cost per Spool ($)': obj.cost,
-    'Build To (spools)': obj.buildTo, 'Vendor': obj.vendor,
-    'Status': obj.status, 'Swatch Hex': obj.hex
-  };
-  if (tab === 'Supplies') return {
-    'ID': obj.id, 'Item Name': obj.name, 'Category': obj.category,
-    'Qty': obj.qty, 'Unit Cost ($)': obj.cost,
-    'Extended ($)': (obj.cost * obj.qty).toFixed(2),
-    'Printer': obj.printer, 'Status': obj.status, 'Order Date': obj.date || ''
-  };
-  if (tab === 'Products') return {
-    'ID': obj.id, 'Product Name': obj.name,
-    'Width (in)': obj.w, 'Depth (in)': obj.d, 'Height (in)': obj.h,
-    'Weight (lb)': obj.weight, 'Filament (kg)': obj.filament,
-    'Filament Type': obj.filtype, 'Print Time (hr)': obj.time,
-    'Sale Price ($)': obj.price, 'TikTok Fee (%)': obj.tiktokPct
-  };
-  if (tab === 'Inventory') return {
-    'ID': obj.id, 'Product Name': obj.productName, 'Filament Type': obj.filtype,
-    'Color': obj.color, 'Qty Available': obj.qty, 'Qty Sold': obj.sold,
-    'On Loan': obj.loan, 'Build To': obj.buildTo
-  };
-  if (tab === 'Sales') return {
-    'ID': obj.id, 'Date': obj.date, 'Order / Ref #': obj.order,
-    'Channel': obj.channel, 'Product Name': obj.productName,
-    'Filament Type': obj.filtype, 'Color': obj.color, 'Qty': obj.qty,
-    'Sale Price ($)': obj.price,
-    'Subtotal ($)': (obj.price * obj.qty).toFixed(2),
-    'Payout ($)': calcPayout(obj).toFixed(2),
-    'Status': obj.status
-  };
-  if (tab === 'Queue') return {
-    'ID': obj.id, 'Product Name': obj.productName, 'Filament Type': obj.filtype,
-    'Color': obj.color, 'Qty': obj.qty,
-    'Est. Print Time (hr)': obj.estTime, 'Priority': obj.priority,
-    'Status': obj.status, 'Notes': obj.notes || '',
-    'Date Added': obj.added || new Date().toISOString().slice(0,10),
-    'Auto Generated': obj.auto ? 'true' : 'false'
-  };
-  return obj;
-}
-
-function calcPayout(sale) {
-  const prod = CACHE.Products.find(p => p.name === sale.productName);
-  const subtotal = sale.price * sale.qty;
-  if (sale.channel === 'TikTok' && prod) return subtotal - subtotal * (prod.tiktokPct / 100);
-  return subtotal;
-}
-
-async function writeToSheet(tab, obj) {
-  const row = objToSheetRow(tab, obj);
-  const editId = obj._isEdit;
-  if (editId) {
-    return await apiPost({ action: 'update', tab, row: JSON.stringify(row) });
-  } else {
-    return await apiPost({ action: 'write', tab, row: JSON.stringify(row) });
-  }
-}
-
-async function deleteFromSheet(tab, id) {
-  return await apiPost({ action: 'delete', tab, id });
-}
-
-// ═══ SETUP ═══
-function saveApiUrl() {
-  const url = document.getElementById('api-url-input').value.trim();
-  if (!url.startsWith('https://script.google.com')) {
-    toast('Please paste a valid Apps Script URL'); return;
-  }
-  API_URL = url;
-  localStorage.setItem('pf_api_url', url);
-  document.getElementById('setup-banner').style.display = 'none';
-  initApp();
-}
+// Settings — defaults, overridden by sheet on load
+let SETTINGS = {
+  electricity_rate_per_hr: 0.12,
+  tiktok_default_fee_pct:  10,
+};
 
 // ═══ INIT ═══
 async function initApp() {
-  if (!API_URL) {
-    document.getElementById('setup-banner').style.display = 'flex';
-    setSyncStatus('err', 'Not connected');
-    // Load empty state so UI renders
-    renderPage('filament');
-    return;
+  const savedUrl = localStorage.getItem('pf_script_url');
+  if (savedUrl) {
+    SCRIPT_URL = savedUrl;
+    document.getElementById('setting-script-url').value = savedUrl;
+    document.getElementById('script-url-input').value   = savedUrl;
+    await loadAll();
+  } else {
+    setSyncStatus('error', 'Not connected');
+    document.getElementById('setup-banner').classList.remove('hidden');
   }
-  setSyncStatus('spin', 'Loading…');
+}
+
+async function loadAll() {
+  setSyncStatus('loading', 'Loading…');
   try {
-    // Init sheets first (creates tabs if missing)
-    await apiCall({ action: 'init' });
-    // Load all tabs in parallel
-    await Promise.all(['Filament','Supplies','Products','Inventory','Sales','Queue'].map(t => loadTab(t)));
+    // Load settings first so electricity rate is available for product cost calcs
+    await loadSettings();
+    await Promise.all([
+      loadTab('filament','Filament'),
+      loadTab('supplies','Supplies'),
+      loadTab('products','Products'),
+      loadTab('inventory','Inventory'),
+      loadTab('sales','Sales'),
+      loadTab('queue','Queue'),
+    ]);
+    renderAll();
     setSyncStatus('ok', 'Synced');
-    renderPage('filament');
   } catch(e) {
-    setSyncStatus('err', 'Offline');
-    toast('Could not reach Google Sheets — check your URL');
-    renderPage('filament');
+    setSyncStatus('error', 'Error');
+    console.error(e);
   }
 }
 
-async function refreshTab(tab) {
-  setSyncStatus('spin', 'Syncing…');
+async function loadSettings() {
   try {
-    await loadTab(tab);
-    setSyncStatus('ok', 'Synced');
+    const res  = await api({ action: 'getSettings' });
+    if (res.ok && res.settings) {
+      const s = res.settings;
+      if (s.electricity_rate_per_hr !== undefined) {
+        SETTINGS.electricity_rate_per_hr = parseFloat(s.electricity_rate_per_hr) || 0.12;
+      }
+      if (s.tiktok_default_fee_pct !== undefined) {
+        SETTINGS.tiktok_default_fee_pct = parseFloat(s.tiktok_default_fee_pct) || 10;
+      }
+      // Update settings UI
+      document.getElementById('setting-electricity-rate').value = SETTINGS.electricity_rate_per_hr;
+    }
   } catch(e) {
-    setSyncStatus('err', 'Sync error');
+    console.warn('Could not load settings, using defaults', e);
   }
 }
 
-// ═══ UTILS ═══
-function uid(){return'pf_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);}
-function $(id){return document.getElementById(id);}
-function fmt$(n){return'$'+(+(n||0)).toFixed(2);}
-function fmtKg(n){return(+(n||0)).toFixed(2)+' kg';}
-function toast(msg,dur=3000){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-function openModal(id){$(id).classList.add('open');}
-function closeModal(id){$(id).classList.remove('open');}
-document.querySelectorAll('.modal-backdrop').forEach(b=>{b.addEventListener('click',e=>{if(e.target===b)b.classList.remove('open');});});
-
-// ═══ NAV ═══
-function showPage(name){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active'));
-  $('page-'+name).classList.add('active');
-  [...document.querySelectorAll('#main-nav button')].find(b=>b.textContent.toLowerCase()===name)?.classList.add('active');
-  renderPage(name);
+async function loadTab(key, tabName) {
+  const res = await api({ action: 'read', tab: tabName });
+  DB[key]   = res.rows || [];
 }
-function renderPage(name){
-  if(name==='filament'){renderFilamentStats();renderFilamentTable();renderFilamentAlerts();}
-  if(name==='supplies'){renderSupplyStats();renderSupplyTable();}
-  if(name==='products'){renderProductTable();}
-  if(name==='inventory'){renderInventory();}
-  if(name==='queue'){renderQueue();}
-  if(name==='sales'){renderSalesStats();renderSalesTable();}
+
+// ═══ API ═══
+async function api(payload) {
+  if (!SCRIPT_URL) throw new Error('No script URL configured');
+  const url = SCRIPT_URL + '?action=' + payload.action + (payload.tab ? '&tab=' + payload.tab : '');
+  const res = await fetch(url, {
+    method: 'POST',
+    body:   JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+// ═══ SETTINGS ═══
+async function saveSettings() {
+  const rate    = parseFloat(document.getElementById('setting-electricity-rate').value);
+  const urlVal  = document.getElementById('setting-script-url').value.trim();
+
+  if (isNaN(rate) || rate < 0) { alert('Please enter a valid electricity rate.'); return; }
+
+  SETTINGS.electricity_rate_per_hr = rate;
+
+  setSyncStatus('loading', 'Saving…');
+  try {
+    await api({ action: 'updateSetting', key: 'electricity_rate_per_hr', value: rate.toString() });
+    setSyncStatus('ok', 'Saved');
+    // Update script URL if changed
+    if (urlVal && urlVal !== SCRIPT_URL) {
+      SCRIPT_URL = urlVal;
+      localStorage.setItem('pf_script_url', urlVal);
+    }
+    // Re-render products table with new rate
+    renderProducts();
+    renderSales();
+    alert('Settings saved! Electricity rate updated to $' + rate.toFixed(2) + '/hr.');
+  } catch(e) {
+    setSyncStatus('error', 'Save failed');
+    alert('Error saving settings: ' + e.message);
+  }
+}
+
+async function reconnectFromSettings() {
+  const urlVal = document.getElementById('setting-script-url').value.trim();
+  if (!urlVal) { alert('Paste your Apps Script URL first.'); return; }
+  SCRIPT_URL = urlVal;
+  localStorage.setItem('pf_script_url', urlVal);
+  document.getElementById('script-url-input').value = urlVal;
+  await loadAll();
+}
+
+// ═══ HELPERS ═══
+function fmt$(n)  { return '$' + (+n||0).toFixed(2); }
+function fmtKg(n) { return (+n||0).toFixed(3) + ' kg'; }
+
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot ' + (state==='ok'?'ok':state==='error'?'err':'loading');
+  document.getElementById('sync-label').textContent = label;
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id==='settings') {
+    document.getElementById('setting-electricity-rate').value = SETTINGS.electricity_rate_per_hr;
+    document.getElementById('setting-script-url').value       = SCRIPT_URL;
+  }
+}
+
+function toggleSetup() {
+  document.getElementById('setup-banner').classList.toggle('hidden');
+}
+
+async function connectScript() {
+  const url = document.getElementById('script-url-input').value.trim();
+  if (!url) return;
+  SCRIPT_URL = url;
+  localStorage.setItem('pf_script_url', url);
+  document.getElementById('setting-script-url').value = url;
+  document.getElementById('setup-banner').classList.add('hidden');
+  await loadAll();
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function renderAll() {
+  renderFilament(); renderSupplies(); renderProducts();
+  renderInventory(); renderQueue(); renderSales();
 }
 
 // ═══ COST CALC ═══
-const ELEC = 0.50;
-function avgCostPerKg(type){
-  const f=CACHE.Filament.filter(x=>x.type===type);
-  return f.length ? f.reduce((s,x)=>s+x.cost,0)/f.length : 12.99;
-}
-function calcProduct(p){
-  const filCost=p.filament*avgCostPerKg(p.filtype);
-  const elecCost=p.time*ELEC;
-  const totalCost=filCost+elecCost;
-  const tiktokFee=p.price*(p.tiktokPct/100);
-  const netProfit=p.price-tiktokFee-totalCost;
-  const margin=p.price>0?(netProfit/p.price*100):0;
-  return{filCost,elecCost,totalCost,tiktokFee,netProfit,margin};
+function filCostPerKg(type) {
+  const match = DB.filament.find(f => f['Type'] === type);
+  if (!match) return 12.99 / 1; // fallback $12.99/kg
+  const spool = parseFloat(match['Cost per Spool ($)']) || 12.99;
+  // Bambu spools are 1kg; assume 1kg per spool
+  return spool;
 }
 
-function getFilamentTypes(){return[...new Set(CACHE.Filament.map(f=>f.type))].sort();}
-function getColorsByType(type){return CACHE.Filament.filter(f=>f.type===type).map(f=>f.color);}
-function getFilamentHex(color){return CACHE.Filament.find(f=>f.color===color)?.hex||null;}
+function productCost(p) {
+  const filKg    = parseFloat(p['Filament (kg)'])  || 0;
+  const time     = parseFloat(p['Print Time (hr)']) || 0;
+  const type     = p['Filament Type'] || 'PLA Basic';
+  const cPerKg   = filCostPerKg(type);
+  const filCost  = filKg * cPerKg;
+  const elecCost = time  * SETTINGS.electricity_rate_per_hr;
+  return { filCost, elecCost, total: filCost + elecCost };
+}
+
+function saleCost(s) {
+  const prod = DB.products.find(p => p['Product Name'] === s['Product Name']);
+  if (!prod) return 0;
+  return productCost(prod).total * (parseFloat(s['Qty']) || 1);
+}
 
 // ═══ FILAMENT ═══
-function openFilamentModal(id){
-  $('f-edit-id').value=id||'';
-  if(id){
-    const f=CACHE.Filament.find(x=>x.id===id);if(!f)return;
-    $('filament-modal-title').textContent='Edit Filament';
-    $('f-type').value=f.type;$('f-color').value=f.color;$('f-qty').value=f.qty;
-    $('f-cost').value=f.cost;$('f-buildto').value=f.buildTo;$('f-vendor').value=f.vendor;
-    $('f-status').value=f.status;$('f-hex').value=f.hex||'#888888';
-  } else {
-    $('filament-modal-title').textContent='Add Filament';
-    $('f-color').value='';$('f-qty').value='1.0';$('f-cost').value='12.99';$('f-buildto').value='1';
-    $('f-vendor').value='Bambu';$('f-status').value='Up to date';$('f-hex').value='#888888';
-  }
-  openModal('modal-filament');
-}
-async function saveFilament(){
-  const color=$('f-color').value.trim();if(!color){toast('Enter a color name');return;}
-  const editId=$('f-edit-id').value;
-  const obj={id:editId||uid(),type:$('f-type').value,color,qty:+$('f-qty').value,cost:+$('f-cost').value,buildTo:+$('f-buildto').value,vendor:$('f-vendor').value,status:$('f-status').value,hex:$('f-hex').value};
-  if(editId) obj._isEdit=editId;
-  // Update cache immediately for snappy UI
-  if(editId){const i=CACHE.Filament.findIndex(x=>x.id===editId);if(i>-1)CACHE.Filament[i]=obj;}
-  else CACHE.Filament.push(obj);
-  closeModal('modal-filament');renderPage('filament');
-  try{await writeToSheet('Filament',obj);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Added ✓');}
-  catch(e){setSyncStatus('err','Sync error');toast('Saved locally — sync failed');}
-}
-async function deleteFilament(id){
-  if(!confirm('Remove this filament?'))return;
-  CACHE.Filament=CACHE.Filament.filter(f=>f.id!==id);renderPage('filament');
-  try{await deleteFromSheet('Filament',id);setSyncStatus('ok','Synced');toast('Removed');}
-  catch(e){setSyncStatus('err','Sync error');}
-}
-function renderFilamentStats(){
-  const f=CACHE.Filament;
-  const totalKg=f.reduce((s,x)=>s+(+x.qty),0);
-  const totalVal=f.reduce((s,x)=>s+x.cost*Math.ceil(x.qty),0);
-  const low=f.filter(x=>x.qty<x.buildTo).length;
-  const ordered=f.filter(x=>x.status==='Ordered').length;
-  $('filament-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-label">Colors</div><div class="stat-value accent">${f.length}</div></div>
-    <div class="stat-card"><div class="stat-label">Total Stock</div><div class="stat-value">${totalKg.toFixed(1)} kg</div></div>
-    <div class="stat-card"><div class="stat-label">Inv. Value</div><div class="stat-value green">${fmt$(totalVal)}</div></div>
-    <div class="stat-card"><div class="stat-label">Below Build-To</div><div class="stat-value ${low?'yellow':'green'}">${low}</div></div>
-    <div class="stat-card"><div class="stat-label">On Order</div><div class="stat-value accent">${ordered}</div></div>`;
-  const types=[...new Set(f.map(x=>x.type))].sort();
-  const tf=$('filament-type-filter');const cur=tf.value;
-  tf.innerHTML='<option value="">All Types</option>'+types.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('');
-}
-function renderFilamentAlerts(){
-  const low=CACHE.Filament.filter(f=>f.qty<f.buildTo&&f.status!=='Ordered');
-  const el=$('filament-alerts');
-  if(!low.length){el.innerHTML='';return;}
-  el.innerHTML=low.slice(0,3).map(f=>`<div class="alert alert-yellow">⚠ <strong>${f.color}</strong> — ${fmtKg(f.qty)} on hand, build-to: ${f.buildTo} spool${f.buildTo!==1?'s':''}.</div>`).join('')
-    +(low.length>3?`<div class="alert alert-yellow">+${low.length-3} more below build-to</div>`:'');
-}
-function renderFilamentTable(){
-  const search=$('filament-search').value.toLowerCase();
-  const typeF=$('filament-type-filter').value;
-  const statusF=$('filament-status-filter').value;
-  let fils=CACHE.Filament;
-  if(search)fils=fils.filter(f=>f.color.toLowerCase().includes(search)||f.type.toLowerCase().includes(search));
-  if(typeF)fils=fils.filter(f=>f.type===typeF);
-  if(statusF==='ok')fils=fils.filter(f=>f.qty>=f.buildTo);
-  else if(statusF==='low')fils=fils.filter(f=>f.qty>0&&f.qty<f.buildTo);
-  else if(statusF==='out')fils=fils.filter(f=>f.qty<=0);
-  else if(statusF==='ordered')fils=fils.filter(f=>f.status==='Ordered');
-  const tbody=$('filament-tbody');
-  if(!fils.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty"><div class="empty-icon">🧵</div><p>No filaments match</p></div></td></tr>';return;}
-  tbody.innerHTML=fils.map(f=>{
-    const pct=Math.min(100,f.buildTo>0?(f.qty/f.buildTo)*100:100);
-    const bc=pct>=100?'#34d399':pct>=50?'#fbbf24':'#f87171';
-    const badge=f.status==='Ordered'?'badge-blue':f.qty<=0?'badge-red':f.qty<f.buildTo?'badge-yellow':'badge-green';
-    return`<tr>
-      <td><div style="display:flex;align-items:center;gap:8px;"><span class="color-swatch" style="background:${f.hex||'#888'}"></span>${f.color}</div></td>
-      <td><span class="badge badge-purple">${f.type}</span></td>
-      <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:${pct}%;background:${bc}"></div></div><span class="mono" style="min-width:48px;">${fmtKg(f.qty)}</span></div></td>
-      <td class="mono">${fmt$(f.cost)}</td>
-      <td class="mono">${(f.cost/1000).toFixed(4)}</td>
-      <td class="mono">${f.buildTo}</td>
-      <td><span class="badge ${badge}">${f.status}</span></td>
-      <td>${f.vendor}</td>
+function renderFilament() {
+  const search  = document.getElementById('fil-search').value.toLowerCase();
+  const type    = document.getElementById('fil-type-filter').value;
+  const status  = document.getElementById('fil-status-filter').value;
+  let rows = DB.filament.filter(f => {
+    if (type && f['Type'] !== type) return false;
+    const st = f['Status'] || '';
+    if (status === 'In Stock' && !['Up to date','Ordered'].includes(st)) return false;
+    if (status === 'Low'      && st !== 'Low') return false;
+    if (status === 'Out'      && st !== 'Out') return false;
+    if (status === 'Ordered'  && st !== 'Ordered') return false;
+    if (search  && !f['Color'].toLowerCase().includes(search) && !f['Type'].toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const badgeMap = {'Up to date':'badge-green','Ordered':'badge-blue','Low':'badge-yellow','Backorder':'badge-red'};
+  document.getElementById('filament-tbody').innerHTML = rows.map(f => {
+    const hex   = f['Swatch Hex'] || '#888';
+    const spool = parseFloat(f['Cost per Spool ($)']) || 0;
+    const perG  = spool > 0 ? (spool / 1000).toFixed(4) : '—';
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <span class="swatch" style="background:${hex}"></span>${f['Color']}
+      </div></td>
+      <td>${f['Type']}</td>
+      <td class="mono">${f['On Hand (kg)']} kg</td>
+      <td class="mono">${fmt$(spool)}</td>
+      <td class="mono">$${perG}</td>
+      <td>${f['Build To (spools)']}</td>
+      <td><span class="badge ${badgeMap[f['Status']]||'badge-gray'}">${f['Status']}</span></td>
+      <td>${f['Vendor']}</td>
       <td><div class="actions-cell">
-        <button class="btn btn-warn btn-xs" onclick="openFilamentModal('${f.id}')">Edit</button>
-        <button class="btn btn-danger btn-xs" onclick="deleteFilament('${f.id}')">✕</button>
-      </div></td></tr>`;
-  }).join('');
+        <button class="btn btn-warn btn-xs" onclick="openFilamentModal('${f['ID']}')">Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteItem('filament','Filament','${f['ID']}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9"><div class="empty-state"><div class="icon">🧵</div><p>No filament found</p></div></td></tr>';
+}
+
+function openFilamentModal(id) {
+  document.getElementById('filament-modal-title').textContent = id ? 'Edit Filament' : 'Add Filament';
+  document.getElementById('fil-edit-id').value = id || '';
+  if (id) {
+    const f = DB.filament.find(x => x['ID'] === id);
+    if (f) {
+      document.getElementById('fil-type').value    = f['Type'];
+      document.getElementById('fil-color').value   = f['Color'];
+      document.getElementById('fil-onhand').value  = f['On Hand (kg)'];
+      document.getElementById('fil-cost').value    = f['Cost per Spool ($)'];
+      document.getElementById('fil-buildto').value = f['Build To (spools)'];
+      document.getElementById('fil-vendor').value  = f['Vendor'];
+      document.getElementById('fil-status').value  = f['Status'];
+      document.getElementById('fil-swatch').value  = f['Swatch Hex'] || '#ffffff';
+    }
+  } else {
+    document.getElementById('fil-color').value = '';
+    document.getElementById('fil-onhand').value = '';
+    document.getElementById('fil-cost').value = '';
+  }
+  openModal('filament-modal');
+}
+
+async function saveFilament() {
+  const id    = document.getElementById('fil-edit-id').value;
+  const color = document.getElementById('fil-color').value.trim();
+  if (!color) { alert('Color name required'); return; }
+  const row = {
+    'ID':                id || 'fil_' + Date.now(),
+    'Type':              document.getElementById('fil-type').value,
+    'Color':             color,
+    'On Hand (kg)':      parseFloat(document.getElementById('fil-onhand').value) || 0,
+    'Cost per Spool ($)':parseFloat(document.getElementById('fil-cost').value)   || 0,
+    'Build To (spools)': parseInt(document.getElementById('fil-buildto').value)  || 0,
+    'Vendor':            document.getElementById('fil-vendor').value,
+    'Status':            document.getElementById('fil-status').value,
+    'Swatch Hex':        document.getElementById('fil-swatch').value,
+  };
+  await api({ action: id ? 'update' : 'write', tab: 'Filament', row });
+  closeModal('filament-modal');
+  await loadTab('filament','Filament');
+  renderFilament();
 }
 
 // ═══ SUPPLIES ═══
-let supplyTab='all';
-function setSupplyTab(tab,el){supplyTab=tab;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderSupplyTable();}
-function openSupplyModal(id){
-  $('s-edit-id').value=id||'';
-  if(id){const s=CACHE.Supplies.find(x=>x.id===id);if(!s)return;
-    $('supply-modal-title').textContent='Edit Supply';
-    $('s-name').value=s.name;$('s-cat').value=s.category;$('s-qty').value=s.qty;
-    $('s-cost').value=s.cost;$('s-printer').value=s.printer;$('s-status').value=s.status;$('s-date').value=s.date||'';
-  }else{$('supply-modal-title').textContent='Add Supply';$('s-name').value='';$('s-cat').value='Hardware';$('s-qty').value='1';$('s-cost').value='';$('s-printer').value='All';$('s-status').value='Received';$('s-date').value='';}
-  openModal('modal-supply');
+function renderSupplies() {
+  const cat  = document.getElementById('sup-cat-filter').value;
+  const rows = DB.supplies.filter(s => !cat || s['Category'] === cat);
+  const badgeMap = { Received:'badge-green', Ordered:'badge-blue', Shipped:'badge-yellow', Delivered:'badge-green' };
+  document.getElementById('supplies-tbody').innerHTML = rows.map(s => `<tr>
+    <td>${s['Item Name']}</td>
+    <td><span class="badge badge-purple">${s['Category']}</span></td>
+    <td class="mono">${s['Qty']}</td>
+    <td class="mono">${fmt$(s['Unit Cost ($)'])}</td>
+    <td class="mono">${fmt$(s['Extended ($)'])}</td>
+    <td>${s['Printer']}</td>
+    <td><span class="badge ${badgeMap[s['Status']]||'badge-gray'}">${s['Status']}</span></td>
+    <td><div class="actions-cell">
+      <button class="btn btn-warn btn-xs" onclick="openSupplyModal('${s['ID']}')">Edit</button>
+      <button class="btn btn-danger btn-xs" onclick="deleteItem('supplies','Supplies','${s['ID']}')">✕</button>
+    </div></td>
+  </tr>`).join('') || '<tr><td colspan="8"><div class="empty-state"><div class="icon">🔧</div><p>No supplies found</p></div></td></tr>';
 }
-async function saveSupply(){
-  const name=$('s-name').value.trim();if(!name){toast('Enter item name');return;}
-  const editId=$('s-edit-id').value;
-  const obj={id:editId||uid(),name,category:$('s-cat').value,qty:+$('s-qty').value,cost:+$('s-cost').value,printer:$('s-printer').value,status:$('s-status').value,date:$('s-date').value};
-  if(editId){obj._isEdit=editId;const i=CACHE.Supplies.findIndex(x=>x.id===editId);if(i>-1)CACHE.Supplies[i]=obj;}
-  else CACHE.Supplies.push(obj);
-  closeModal('modal-supply');renderPage('supplies');
-  try{await writeToSheet('Supplies',obj);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Added ✓');}
-  catch(e){setSyncStatus('err','Sync error');}
+
+function openSupplyModal(id) {
+  document.getElementById('supply-modal-title').textContent = id ? 'Edit Supply' : 'Add Supply';
+  document.getElementById('sup-edit-id').value = id || '';
+  if (id) {
+    const s = DB.supplies.find(x => x['ID'] === id);
+    if (s) {
+      document.getElementById('sup-name').value    = s['Item Name'];
+      document.getElementById('sup-cat').value     = s['Category'];
+      document.getElementById('sup-qty').value     = s['Qty'];
+      document.getElementById('sup-cost').value    = s['Unit Cost ($)'];
+      document.getElementById('sup-printer').value = s['Printer'];
+      document.getElementById('sup-status').value  = s['Status'];
+      document.getElementById('sup-date').value    = s['Order Date'] || '';
+    }
+  } else {
+    document.getElementById('sup-name').value = '';
+    document.getElementById('sup-qty').value  = '1';
+    document.getElementById('sup-cost').value = '';
+    document.getElementById('sup-date').value = '';
+  }
+  openModal('supply-modal');
 }
-async function deleteSupply(id){
-  if(!confirm('Remove?'))return;
-  CACHE.Supplies=CACHE.Supplies.filter(s=>s.id!==id);renderPage('supplies');
-  try{await deleteFromSheet('Supplies',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
-}
-function renderSupplyStats(){
-  const s=CACHE.Supplies;
-  const tv=s.reduce((x,y)=>x+y.cost*y.qty,0);
-  const ord=s.filter(x=>x.status==='Ordered').length;
-  const pr=s.filter(x=>x.category==='Printers').reduce((x,y)=>x+y.cost*y.qty,0);
-  $('supply-stats').innerHTML=`<div class="stat-card"><div class="stat-label">Items</div><div class="stat-value accent">${s.length}</div></div><div class="stat-card"><div class="stat-label">Total Value</div><div class="stat-value green">${fmt$(tv)}</div></div><div class="stat-card"><div class="stat-label">Printers</div><div class="stat-value yellow">${fmt$(pr)}</div></div><div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value ${ord?'accent':'green'}">${ord}</div></div>`;
-}
-function renderSupplyTable(){
-  let sups=CACHE.Supplies;
-  if(supplyTab!=='all')sups=sups.filter(s=>s.category===supplyTab);
-  const tbody=$('supply-tbody');
-  if(!sups.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔧</div><p>No supplies</p></div></td></tr>';return;}
-  const cb={Hardware:'badge-orange',Hotends:'badge-red','Bed Plates':'badge-purple',Consumables:'badge-blue',Printers:'badge-green'};
-  tbody.innerHTML=sups.map(s=>{
-    const bstat=s.status==='Received'?'badge-green':s.status==='Ordered'?'badge-blue':s.status==='Shipped'?'badge-yellow':'badge-purple';
-    return`<tr><td style="font-weight:600;">${s.name}</td><td><span class="badge ${cb[s.category]||'badge-purple'}">${s.category}</span></td><td class="mono">${s.qty}</td><td class="mono">${fmt$(s.cost)}</td><td class="mono">${fmt$(s.cost*s.qty)}</td><td>${s.printer}</td><td><span class="badge ${bstat}">${s.status}</span></td>
-    <td><div class="actions-cell"><button class="btn btn-warn btn-xs" onclick="openSupplyModal('${s.id}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteSupply('${s.id}')">✕</button></div></td></tr>`;
-  }).join('');
+
+async function saveSupply() {
+  const id   = document.getElementById('sup-edit-id').value;
+  const name = document.getElementById('sup-name').value.trim();
+  if (!name) { alert('Item name required'); return; }
+  const qty  = parseInt(document.getElementById('sup-qty').value)  || 0;
+  const cost = parseFloat(document.getElementById('sup-cost').value) || 0;
+  const row = {
+    'ID':           id || 'sup_' + Date.now(),
+    'Item Name':    name,
+    'Category':     document.getElementById('sup-cat').value,
+    'Qty':          qty,
+    'Unit Cost ($)':cost,
+    'Extended ($)': qty * cost,
+    'Printer':      document.getElementById('sup-printer').value,
+    'Status':       document.getElementById('sup-status').value,
+    'Order Date':   document.getElementById('sup-date').value,
+  };
+  await api({ action: id ? 'update' : 'write', tab: 'Supplies', row });
+  closeModal('supply-modal');
+  await loadTab('supplies','Supplies');
+  renderSupplies();
 }
 
 // ═══ PRODUCTS ═══
-function openProductModal(id){
-  $('p-edit-id').value=id||'';
-  if(id){const p=CACHE.Products.find(x=>x.id===id);if(!p)return;
-    $('product-modal-title').textContent='Edit Product';
-    $('p-name').value=p.name;$('p-w').value=p.w;$('p-d').value=p.d;$('p-h').value=p.h;
-    $('p-weight').value=p.weight;$('p-filament').value=p.filament;$('p-filtype').value=p.filtype;
-    $('p-time').value=p.time;$('p-price').value=p.price;$('p-tiktok').value=p.tiktokPct;
-  }else{$('product-modal-title').textContent='Add Product';
-    ['p-name','p-w','p-d','p-h','p-weight','p-filament','p-time','p-price'].forEach(i=>$(i).value='');
-    $('p-filtype').value='PLA Basic';$('p-tiktok').value='10';}
-  $('product-cost-preview').style.display='none';openModal('modal-product');
+function renderProducts() {
+  document.getElementById('products-tbody').innerHTML = DB.products.map(p => {
+    const { filCost, elecCost, total } = productCost(p);
+    const price   = parseFloat(p['Sale Price ($)'])  || 0;
+    const ttPct   = parseFloat(p['TikTok Fee (%)'])  || 0;
+    const ttFee   = price * (ttPct / 100);
+    const profit  = price - ttFee - total;
+    const margin  = price > 0 ? ((profit / price) * 100).toFixed(1) + '%' : '—';
+    const dim     = [p['Width (in)'],p['Depth (in)'],p['Height (in)']].map(v=>parseFloat(v)||0).join('×');
+    return `<tr>
+      <td style="font-weight:600">${p['Product Name']}</td>
+      <td class="mono" style="font-size:0.75rem;">${dim} in</td>
+      <td>${p['Filament Type']}<br><small style="color:var(--text3)">${fmtKg(p['Filament (kg)'])}</small></td>
+      <td class="mono">${p['Print Time (hr)']} hr</td>
+      <td class="mono">${fmt$(filCost)}</td>
+      <td class="mono">${fmt$(elecCost)}</td>
+      <td class="mono" style="font-weight:700">${fmt$(total)}</td>
+      <td class="mono">${fmt$(price)}</td>
+      <td class="mono" style="color:var(--text3)">${fmt$(ttFee)}</td>
+      <td class="mono ${profit>=0?'profit-pos':'profit-neg'}" style="font-weight:700">${fmt$(profit)}</td>
+      <td class="mono" style="color:var(--accent3)">${margin}</td>
+      <td><div class="actions-cell">
+        <button class="btn btn-warn btn-xs" onclick="openProductModal('${p['ID']}')">Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteItem('products','Products','${p['ID']}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="12"><div class="empty-state"><div class="icon">📦</div><p>No products yet</p></div></td></tr>';
 }
-function calcProductPreview(){
-  const fil=+$('p-filament').value||0,time=+$('p-time').value||0,price=+$('p-price').value||0,pct=+$('p-tiktok').value||10;
-  if(!fil&&!time&&!price){$('product-cost-preview').style.display='none';return;}
-  const c=calcProduct({filament:fil,time,price,tiktokPct:pct,filtype:$('p-filtype').value});
-  $('product-cost-preview').style.display='block';
-  $('prev-fil').textContent=fmt$(c.filCost);$('prev-elec').textContent=fmt$(c.elecCost);
-  $('prev-cost').textContent=fmt$(c.totalCost);$('prev-tiktok').textContent=fmt$(c.tiktokFee);
-  $('prev-profit').textContent=fmt$(c.netProfit);$('prev-profit').style.color=c.netProfit>=0?'var(--green)':'var(--red)';
-  $('prev-margin').textContent=c.margin.toFixed(1)+'%';
+
+function updateCostPreview() {
+  const filKg   = parseFloat(document.getElementById('prod-fil-kg').value)  || 0;
+  const time    = parseFloat(document.getElementById('prod-time').value)     || 0;
+  const type    = document.getElementById('prod-fil-type').value;
+  const price   = parseFloat(document.getElementById('prod-price').value)   || 0;
+  const ttPct   = parseFloat(document.getElementById('prod-tiktok').value)  || 0;
+  const cPerKg  = filCostPerKg(type);
+  const filCost = filKg * cPerKg;
+  const elec    = time * SETTINGS.electricity_rate_per_hr;
+  const total   = filCost + elec;
+  const ttFee   = price * (ttPct / 100);
+  const profit  = price - ttFee - total;
+  const margin  = price > 0 ? ((profit / price) * 100).toFixed(1) + '%' : '—';
+  document.getElementById('prev-fil').textContent    = fmt$(filCost);
+  document.getElementById('prev-elec').textContent   = fmt$(elec) + ' ($' + SETTINGS.electricity_rate_per_hr.toFixed(2) + '/hr)';
+  document.getElementById('prev-total').textContent  = fmt$(total);
+  document.getElementById('prev-ttfee').textContent  = '-' + fmt$(ttFee);
+  document.getElementById('prev-profit').textContent = fmt$(profit);
+  document.getElementById('prev-margin').textContent = margin;
 }
-async function saveProduct(){
-  const name=$('p-name').value.trim();if(!name){toast('Enter product name');return;}
-  const editId=$('p-edit-id').value;
-  const obj={id:editId||uid(),name,w:+$('p-w').value,d:+$('p-d').value,h:+$('p-h').value,weight:+$('p-weight').value,filament:+$('p-filament').value,filtype:$('p-filtype').value,time:+$('p-time').value,price:+$('p-price').value,tiktokPct:+$('p-tiktok').value};
-  if(editId){obj._isEdit=editId;const i=CACHE.Products.findIndex(x=>x.id===editId);if(i>-1)CACHE.Products[i]=obj;}
-  else CACHE.Products.push(obj);
-  closeModal('modal-product');renderPage('products');
-  try{await writeToSheet('Products',obj);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Added ✓');}
-  catch(e){setSyncStatus('err','Sync error');}
+
+function openProductModal(id) {
+  document.getElementById('product-modal-title').textContent = id ? 'Edit Product' : 'Add Product';
+  document.getElementById('prod-edit-id').value = id || '';
+  if (id) {
+    const p = DB.products.find(x => x['ID'] === id);
+    if (p) {
+      document.getElementById('prod-name').value     = p['Product Name'];
+      document.getElementById('prod-w').value        = p['Width (in)'];
+      document.getElementById('prod-d').value        = p['Depth (in)'];
+      document.getElementById('prod-h').value        = p['Height (in)'];
+      document.getElementById('prod-wt').value       = p['Weight (lb)'];
+      document.getElementById('prod-fil-kg').value   = p['Filament (kg)'];
+      document.getElementById('prod-time').value     = p['Print Time (hr)'];
+      document.getElementById('prod-fil-type').value = p['Filament Type'];
+      document.getElementById('prod-price').value    = p['Sale Price ($)'];
+      document.getElementById('prod-tiktok').value   = p['TikTok Fee (%)'];
+    }
+  } else {
+    ['prod-name','prod-w','prod-d','prod-h','prod-wt','prod-fil-kg','prod-time','prod-price'].forEach(i => document.getElementById(i).value='');
+    document.getElementById('prod-tiktok').value = '10';
+  }
+  updateCostPreview();
+  openModal('product-modal');
 }
-async function deleteProduct(id){
-  if(!confirm('Remove?'))return;
-  CACHE.Products=CACHE.Products.filter(p=>p.id!==id);renderPage('products');
-  try{await deleteFromSheet('Products',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
-}
-function renderProductTable(){
-  const prods=CACHE.Products;const tbody=$('product-tbody');
-  if(!prods.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty"><div class="empty-icon">🖨️</div><p>No products</p></div></td></tr>';return;}
-  tbody.innerHTML=prods.map(p=>{
-    const c=calcProduct(p);const dims=[p.w,p.d,p.h].filter(Boolean).join('×')||'—';
-    return`<tr><td style="font-weight:600;">${p.name}</td><td class="mono" style="font-size:.78rem;">${dims}"</td><td class="mono">${p.filament}kg</td><td class="mono">${p.time}hr</td><td class="mono">${fmt$(c.filCost)}</td><td class="mono">${fmt$(c.elecCost)}</td><td class="mono" style="font-weight:600;">${fmt$(c.totalCost)}</td><td class="mono">${fmt$(p.price)}</td><td class="mono">${p.tiktokPct}%</td><td class="mono ${c.netProfit>=0?'profit-pos':'profit-neg'}" style="font-weight:700;">${fmt$(c.netProfit)}</td><td class="mono">${c.margin.toFixed(1)}%</td>
-    <td><div class="actions-cell"><button class="btn btn-warn btn-xs" onclick="openProductModal('${p.id}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteProduct('${p.id}')">✕</button></div></td></tr>`;
-  }).join('');
+
+async function saveProduct() {
+  const id   = document.getElementById('prod-edit-id').value;
+  const name = document.getElementById('prod-name').value.trim();
+  if (!name) { alert('Product name required'); return; }
+  const row = {
+    'ID':              id || 'prod_' + Date.now(),
+    'Product Name':    name,
+    'Width (in)':      parseFloat(document.getElementById('prod-w').value)      || 0,
+    'Depth (in)':      parseFloat(document.getElementById('prod-d').value)      || 0,
+    'Height (in)':     parseFloat(document.getElementById('prod-h').value)      || 0,
+    'Weight (lb)':     parseFloat(document.getElementById('prod-wt').value)     || 0,
+    'Filament (kg)':   parseFloat(document.getElementById('prod-fil-kg').value) || 0,
+    'Filament Type':   document.getElementById('prod-fil-type').value,
+    'Print Time (hr)': parseFloat(document.getElementById('prod-time').value)   || 0,
+    'Sale Price ($)':  parseFloat(document.getElementById('prod-price').value)  || 0,
+    'TikTok Fee (%)':  parseFloat(document.getElementById('prod-tiktok').value) || 0,
+  };
+  await api({ action: id ? 'update' : 'write', tab: 'Products', row });
+  closeModal('product-modal');
+  await loadTab('products','Products');
+  renderProducts();
 }
 
 // ═══ INVENTORY ═══
-function openInventoryModal(id){
-  $('inv-product').innerHTML=CACHE.Products.map(p=>`<option>${p.name}</option>`).join('');
-  const types=getFilamentTypes();
-  $('inv-filtype').innerHTML=types.map(t=>`<option>${t}</option>`).join('');
-  $('inv-edit-id').value=id||'';
-  if(id){const item=CACHE.Inventory.find(x=>x.id===id);if(!item)return;
-    $('inventory-modal-title').textContent='Edit Inventory';
-    $('inv-product').value=item.productName;
-    if(item.filtype)$('inv-filtype').value=item.filtype;
-    updateInvColors();if(item.color)$('inv-color').value=item.color;
-    $('inv-qty').value=item.qty;$('inv-sold').value=item.sold||0;$('inv-loan').value=item.loan||0;$('inv-buildto').value=item.buildTo||2;
-  }else{$('inventory-modal-title').textContent='Add Stock';
-    $('inv-qty').value='1';$('inv-sold').value='0';$('inv-loan').value='0';$('inv-buildto').value='2';updateInvColors();}
-  openModal('modal-inventory');
+function renderInventory() {
+  const velDays = parseInt(document.getElementById('vel-days').value) || 30;
+  const prodSel = document.getElementById('inv-product');
+  const names   = [...new Set(DB.products.map(p => p['Product Name']))];
+  prodSel.innerHTML = names.map(n => `<option>${n}</option>`).join('');
+
+  document.getElementById('inventory-tbody').innerHTML = DB.inventory.map(inv => {
+    const sold     = parseFloat(inv['Qty Sold'])      || 0;
+    const avail    = parseFloat(inv['Qty Available'])  || 0;
+    const buildTo  = parseFloat(inv['Build To'])       || 0;
+    const vel      = sold / velDays;
+    const daysLeft = vel > 0 ? Math.round(avail / vel) : '∞';
+    const needed   = Math.max(0, buildTo - avail);
+    const prod     = DB.products.find(p => p['Product Name'] === inv['Product Name']);
+    const pTime    = prod ? parseFloat(prod['Print Time (hr)']) || 0 : 0;
+    const estTime  = (needed * pTime).toFixed(2);
+    let velColor = 'var(--text3)';
+    if (vel > 0.2) velColor = 'var(--green)';
+    else if (vel > 0.05) velColor = 'var(--yellow)';
+    return `<tr>
+      <td style="font-weight:600">${inv['Product Name']}</td>
+      <td>${inv['Filament Type']}<br><small style="color:var(--text3)">${inv['Color']}</small></td>
+      <td class="mono" style="font-weight:700">${avail}</td>
+      <td class="mono">${sold}</td>
+      <td class="mono">${inv['On Loan']||0}</td>
+      <td><div class="vel-bar"><div class="vel-dot" style="background:${velColor}"></div><span class="mono" style="color:${velColor}">${vel.toFixed(3)}</span></div></td>
+      <td class="mono" style="color:${typeof daysLeft==='number'&&daysLeft<7?'var(--red)':typeof daysLeft==='number'&&daysLeft<14?'var(--yellow)':'var(--text)'}">${daysLeft}</td>
+      <td class="mono">${buildTo}</td>
+      <td class="mono" style="color:${needed>0?'var(--orange)':'var(--green)'}">${needed > 0 ? '+'+needed : '✓'}</td>
+      <td class="mono">${needed > 0 ? estTime + ' hr' : '—'}</td>
+      <td><div class="actions-cell">
+        <button class="btn btn-warn btn-xs" onclick="openInventoryModal('${inv['ID']}')">Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteItem('inventory','Inventory','${inv['ID']}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="11"><div class="empty-state"><div class="icon">📊</div><p>No inventory records</p></div></td></tr>';
 }
-function updateInvColors(){$('inv-color').innerHTML=getColorsByType($('inv-filtype').value).map(c=>`<option>${c}</option>`).join('');}
-async function saveInventory(){
-  const editId=$('inv-edit-id').value;
-  const obj={id:editId||uid(),productName:$('inv-product').value,filtype:$('inv-filtype').value,color:$('inv-color').value,qty:+$('inv-qty').value,sold:+$('inv-sold').value,loan:+$('inv-loan').value,buildTo:+$('inv-buildto').value};
-  if(editId){obj._isEdit=editId;const i=CACHE.Inventory.findIndex(x=>x.id===editId);if(i>-1)CACHE.Inventory[i]=obj;}
-  else CACHE.Inventory.push(obj);
-  closeModal('modal-inventory');renderPage('inventory');
-  try{await writeToSheet('Inventory',obj);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Added ✓');}
-  catch(e){setSyncStatus('err','Sync error');}
+
+function openInventoryModal(id) {
+  const names = [...new Set(DB.products.map(p => p['Product Name']))];
+  document.getElementById('inv-product').innerHTML = names.map(n=>`<option>${n}</option>`).join('');
+  document.getElementById('inventory-modal-title').textContent = id ? 'Edit Stock' : 'Add Stock';
+  document.getElementById('inv-edit-id').value = id || '';
+  if (id) {
+    const inv = DB.inventory.find(x => x['ID'] === id);
+    if (inv) {
+      document.getElementById('inv-product').value  = inv['Product Name'];
+      document.getElementById('inv-fil-type').value = inv['Filament Type'];
+      document.getElementById('inv-color').value    = inv['Color'];
+      document.getElementById('inv-qty').value      = inv['Qty Available'];
+      document.getElementById('inv-sold').value     = inv['Qty Sold'];
+      document.getElementById('inv-loan').value     = inv['On Loan'];
+      document.getElementById('inv-buildto').value  = inv['Build To'];
+    }
+  } else {
+    document.getElementById('inv-color').value   = '';
+    document.getElementById('inv-qty').value     = '0';
+    document.getElementById('inv-sold').value    = '0';
+    document.getElementById('inv-loan').value    = '0';
+    document.getElementById('inv-buildto').value = '2';
+  }
+  openModal('inventory-modal');
 }
-async function deleteInventory(id){
-  if(!confirm('Remove?'))return;
-  CACHE.Inventory=CACHE.Inventory.filter(i=>i.id!==id);renderPage('inventory');
-  try{await deleteFromSheet('Inventory',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
-}
-function salesVelocity(productName,color,days){
-  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);
-  const s=CACHE.Sales.filter(x=>x.productName===productName&&x.color===color&&new Date(x.date)>=cutoff);
-  return s.reduce((sum,x)=>sum+(+x.qty||1),0)/days;
-}
-function renderInventory(){
-  const inv=CACHE.Inventory;const days=+$('velocity-window').value;const prods=CACHE.Products;
-  const tbody=$('inventory-tbody');const alerts=[];
-  if(!inv.length){tbody.innerHTML='<tr><td colspan="11"><div class="empty"><div class="empty-icon">📦</div><p>No inventory tracked</p></div></td></tr>';$('inventory-alerts').innerHTML='';return;}
-  tbody.innerHTML=inv.map(item=>{
-    const prod=prods.find(p=>p.name===item.productName);
-    const vel=salesVelocity(item.productName,item.color,days);
-    const daysLeft=vel>0?Math.floor(item.qty/vel):null;
-    const ptd=prod?(prod.time/8):0;
-    const sbt=Math.max(item.buildTo,vel>0?Math.ceil(vel*30+ptd*2):item.buildTo);
-    const needPrint=Math.max(0,sbt-item.qty);
-    const estTime=prod?(needPrint*prod.time).toFixed(1)+' hr':'—';
-    if(needPrint>0)alerts.push(`<div class="alert alert-yellow">🖨 Print <strong>${needPrint}×</strong> ${item.productName} — ${item.color} (${estTime})</div>`);
-    if(daysLeft!==null&&daysLeft<7)alerts.push(`<div class="alert alert-red">⚡ <strong>${item.productName}</strong> (${item.color}) — ${daysLeft}d stock left</div>`);
-    const hex=getFilamentHex(item.color);
-    return`<tr>
-      <td style="font-weight:600;">${item.productName}</td>
-      <td><div style="display:flex;align-items:center;gap:6px;">${hex?`<span class="color-swatch" style="background:${hex}"></span>`:''}<span style="font-size:.8rem;">${item.color}</span></div></td>
-      <td class="mono" style="font-weight:700;">${item.qty}</td><td class="mono">${item.sold||0}</td><td class="mono">${item.loan||0}</td>
-      <td class="mono">${vel>0?vel.toFixed(3)+'/d':'<span style="color:var(--text3)">—</span>'}</td>
-      <td class="mono">${daysLeft!==null?`<span style="color:${daysLeft<7?'var(--red)':daysLeft<14?'var(--yellow)':'var(--green)'}">${daysLeft}d</span>`:'—'}</td>
-      <td class="mono">${sbt}</td>
-      <td class="mono ${needPrint>0?'build-needed':'build-ok'}">${needPrint>0?'🖨 '+needPrint:'✓ 0'}</td>
-      <td class="mono">${estTime}</td>
-      <td><div class="actions-cell"><button class="btn btn-warn btn-xs" onclick="openInventoryModal('${item.id}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteInventory('${item.id}')">✕</button></div></td></tr>`;
-  }).join('');
-  const seen=new Set();
-  $('inventory-alerts').innerHTML=alerts.filter(a=>{if(seen.has(a))return false;seen.add(a);return true;}).slice(0,5).join('');
+
+async function saveInventory() {
+  const id = document.getElementById('inv-edit-id').value;
+  const row = {
+    'ID':            id || 'inv_' + Date.now(),
+    'Product Name':  document.getElementById('inv-product').value,
+    'Filament Type': document.getElementById('inv-fil-type').value,
+    'Color':         document.getElementById('inv-color').value,
+    'Qty Available': parseInt(document.getElementById('inv-qty').value)     || 0,
+    'Qty Sold':      parseInt(document.getElementById('inv-sold').value)    || 0,
+    'On Loan':       parseInt(document.getElementById('inv-loan').value)    || 0,
+    'Build To':      parseInt(document.getElementById('inv-buildto').value) || 0,
+  };
+  await api({ action: id ? 'update' : 'write', tab: 'Inventory', row });
+  closeModal('inventory-modal');
+  await loadTab('inventory','Inventory');
+  renderInventory();
 }
 
 // ═══ QUEUE ═══
-async function buildQueueFromInventory(){
-  const inv=CACHE.Inventory;const prods=CACHE.Products;const days=30;const existing=CACHE.Queue;
-  const generated=[];
-  inv.forEach(item=>{
-    const prod=prods.find(p=>p.name===item.productName);
-    const vel=salesVelocity(item.productName,item.color,days);
-    const ptd=prod?(prod.time/8):0;
-    const sbt=Math.max(item.buildTo,vel>0?Math.ceil(vel*30+ptd*2):item.buildTo);
-    const needPrint=Math.max(0,sbt-item.qty);
-    if(needPrint>0){
-      const exists=existing.find(q=>q.auto&&q.productName===item.productName&&q.color===item.color&&q.status!=='done');
-      if(!exists){
-        const dl=vel>0?Math.floor(item.qty/vel):999;
-        const job={id:uid(),auto:true,productName:item.productName,filtype:item.filtype||'',color:item.color,qty:needPrint,estTime:prod?(needPrint*prod.time).toFixed(1):0,priority:dl<7?'high':dl<14?'med':'low',status:'pending',notes:'Auto from inventory',added:new Date().toISOString().slice(0,10)};
-        generated.push(job);
-        CACHE.Queue.push(job);
-      }
-    }
+function renderQueue() {
+  const names = [...new Set(DB.products.map(p => p['Product Name']))];
+  document.getElementById('q-product').innerHTML = names.map(n=>`<option>${n}</option>`).join('');
+  const priOrder = { High: 0, Medium: 1, Low: 2 };
+  const sorted = [...DB.queue].sort((a,b) => (priOrder[a['Priority']]||1) - (priOrder[b['Priority']]||1));
+  const priIcon = { High: '🔴', Medium: '🟡', Low: '🟢' };
+  document.getElementById('queue-list').innerHTML = sorted.map(q => `
+    <div class="queue-card">
+      <div class="queue-priority">${priIcon[q['Priority']]||'⚪'}</div>
+      <div class="queue-info">
+        <div class="queue-name">${q['Product Name']} × ${q['Qty']}</div>
+        <div class="queue-meta">${q['Filament Type']} · ${q['Color']} · ${q['Est. Print Time (hr)']} hr · ${q['Notes']||''}</div>
+      </div>
+      <div class="queue-actions">
+        <button class="btn btn-green btn-xs" onclick="completeQueueJob('${q['ID']}')">✓ Done</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteItem('queue','Queue','${q['ID']}')">✕</button>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state"><div class="icon">🖨️</div><p>Queue is empty — refresh from Inventory or add a manual job</p></div>';
+}
+
+function openManualQueueModal() { openModal('queue-modal'); }
+
+async function saveQueueJob() {
+  const prod = DB.products.find(p => p['Product Name'] === document.getElementById('q-product').value);
+  const qty  = parseInt(document.getElementById('q-qty').value) || 1;
+  const row = {
+    'ID':                   'q_' + Date.now(),
+    'Product Name':          document.getElementById('q-product').value,
+    'Filament Type':         document.getElementById('q-filtype').value,
+    'Color':                 document.getElementById('q-color').value,
+    'Qty':                   qty,
+    'Est. Print Time (hr)': prod ? (parseFloat(prod['Print Time (hr)']) * qty).toFixed(2) : '',
+    'Priority':              document.getElementById('q-priority').value,
+    'Status':               'Pending',
+    'Notes':                 document.getElementById('q-notes').value,
+    'Date Added':            new Date().toISOString().slice(0,10),
+    'Auto Generated':       'No',
+  };
+  await api({ action: 'write', tab: 'Queue', row });
+  closeModal('queue-modal');
+  await loadTab('queue','Queue');
+  renderQueue();
+}
+
+async function completeQueueJob(id) {
+  await deleteItem('queue','Queue',id);
+}
+
+async function refreshQueue() {
+  const toAdd = DB.inventory.filter(inv => {
+    const avail   = parseFloat(inv['Qty Available']) || 0;
+    const buildTo = parseFloat(inv['Build To'])      || 0;
+    return avail < buildTo;
   });
-  if(!generated.length){toast('Queue is up to date ✓');renderQueue();return;}
-  renderQueue();toast(`Added ${generated.length} job${generated.length>1?'s':''} ✓`);
-  // Write to sheet in background
-  try{for(const j of generated){await writeToSheet('Queue',j);}setSyncStatus('ok','Synced');}
-  catch(e){setSyncStatus('err','Sync error');}
-}
-function openManualQueueModal(){
-  $('qj-product').innerHTML=CACHE.Products.map(p=>`<option>${p.name}</option>`).join('');
-  const types=getFilamentTypes();
-  $('qj-filtype').innerHTML=types.map(t=>`<option>${t}</option>`).join('');
-  updateQJColors();openModal('modal-queue-job');
-}
-function updateQJColors(){$('qj-color').innerHTML=getColorsByType($('qj-filtype').value).map(c=>`<option>${c}</option>`).join('');}
-async function saveQueueJob(){
-  const productName=$('qj-product').value;
-  const prod=CACHE.Products.find(p=>p.name===productName);
-  const qty=+$('qj-qty').value||1;
-  const job={id:uid(),auto:false,productName,filtype:$('qj-filtype').value,color:$('qj-color').value,qty,estTime:prod?(qty*prod.time).toFixed(1):0,priority:$('qj-priority').value,status:'pending',notes:$('qj-notes').value,added:new Date().toISOString().slice(0,10)};
-  CACHE.Queue.push(job);closeModal('modal-queue-job');renderQueue();toast('Job added ✓');
-  try{await writeToSheet('Queue',job);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
-}
-async function markQueueDone(id){
-  const item=CACHE.Queue.find(x=>x.id===id);if(!item)return;
-  item.status=item.status==='done'?'pending':'done';
-  item._isEdit=id;renderQueue();
-  try{await writeToSheet('Queue',item);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
-}
-async function deleteQueueItem(id){
-  CACHE.Queue=CACHE.Queue.filter(x=>x.id!==id);renderQueue();
-  try{await deleteFromSheet('Queue',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
-}
-function renderQueue(){
-  const pending=CACHE.Queue.filter(x=>x.status!=='done');
-  const done=CACHE.Queue.filter(x=>x.status==='done');
-  const totalHrs=pending.reduce((s,x)=>s+(+x.estTime||0),0);
-  const highCt=pending.filter(x=>x.priority==='high').length;
-  $('queue-stats').innerHTML=`<div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value accent">${pending.length}</div></div><div class="stat-card"><div class="stat-label">High Priority</div><div class="stat-value ${highCt?'red':'green'}">${highCt}</div></div><div class="stat-card"><div class="stat-label">Est. Time</div><div class="stat-value yellow">${totalHrs.toFixed(1)} hr</div></div><div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value green">${done.length}</div></div>`;
-  const sorted=[...pending].sort((a,b)=>{const p={high:0,med:1,low:2};return p[a.priority]-p[b.priority];});
-  const all=[...sorted,...done];
-  if(!all.length){$('queue-list').innerHTML='<div class="empty"><div class="empty-icon">✅</div><p>Queue empty — hit "Refresh from Inventory" to auto-generate jobs.</p></div>';return;}
-  let html='';
-  if(sorted.length)html+='<div class="section-title">To Print</div>';
-  sorted.forEach((job,i)=>{
-    const hex=getFilamentHex(job.color);
-    const pl={high:'🔴 Urgent',med:'🟡 Medium',low:'🟢 Low'}[job.priority];
-    html+=`<div class="queue-card priority-${job.priority}">
-      <div class="queue-num">${String(i+1).padStart(2,'0')}</div>
-      <div style="width:28px;height:28px;border-radius:50%;background:${hex||'#888'};border:2px solid var(--border2);flex-shrink:0;"></div>
-      <div class="queue-info"><div class="queue-name">${job.qty}× ${job.productName}</div><div class="queue-meta">${job.color} · ${job.filtype} · ${job.estTime} hr · ${pl}${job.notes?' · '+job.notes:''}</div></div>
-      <div class="queue-actions"><button class="btn btn-ghost btn-sm" onclick="markQueueDone('${job.id}')">✓ Done</button><button class="btn btn-danger btn-xs" onclick="deleteQueueItem('${job.id}')">✕</button></div>
-    </div>`;
-  });
-  if(done.length){
-    html+='<div class="section-title" style="margin-top:28px;">Completed</div>';
-    done.forEach(job=>{
-      const hex=getFilamentHex(job.color);
-      html+=`<div class="queue-card completed">
-        <div class="queue-num">✓</div>
-        <div style="width:28px;height:28px;border-radius:50%;background:${hex||'#888'};border:2px solid var(--border2);flex-shrink:0;"></div>
-        <div class="queue-info"><div class="queue-name" style="text-decoration:line-through;">${job.qty}× ${job.productName}</div><div class="queue-meta">${job.color}</div></div>
-        <div class="queue-actions"><button class="btn btn-ghost btn-xs" onclick="markQueueDone('${job.id}')">Undo</button><button class="btn btn-danger btn-xs" onclick="deleteQueueItem('${job.id}')">✕</button></div>
-      </div>`;
-    });
+  for (const inv of toAdd) {
+    const needed = Math.max(0, (parseFloat(inv['Build To'])||0) - (parseFloat(inv['Qty Available'])||0));
+    const prod   = DB.products.find(p => p['Product Name'] === inv['Product Name']);
+    const row = {
+      'ID':                   'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      'Product Name':          inv['Product Name'],
+      'Filament Type':         inv['Filament Type'],
+      'Color':                 inv['Color'],
+      'Qty':                   needed,
+      'Est. Print Time (hr)': prod ? (parseFloat(prod['Print Time (hr)']) * needed).toFixed(2) : '',
+      'Priority':             'Medium',
+      'Status':               'Pending',
+      'Notes':                'Auto-generated',
+      'Date Added':            new Date().toISOString().slice(0,10),
+      'Auto Generated':       'Yes',
+    };
+    await api({ action: 'write', tab: 'Queue', row });
   }
-  $('queue-list').innerHTML=html;
+  await loadTab('queue','Queue');
+  renderQueue();
 }
 
 // ═══ SALES ═══
-function openSaleModal(id){
-  $('sale-product').innerHTML=CACHE.Products.map(p=>`<option>${p.name}</option>`).join('');
-  $('sale-edit-id').value=id||'';
-  if(id){const s=CACHE.Sales.find(x=>x.id===id);if(!s)return;
-    $('sale-modal-title').textContent='Edit Sale';
-    $('sale-date').value=s.date;$('sale-channel').value=s.channel;$('sale-order').value=s.order;
-    $('sale-product').value=s.productName;updateSaleFilaments();
-    if(s.filtype)$('sale-filtype').value=s.filtype;updateSaleColors();
-    if(s.color)$('sale-color').value=s.color;
-    $('sale-qty').value=s.qty;$('sale-price').value=s.price;$('sale-status').value=s.status;calcSale();
-  }else{$('sale-modal-title').textContent='Record Sale';
-    $('sale-date').value=new Date().toISOString().slice(0,10);$('sale-channel').value='TikTok';$('sale-order').value='';$('sale-qty').value='1';$('sale-status').value='Paid';
-    updateSaleFilaments();}
-  openModal('modal-sale');
+function renderSales() {
+  const search  = document.getElementById('sale-search').value.toLowerCase();
+  const channel = document.getElementById('sale-channel-filter').value;
+  const period  = parseInt(document.getElementById('sale-period-filter').value) || 0;
+  const cutoff  = period ? new Date(Date.now() - period * 86400000) : null;
+
+  let rows = DB.sales.filter(s => {
+    if (channel && s['Channel'] !== channel) return false;
+    if (cutoff) {
+      const d = new Date(s['Date']);
+      if (d < cutoff) return false;
+    }
+    if (search && !s['Product Name'].toLowerCase().includes(search) &&
+        !s['Order / Ref #'].toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  // KPIs
+  let rev = 0, payout = 0, cost = 0;
+  rows.forEach(s => {
+    rev    += parseFloat(s['Subtotal ($)']) || 0;
+    payout += parseFloat(s['Payout ($)'])  || 0;
+    cost   += saleCost(s);
+  });
+  const profit = payout - cost;
+  document.getElementById('sales-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Revenue</div><div class="kpi-value blue">${fmt$(rev)}</div></div>
+    <div class="kpi"><div class="kpi-label">Payout</div><div class="kpi-value">${fmt$(payout)}</div></div>
+    <div class="kpi"><div class="kpi-label">COGS</div><div class="kpi-value yellow">${fmt$(cost)}</div></div>
+    <div class="kpi"><div class="kpi-label">Profit</div><div class="kpi-value ${profit>=0?'green':'red'}">${fmt$(profit)}</div></div>
+    <div class="kpi"><div class="kpi-label">Orders</div><div class="kpi-value">${rows.length}</div></div>
+  `;
+
+  const badgeMap = { Paid:'badge-green', Delivered:'badge-green', Shipped:'badge-blue', Pending:'badge-yellow' };
+  document.getElementById('sales-tbody').innerHTML = rows.map(s => {
+    const cost   = saleCost(s);
+    const payout = parseFloat(s['Payout ($)']) || 0;
+    const profit = payout - cost;
+    const sb     = badgeMap[s['Status']] || 'badge-gray';
+    return `<tr>
+      <td class="mono" style="font-size:0.78rem">${s['Date']}</td>
+      <td class="mono" style="font-size:0.75rem;color:var(--text3)">${s['Order / Ref #']}</td>
+      <td><span class="badge ${s['Channel']==='TikTok'?'badge-purple':'badge-blue'}">${s['Channel']}</span></td>
+      <td style="font-weight:600">${s['Product Name']}</td>
+      <td style="font-size:0.78rem;color:var(--text3)">${s['Color']}</td>
+      <td class="mono">${s['Qty']}</td>
+      <td class="mono">${fmt$(s['Sale Price ($)'])}</td>
+      <td class="mono">${fmt$(s['Subtotal ($)'])}</td>
+      <td class="mono">${fmt$(payout)}</td>
+      <td class="mono" style="color:var(--yellow)">${fmt$(cost)}</td>
+      <td class="mono ${profit>=0?'profit-pos':'profit-neg'}" style="font-weight:700">${fmt$(profit)}</td>
+      <td><span class="badge ${sb}">${s['Status']}</span></td>
+      <td><div class="actions-cell">
+        <button class="btn btn-warn btn-xs" onclick="openSaleModal('${s['ID']}')">Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteItem('sales','Sales','${s['ID']}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="13"><div class="empty-state"><div class="icon">💰</div><p>No sales recorded</p></div></td></tr>';
 }
-function updateSaleFilaments(){
-  const types=getFilamentTypes();$('sale-filtype').innerHTML=types.map(t=>`<option>${t}</option>`).join('');
-  const prod=CACHE.Products.find(p=>p.name===$('sale-product').value);
-  if(prod&&prod.filtype)$('sale-filtype').value=prod.filtype;
-  updateSaleColors();if(prod)$('sale-price').value=prod.price;calcSale();
-}
-function updateSaleColors(){$('sale-color').innerHTML=getColorsByType($('sale-filtype').value).map(c=>`<option>${c}</option>`).join('');calcSale();}
-function calcSale(){
-  const price=+$('sale-price').value||0,qty=+$('sale-qty').value||1,ch=$('sale-channel').value;
-  const prod=CACHE.Products.find(p=>p.name===$('sale-product').value);
-  const fee=ch==='TikTok'&&prod?price*qty*(prod.tiktokPct/100):0;
-  $('sale-payout').value=(price*qty-fee).toFixed(2);
-}
-async function saveSale(){
-  const date=$('sale-date').value,productName=$('sale-product').value;
-  if(!date||!productName){toast('Fill date and product');return;}
-  const editId=$('sale-edit-id').value;
-  const s={id:editId||uid(),date,order:$('sale-order').value,channel:$('sale-channel').value,productName,filtype:$('sale-filtype').value,color:$('sale-color').value,qty:+$('sale-qty').value,price:+$('sale-price').value,status:$('sale-status').value};
-  if(editId){s._isEdit=editId;const i=CACHE.Sales.findIndex(x=>x.id===editId);if(i>-1)CACHE.Sales[i]=s;}
-  else{
-    // deduct inventory
-    const inv=CACHE.Inventory.find(i=>i.productName===s.productName&&i.color===s.color);
-    if(inv){inv.qty=Math.max(0,inv.qty-s.qty);inv.sold=(inv.sold||0)+s.qty;inv._isEdit=inv.id;try{await writeToSheet('Inventory',inv);}catch(e){}}
-    // deduct filament
-    const prod=CACHE.Products.find(p=>p.name===s.productName);
-    if(prod){const fil=CACHE.Filament.find(f=>f.color===s.color&&f.type===s.filtype);if(fil){fil.qty=Math.max(0,fil.qty-prod.filament*s.qty);fil._isEdit=fil.id;try{await writeToSheet('Filament',fil);}catch(e){}}}
-    CACHE.Sales.push(s);
+
+function openSaleModal(id) {
+  const names = [...new Set(DB.products.map(p => p['Product Name']))];
+  document.getElementById('sale-product').innerHTML = names.map(n=>`<option>${n}</option>`).join('');
+  document.getElementById('sale-modal-title').textContent = id ? 'Edit Sale' : 'Record Sale';
+  document.getElementById('sale-edit-id').value = id || '';
+  if (id) {
+    const s = DB.sales.find(x => x['ID'] === id);
+    if (s) {
+      document.getElementById('sale-date').value    = s['Date'];
+      document.getElementById('sale-channel').value = s['Channel'];
+      document.getElementById('sale-order').value   = s['Order / Ref #'];
+      document.getElementById('sale-product').value = s['Product Name'];
+      document.getElementById('sale-filtype').value = s['Filament Type'];
+      document.getElementById('sale-color').value   = s['Color'];
+      document.getElementById('sale-qty').value     = s['Qty'];
+      document.getElementById('sale-price').value   = s['Sale Price ($)'];
+      document.getElementById('sale-payout').value  = s['Payout ($)'];
+      document.getElementById('sale-status').value  = s['Status'];
+    }
+  } else {
+    document.getElementById('sale-date').value   = new Date().toISOString().slice(0,10);
+    document.getElementById('sale-order').value  = '';
+    document.getElementById('sale-filtype').value= '';
+    document.getElementById('sale-color').value  = '';
+    document.getElementById('sale-qty').value    = '1';
+    document.getElementById('sale-price').value  = '';
+    document.getElementById('sale-payout').value = '';
   }
-  closeModal('modal-sale');renderPage('sales');
-  try{await writeToSheet('Sales',s);setSyncStatus('ok','Synced');toast(editId?'Updated ✓':'Sale recorded ✓');}
-  catch(e){setSyncStatus('err','Sync error');}
+  openModal('sale-modal');
 }
-async function deleteSale(id){
-  if(!confirm('Delete sale?'))return;
-  CACHE.Sales=CACHE.Sales.filter(s=>s.id!==id);renderPage('sales');
-  try{await deleteFromSheet('Sales',id);setSyncStatus('ok','Synced');}catch(e){setSyncStatus('err','Sync error');}
+
+function onSaleProductChange() {
+  const name = document.getElementById('sale-product').value;
+  const prod = DB.products.find(p => p['Product Name'] === name);
+  if (prod) {
+    document.getElementById('sale-filtype').value = prod['Filament Type'];
+    document.getElementById('sale-price').value   = prod['Sale Price ($)'];
+    document.getElementById('prod-tiktok') && (document.getElementById('prod-tiktok').value = prod['TikTok Fee (%)']);
+  }
+  updatePayoutPreview();
 }
-function renderSalesStats(){
-  const s=CACHE.Sales;const prods=CACHE.Products;
-  const rev=s.reduce((x,y)=>x+y.price*y.qty,0);
-  let profit=0;s.forEach(x=>{const p=prods.find(q=>q.name===x.productName);if(p){const c=calcProduct(p);const f=x.channel==='TikTok'?x.price*(p.tiktokPct/100):0;profit+=(x.price-f-c.totalCost)*x.qty;}});
-  const tt=s.filter(x=>x.channel==='TikTok').length,ip=s.filter(x=>x.channel==='In-Person').length;
-  $('sales-stats').innerHTML=`<div class="stat-card"><div class="stat-label">Orders</div><div class="stat-value accent">${s.length}</div></div><div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-value green">${fmt$(rev)}</div></div><div class="stat-card"><div class="stat-label">Net Profit</div><div class="stat-value ${profit>=0?'green':'red'}">${fmt$(profit)}</div></div><div class="stat-card"><div class="stat-label">TikTok</div><div class="stat-value accent">${tt}</div></div><div class="stat-card"><div class="stat-label">In-Person</div><div class="stat-value yellow">${ip}</div></div>`;
+
+function updatePayoutPreview() {
+  const channel = document.getElementById('sale-channel').value;
+  const price   = parseFloat(document.getElementById('sale-price').value) || 0;
+  const qty     = parseInt(document.getElementById('sale-qty').value) || 1;
+  const prodName= document.getElementById('sale-product').value;
+  const prod    = DB.products.find(p => p['Product Name'] === prodName);
+  const ttPct   = prod ? (parseFloat(prod['TikTok Fee (%)']) || 10) : 10;
+  const subtotal = price * qty;
+  const payout  = channel === 'TikTok' ? subtotal * (1 - ttPct / 100) : subtotal;
+  document.getElementById('sale-payout').value = payout.toFixed(2);
 }
-function renderSalesTable(){
-  const search=$('sales-search').value.toLowerCase();
-  const chF=$('sales-channel-filter').value,pdF=+$('sales-period-filter').value;
-  const prods=CACHE.Products;
-  let sales=CACHE.Sales;
-  if(search)sales=sales.filter(s=>s.order.toLowerCase().includes(search)||s.productName.toLowerCase().includes(search)||s.color.toLowerCase().includes(search));
-  if(chF)sales=sales.filter(s=>s.channel===chF);
-  if(pdF){const c=new Date();c.setDate(c.getDate()-pdF);sales=sales.filter(s=>new Date(s.date)>=c);}
-  sales=[...sales].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const tbody=$('sales-tbody');
-  if(!sales.length){tbody.innerHTML='<tr><td colspan="13"><div class="empty"><div class="empty-icon">💰</div><p>No sales match</p></div></td></tr>';return;}
-  tbody.innerHTML=sales.map(s=>{
-    const sub=s.price*s.qty;const prod=prods.find(p=>p.name===s.productName);
-    let profit=0,payout=sub;
-    if(prod){const c=calcProduct(prod);const fee=s.channel==='TikTok'?sub*(prod.tiktokPct/100):0;payout=sub-fee;profit=(payout-c.totalCost)*s.qty;}
-    const cc=s.channel==='TikTok'?'channel-tiktok':'channel-person';
-    const sb=s.status==='Paid'||s.status==='Delivered'?'badge-green':s.status==='Shipped'?'badge-blue':'badge-yellow';
-    const hex=getFilamentHex(s.color);
-    return`<tr><td class="mono" style="font-size:.79rem;">${s.date}</td><td class="mono" style="font-size:.74rem;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.order}</td><td><span class="badge ${cc}">${s.channel}</span></td><td style="font-size:.82rem;font-weight:600;">${s.productName}</td>
-    <td><div style="display:flex;align-items:center;gap:5px;">${hex?`<span class="color-swatch" style="background:${hex}"></span>`:''}<span style="font-size:.79rem;">${s.color}</span></div></td>
-    <td class="mono">${s.qty}</td><td class="mono">${fmt$(s.price)}</td><td class="mono">${fmt$(sub)}</td><td class="mono">${fmt$(payout)}</td><td class="mono">${prod?fmt$(calcProduct(prod).totalCost):'—'}</td><td class="mono ${profit>=0?'profit-pos':'profit-neg'}" style="font-weight:700;">${fmt$(profit)}</td><td><span class="badge ${sb}">${s.status}</span></td>
-    <td><div class="actions-cell"><button class="btn btn-warn btn-xs" onclick="openSaleModal('${s.id}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteSale('${s.id}')">✕</button></div></td></tr>`;
-  }).join('');
+
+async function saveSale() {
+  const id = document.getElementById('sale-edit-id').value;
+  const price = parseFloat(document.getElementById('sale-price').value) || 0;
+  const qty   = parseInt(document.getElementById('sale-qty').value) || 1;
+  const row = {
+    'ID':             id || 'sale_' + Date.now(),
+    'Date':           document.getElementById('sale-date').value,
+    'Order / Ref #':  document.getElementById('sale-order').value,
+    'Channel':        document.getElementById('sale-channel').value,
+    'Product Name':   document.getElementById('sale-product').value,
+    'Filament Type':  document.getElementById('sale-filtype').value,
+    'Color':          document.getElementById('sale-color').value,
+    'Qty':            qty,
+    'Sale Price ($)': price,
+    'Subtotal ($)':   price * qty,
+    'Payout ($)':     parseFloat(document.getElementById('sale-payout').value) || 0,
+    'Status':         document.getElementById('sale-status').value,
+  };
+  await api({ action: id ? 'update' : 'write', tab: 'Sales', row });
+  closeModal('sale-modal');
+  await loadTab('sales','Sales');
+  renderSales();
+}
+
+// ═══ DELETE ═══
+async function deleteItem(key, tab, id) {
+  if (!confirm('Delete this item?')) return;
+  await api({ action: 'delete', tab, id });
+  await loadTab(key, tab);
+  if (key==='filament')  renderFilament();
+  if (key==='supplies')  renderSupplies();
+  if (key==='products')  renderProducts();
+  if (key==='inventory') renderInventory();
+  if (key==='sales')     renderSales();
+  if (key==='queue')     renderQueue();
 }
 
 // ═══ BOOT ═══
