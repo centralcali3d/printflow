@@ -591,8 +591,14 @@
         <label>Product</label>
         <select id="sale-product" onchange="onSaleProductChange()"></select>
       </div>
-      <div class="form-group"><label>Filament Type</label><input type="text" id="sale-filtype"></div>
-      <div class="form-group"><label>Color</label><input type="text" id="sale-color"></div>
+      <div class="form-group">
+        <label>Filament Type</label>
+        <select id="sale-filtype" onchange="updateSaleColors()"></select>
+      </div>
+      <div class="form-group">
+        <label>Color</label>
+        <select id="sale-color"></select>
+      </div>
       <div class="form-group"><label>Qty</label><input type="number" id="sale-qty" value="1" oninput="updatePayoutPreview()"></div>
       <div class="form-group"><label>Sale Price ($)</label><input type="number" step="0.01" id="sale-price" oninput="updatePayoutPreview()"></div>
       <div class="form-group"><label>Payout (auto)</label><input type="number" step="0.01" id="sale-payout" placeholder="Auto-calculated"></div>
@@ -667,7 +673,6 @@ async function initApp() {
 async function loadAll() {
   setSyncStatus('loading', 'Loading…');
   try {
-    // Load settings first so electricity rate is available for product cost calcs
     await loadSettings();
     await Promise.all([
       loadTab('filament','Filament'),
@@ -696,7 +701,6 @@ async function loadSettings() {
       if (s.tiktok_default_fee_pct !== undefined) {
         SETTINGS.tiktok_default_fee_pct = parseFloat(s.tiktok_default_fee_pct) || 10;
       }
-      // Update settings UI
       document.getElementById('setting-electricity-rate').value = SETTINGS.electricity_rate_per_hr;
     }
   } catch(e) {
@@ -724,21 +728,16 @@ async function api(payload) {
 async function saveSettings() {
   const rate    = parseFloat(document.getElementById('setting-electricity-rate').value);
   const urlVal  = document.getElementById('setting-script-url').value.trim();
-
   if (isNaN(rate) || rate < 0) { alert('Please enter a valid electricity rate.'); return; }
-
   SETTINGS.electricity_rate_per_hr = rate;
-
   setSyncStatus('loading', 'Saving…');
   try {
     await api({ action: 'updateSetting', key: 'electricity_rate_per_hr', value: rate.toString() });
     setSyncStatus('ok', 'Saved');
-    // Update script URL if changed
     if (urlVal && urlVal !== SCRIPT_URL) {
       SCRIPT_URL = urlVal;
       localStorage.setItem('pf_script_url', urlVal);
     }
-    // Re-render products table with new rate
     renderProducts();
     renderSales();
     alert('Settings saved! Electricity rate updated to $' + rate.toFixed(2) + '/hr.');
@@ -803,10 +802,8 @@ function renderAll() {
 // ═══ COST CALC ═══
 function filCostPerKg(type) {
   const match = DB.filament.find(f => f['Type'] === type);
-  if (!match) return 12.99 / 1; // fallback $12.99/kg
-  const spool = parseFloat(match['Cost per Spool ($)']) || 12.99;
-  // Bambu spools are 1kg; assume 1kg per spool
-  return spool;
+  if (!match) return 12.99;
+  return parseFloat(match['Cost per Spool ($)']) || 12.99;
 }
 
 function productCost(p) {
@@ -1252,7 +1249,6 @@ function renderSales() {
     return true;
   });
 
-  // KPIs
   let rev = 0, payout = 0, cost = 0;
   rows.forEach(s => {
     rev    += parseFloat(s['Subtotal ($)']) || 0;
@@ -1307,8 +1303,11 @@ function openSaleModal(id) {
       document.getElementById('sale-channel').value = s['Channel'];
       document.getElementById('sale-order').value   = s['Order / Ref #'];
       document.getElementById('sale-product').value = s['Product Name'];
-      document.getElementById('sale-filtype').value = s['Filament Type'];
-      document.getElementById('sale-color').value   = s['Color'];
+      // Populate cascading dropdowns, then restore saved values
+      updateSaleFilaments();
+      if (s['Filament Type']) document.getElementById('sale-filtype').value = s['Filament Type'];
+      updateSaleColors();
+      if (s['Color']) document.getElementById('sale-color').value = s['Color'];
       document.getElementById('sale-qty').value     = s['Qty'];
       document.getElementById('sale-price').value   = s['Sale Price ($)'];
       document.getElementById('sale-payout').value  = s['Payout ($)'];
@@ -1317,40 +1316,63 @@ function openSaleModal(id) {
   } else {
     document.getElementById('sale-date').value   = new Date().toISOString().slice(0,10);
     document.getElementById('sale-order').value  = '';
-    document.getElementById('sale-filtype').value= '';
-    document.getElementById('sale-color').value  = '';
     document.getElementById('sale-qty').value    = '1';
     document.getElementById('sale-price').value  = '';
     document.getElementById('sale-payout').value = '';
+    updateSaleFilaments();
   }
   openModal('sale-modal');
 }
 
+// Called when the Product dropdown changes
 function onSaleProductChange() {
-  const name = document.getElementById('sale-product').value;
-  const prod = DB.products.find(p => p['Product Name'] === name);
-  if (prod) {
-    document.getElementById('sale-filtype').value = prod['Filament Type'];
-    document.getElementById('sale-price').value   = prod['Sale Price ($)'];
-    document.getElementById('prod-tiktok') && (document.getElementById('prod-tiktok').value = prod['TikTok Fee (%)']);
+  updateSaleFilaments();
+}
+
+// Populate Filament Type dropdown from DB.filament,
+// pre-selecting the current product's type
+function updateSaleFilaments() {
+  const name  = document.getElementById('sale-product').value;
+  const prod  = DB.products.find(p => p['Product Name'] === name);
+  const types = [...new Set(DB.filament.map(f => f['Type']))].sort();
+  const sel   = document.getElementById('sale-filtype');
+  sel.innerHTML = types.map(t => `<option>${t}</option>`).join('');
+  // Pre-select product's filament type if it exists in the list
+  if (prod && prod['Filament Type']) {
+    sel.value = prod['Filament Type'];
   }
+  // Auto-fill price from product
+  if (prod) {
+    document.getElementById('sale-price').value = prod['Sale Price ($)'];
+  }
+  updateSaleColors();
+}
+
+// Populate Color dropdown filtered by the selected Filament Type
+function updateSaleColors() {
+  const type   = document.getElementById('sale-filtype').value;
+  const colors = DB.filament
+    .filter(f => f['Type'] === type)
+    .map(f => f['Color'])
+    .sort();
+  document.getElementById('sale-color').innerHTML = colors.map(c => `<option>${c}</option>`).join('');
   updatePayoutPreview();
 }
 
 function updatePayoutPreview() {
-  const channel = document.getElementById('sale-channel').value;
-  const price   = parseFloat(document.getElementById('sale-price').value) || 0;
-  const qty     = parseInt(document.getElementById('sale-qty').value) || 1;
-  const prodName= document.getElementById('sale-product').value;
-  const prod    = DB.products.find(p => p['Product Name'] === prodName);
-  const ttPct   = prod ? (parseFloat(prod['TikTok Fee (%)']) || 10) : 10;
+  const channel  = document.getElementById('sale-channel').value;
+  const price    = parseFloat(document.getElementById('sale-price').value) || 0;
+  const qty      = parseInt(document.getElementById('sale-qty').value) || 1;
+  const prodName = document.getElementById('sale-product').value;
+  const prod     = DB.products.find(p => p['Product Name'] === prodName);
+  const ttPct    = prod ? (parseFloat(prod['TikTok Fee (%)']) || 10) : 10;
   const subtotal = price * qty;
-  const payout  = channel === 'TikTok' ? subtotal * (1 - ttPct / 100) : subtotal;
+  const payout   = channel === 'TikTok' ? subtotal * (1 - ttPct / 100) : subtotal;
   document.getElementById('sale-payout').value = payout.toFixed(2);
 }
 
 async function saveSale() {
-  const id = document.getElementById('sale-edit-id').value;
+  const id    = document.getElementById('sale-edit-id').value;
   const price = parseFloat(document.getElementById('sale-price').value) || 0;
   const qty   = parseInt(document.getElementById('sale-qty').value) || 1;
   const row = {
