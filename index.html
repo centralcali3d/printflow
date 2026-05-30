@@ -597,15 +597,19 @@
     <div class="form-grid">
       <div class="form-group"><label>Date</label><input type="date" id="exp-date"></div>
       <div class="form-group"><label>Category</label>
-        <select id="exp-cat">
+        <select id="exp-cat" onchange="onExpenseCatChange()">
           <option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option>
           <option>Marketing</option><option>Video/Editing</option><option>Software/Licensing</option>
           <option>Mileage</option><option>Shipping</option><option>Other</option>
         </select>
       </div>
       <div class="form-group full"><label>Description</label><input type="text" id="exp-desc"></div>
-      <div class="form-group"><label>Amount ($)</label><input type="number" step="0.01" id="exp-amount"></div>
-      <div class="form-group"><label>Miles (if mileage)</label><input type="number" step="0.1" id="exp-miles" value="0"></div>
+      <div class="form-group" id="exp-miles-row"><label>Miles (if mileage)</label><input type="number" step="0.1" id="exp-miles" value="0" oninput="onExpenseMilesInput()"></div>
+      <div class="form-group" id="exp-amount-row">
+        <label>Amount ($)</label>
+        <input type="number" step="0.01" id="exp-amount">
+        <div id="exp-mileage-hint" style="font-size:0.72rem;color:var(--green);margin-top:3px;font-family:var(--font-mono);"></div>
+      </div>
       <div class="form-group"><label>Printer (if applicable)</label>
         <select id="exp-printer"><option value="">N/A</option><option>H2C</option><option>P1S</option><option>P2S</option><option>All</option></select>
       </div>
@@ -1515,9 +1519,44 @@ function renderExpenses() {
     </div></td></tr>`).join('') || '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No expenses recorded</p></div></td></tr>';
 }
 
+function onExpenseCatChange() {
+  const cat = document.getElementById('exp-cat').value;
+  const isMileage = cat === 'Mileage';
+  const amountInput = document.getElementById('exp-amount');
+  const milesInput  = document.getElementById('exp-miles');
+  const amountRow   = document.getElementById('exp-amount-row');
+  const milesRow    = document.getElementById('exp-miles-row');
+  if (isMileage) {
+    amountRow.style.opacity = '0.5';
+    amountInput.placeholder = 'Auto-calculated from miles';
+    amountInput.readOnly = true;
+    milesRow.querySelector('label').textContent = 'Miles (round trip)';
+    onExpenseMilesInput();
+  } else {
+    amountRow.style.opacity = '1';
+    amountInput.placeholder = '';
+    amountInput.readOnly = false;
+    milesRow.querySelector('label').textContent = 'Miles (if mileage)';
+  }
+}
+
+function onExpenseMilesInput() {
+  const cat = document.getElementById('exp-cat').value;
+  if (cat !== 'Mileage') return;
+  const miles = parseFloat(document.getElementById('exp-miles').value) || 0;
+  const cost  = (miles * SETTINGS.mileage_rate).toFixed(2);
+  document.getElementById('exp-amount').value = cost;
+  document.getElementById('exp-mileage-hint').textContent =
+    miles > 0 ? `${miles} mi × $${SETTINGS.mileage_rate.toFixed(2)}/mi = $${cost}` : '';
+}
+
 function openExpenseModal(id) {
   document.getElementById('expense-modal-title').textContent = id ? 'Edit Expense' : 'Add Expense';
   document.getElementById('exp-edit-id').value = id || '';
+  // Reset amount field state first
+  document.getElementById('exp-amount').readOnly = false;
+  document.getElementById('exp-amount-row').style.opacity = '1';
+  document.getElementById('exp-mileage-hint').textContent = '';
   if (id) {
     const e = DB.expenses.find(x => x['ID'] === id);
     if (e) {
@@ -1531,12 +1570,14 @@ function openExpenseModal(id) {
     }
   } else {
     document.getElementById('exp-date').value    = new Date().toISOString().slice(0,10);
+    document.getElementById('exp-cat').value     = 'Hardware';
     document.getElementById('exp-desc').value    = '';
     document.getElementById('exp-amount').value  = '';
     document.getElementById('exp-miles').value   = '0';
     document.getElementById('exp-printer').value = '';
     document.getElementById('exp-notes').value   = '';
   }
+  onExpenseCatChange();
   openModal('expense-modal');
 }
 
@@ -1544,18 +1585,35 @@ async function saveExpense() {
   const id = document.getElementById('exp-edit-id').value;
   const desc = document.getElementById('exp-desc').value.trim();
   if (!desc) { alert('Description required'); return; }
+  const cat   = document.getElementById('exp-cat').value;
+  const miles = parseFloat(document.getElementById('exp-miles').value) || 0;
+  let amount  = parseFloat(document.getElementById('exp-amount').value) || 0;
+  // Auto-calc mileage amount if somehow still 0
+  if (cat === 'Mileage' && amount === 0 && miles > 0) {
+    amount = miles * SETTINGS.mileage_rate;
+  }
   const row = {
     'ID':          id || 'exp_' + Date.now(),
     'Date':        document.getElementById('exp-date').value,
-    'Category':    document.getElementById('exp-cat').value,
+    'Category':    cat,
     'Description': desc,
-    'Amount ($)':  parseFloat(document.getElementById('exp-amount').value) || 0,
+    'Amount ($)':  amount,
     'Printer':     document.getElementById('exp-printer').value,
-    'Miles':       parseFloat(document.getElementById('exp-miles').value) || 0,
+    'Miles':       miles,
     'Notes':       document.getElementById('exp-notes').value,
   };
-  await api({ action: id ? 'update' : 'write', tab: 'Expenses', row });
-  closeModal('expense-modal'); await loadTab('expenses','Expenses'); renderExpenses();
+  setSyncStatus('loading', 'Saving…');
+  try {
+    const result = await api({ action: id ? 'update' : 'write', tab: 'Expenses', row });
+    if (result.error) throw new Error(result.error);
+    closeModal('expense-modal');
+    await loadTab('expenses','Expenses');
+    renderExpenses();
+    setSyncStatus('ok', 'Synced');
+  } catch(e) {
+    setSyncStatus('error', 'Save failed');
+    alert('Failed to save expense: ' + e.message + '\n\nCheck that your Apps Script URL is connected (🔗 in the header).');
+  }
 }
 
 // ═══ DELETE ═══
