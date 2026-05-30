@@ -722,7 +722,8 @@ async function loadTab(key, tabName) {
 async function api(payload) {
   if (!SCRIPT_URL) throw new Error('No script URL configured');
   const url = SCRIPT_URL + '?action=' + payload.action + (payload.tab ? '&tab=' + payload.tab : '');
-  const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+  const res = await fetch(url, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
 
