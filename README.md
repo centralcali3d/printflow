@@ -157,6 +157,11 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 
 ## Changelog
 
+### v1.4 — 2026-05-30
+- **Inventory Value KPIs** — Inventory tab now shows Units in Stock, Inventory Value (cost basis for taxes), Retail Value, Potential Profit, and Active SKUs
+- Added tax tip note explaining how to use Inventory Value on Schedule C at year end
+- Updated default electricity rate to $0.46/hr
+
 ### v1.3 — 2026-05-29
 - Added **Expenses tab** — log hardware, marketing, software, mileage, and other overhead
 - Added **Post Office Trip Logger** — one-click IRS-compliant mileage entry for shipping runs
