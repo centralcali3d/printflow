@@ -513,7 +513,8 @@
       <div class="form-group"><label>Depth (in)</label><input type="number" step="0.01" id="prod-d"></div>
       <div class="form-group"><label>Height (in)</label><input type="number" step="0.01" id="prod-h"></div>
       <div class="form-group"><label>Weight (lb)</label><input type="number" step="0.01" id="prod-wt"></div>
-      <div class="form-group"><label>Filament (kg)</label><input type="number" step="0.01" id="prod-fil-kg" oninput="updateCostPreview()"></div>
+      <!-- CHANGED: label now says "Filament (g)" — stores grams, not kg or dollars -->
+      <div class="form-group"><label>Filament (g)</label><input type="number" step="1" id="prod-fil-g" oninput="updateCostPreview()"></div>
       <div class="form-group"><label>Print Time (hr)</label><input type="number" step="0.01" id="prod-time" oninput="updateCostPreview()"></div>
       <div class="form-group">
         <label>Filament Type</label>
@@ -758,7 +759,8 @@ async function reconnectFromSettings() {
 
 // ═══ HELPERS ═══
 function fmt$(n)  { return '$' + (+n||0).toFixed(2); }
-function fmtKg(n) { return (+n||0).toFixed(3) + ' kg'; }
+// NEW: display grams cleanly
+function fmtG(n)  { return (+n||0).toFixed(0) + ' g'; }
 
 function setSyncStatus(state, label) {
   const dot = document.getElementById('sync-dot');
@@ -800,19 +802,21 @@ function renderAll() {
 }
 
 // ═══ COST CALC ═══
+// Returns the cost per kg for a given filament type (spool cost / 1 kg)
 function filCostPerKg(type) {
   const match = DB.filament.find(f => f['Type'] === type);
-  if (!match) return 12.99;
+  if (!match) return 12.99; // fallback $12.99/kg
   return parseFloat(match['Cost per Spool ($)']) || 12.99;
 }
 
+// FIXED: now reads 'Filament (g)' and divides by 1000 to get kg before multiplying
 function productCost(p) {
-  const filKg    = parseFloat(p['Filament (kg)'])  || 0;
+  const filG     = parseFloat(p['Filament (g)'])   || 0;  // grams
   const time     = parseFloat(p['Print Time (hr)']) || 0;
   const type     = p['Filament Type'] || 'PLA Basic';
   const cPerKg   = filCostPerKg(type);
-  const filCost  = filKg * cPerKg;
-  const elecCost = time  * SETTINGS.electricity_rate_per_hr;
+  const filCost  = (filG / 1000) * cPerKg;               // convert g → kg → $
+  const elecCost = time * SETTINGS.electricity_rate_per_hr;
   return { filCost, elecCost, total: filCost + elecCost };
 }
 
@@ -981,10 +985,12 @@ function renderProducts() {
     const profit  = price - ttFee - total;
     const margin  = price > 0 ? ((profit / price) * 100).toFixed(1) + '%' : '—';
     const dim     = [p['Width (in)'],p['Depth (in)'],p['Height (in)']].map(v=>parseFloat(v)||0).join('×');
+    // CHANGED: show grams in the filament column
+    const filG    = parseFloat(p['Filament (g)']) || 0;
     return `<tr>
       <td style="font-weight:600">${p['Product Name']}</td>
       <td class="mono" style="font-size:0.75rem;">${dim} in</td>
-      <td>${p['Filament Type']}<br><small style="color:var(--text3)">${fmtKg(p['Filament (kg)'])}</small></td>
+      <td>${p['Filament Type']}<br><small style="color:var(--text3)">${fmtG(filG)}</small></td>
       <td class="mono">${p['Print Time (hr)']} hr</td>
       <td class="mono">${fmt$(filCost)}</td>
       <td class="mono">${fmt$(elecCost)}</td>
@@ -1002,13 +1008,14 @@ function renderProducts() {
 }
 
 function updateCostPreview() {
-  const filKg   = parseFloat(document.getElementById('prod-fil-kg').value)  || 0;
+  // CHANGED: reads from prod-fil-g (grams), divides by 1000
+  const filG    = parseFloat(document.getElementById('prod-fil-g').value)   || 0;
   const time    = parseFloat(document.getElementById('prod-time').value)     || 0;
   const type    = document.getElementById('prod-fil-type').value;
   const price   = parseFloat(document.getElementById('prod-price').value)   || 0;
   const ttPct   = parseFloat(document.getElementById('prod-tiktok').value)  || 0;
   const cPerKg  = filCostPerKg(type);
-  const filCost = filKg * cPerKg;
+  const filCost = (filG / 1000) * cPerKg;
   const elec    = time * SETTINGS.electricity_rate_per_hr;
   const total   = filCost + elec;
   const ttFee   = price * (ttPct / 100);
@@ -1033,14 +1040,15 @@ function openProductModal(id) {
       document.getElementById('prod-d').value        = p['Depth (in)'];
       document.getElementById('prod-h').value        = p['Height (in)'];
       document.getElementById('prod-wt').value       = p['Weight (lb)'];
-      document.getElementById('prod-fil-kg').value   = p['Filament (kg)'];
+      // CHANGED: reads from 'Filament (g)'
+      document.getElementById('prod-fil-g').value    = p['Filament (g)'];
       document.getElementById('prod-time').value     = p['Print Time (hr)'];
       document.getElementById('prod-fil-type').value = p['Filament Type'];
       document.getElementById('prod-price').value    = p['Sale Price ($)'];
       document.getElementById('prod-tiktok').value   = p['TikTok Fee (%)'];
     }
   } else {
-    ['prod-name','prod-w','prod-d','prod-h','prod-wt','prod-fil-kg','prod-time','prod-price'].forEach(i => document.getElementById(i).value='');
+    ['prod-name','prod-w','prod-d','prod-h','prod-wt','prod-fil-g','prod-time','prod-price'].forEach(i => document.getElementById(i).value='');
     document.getElementById('prod-tiktok').value = '10';
   }
   updateCostPreview();
@@ -1058,7 +1066,8 @@ async function saveProduct() {
     'Depth (in)':      parseFloat(document.getElementById('prod-d').value)      || 0,
     'Height (in)':     parseFloat(document.getElementById('prod-h').value)      || 0,
     'Weight (lb)':     parseFloat(document.getElementById('prod-wt').value)     || 0,
-    'Filament (kg)':   parseFloat(document.getElementById('prod-fil-kg').value) || 0,
+    // CHANGED: saves as 'Filament (g)' in integer grams
+    'Filament (g)':    parseFloat(document.getElementById('prod-fil-g').value)  || 0,
     'Filament Type':   document.getElementById('prod-fil-type').value,
     'Print Time (hr)': parseFloat(document.getElementById('prod-time').value)   || 0,
     'Sale Price ($)':  parseFloat(document.getElementById('prod-price').value)  || 0,
@@ -1303,7 +1312,6 @@ function openSaleModal(id) {
       document.getElementById('sale-channel').value = s['Channel'];
       document.getElementById('sale-order').value   = s['Order / Ref #'];
       document.getElementById('sale-product').value = s['Product Name'];
-      // Populate cascading dropdowns, then restore saved values
       updateSaleFilaments();
       if (s['Filament Type']) document.getElementById('sale-filtype').value = s['Filament Type'];
       updateSaleColors();
@@ -1324,37 +1332,22 @@ function openSaleModal(id) {
   openModal('sale-modal');
 }
 
-// Called when the Product dropdown changes
-function onSaleProductChange() {
-  updateSaleFilaments();
-}
+function onSaleProductChange() { updateSaleFilaments(); }
 
-// Populate Filament Type dropdown from DB.filament,
-// pre-selecting the current product's type
 function updateSaleFilaments() {
   const name  = document.getElementById('sale-product').value;
   const prod  = DB.products.find(p => p['Product Name'] === name);
   const types = [...new Set(DB.filament.map(f => f['Type']))].sort();
   const sel   = document.getElementById('sale-filtype');
   sel.innerHTML = types.map(t => `<option>${t}</option>`).join('');
-  // Pre-select product's filament type if it exists in the list
-  if (prod && prod['Filament Type']) {
-    sel.value = prod['Filament Type'];
-  }
-  // Auto-fill price from product
-  if (prod) {
-    document.getElementById('sale-price').value = prod['Sale Price ($)'];
-  }
+  if (prod && prod['Filament Type']) sel.value = prod['Filament Type'];
+  if (prod) document.getElementById('sale-price').value = prod['Sale Price ($)'];
   updateSaleColors();
 }
 
-// Populate Color dropdown filtered by the selected Filament Type
 function updateSaleColors() {
   const type   = document.getElementById('sale-filtype').value;
-  const colors = DB.filament
-    .filter(f => f['Type'] === type)
-    .map(f => f['Color'])
-    .sort();
+  const colors = DB.filament.filter(f => f['Type'] === type).map(f => f['Color']).sort();
   document.getElementById('sale-color').innerHTML = colors.map(c => `<option>${c}</option>`).join('');
   updatePayoutPreview();
 }
