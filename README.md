@@ -10,7 +10,7 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 
 - **Filament** — Track every spool by type, color, cost, and quantity on hand. Color swatches, reorder status, and per-gram cost calculated automatically.
 - **Supplies** — Manage hardware, hotends, bed plates, consumables, and printers with cost tracking.
-- **Products** — Product catalog with automatic cost calculation (filament + electricity). Shows profit and margin for both TikTok and in-person sales.
+- **Products** — Product catalog with automatic cost calculation (filament + electricity). Filament usage stored in grams; cost calculated by converting to kg and multiplying by spool cost. Shows profit and margin for both TikTok and in-person sales.
 - **Inventory** — Stock levels with build-to targets, velocity tracking (sold/day), and days-remaining estimates.
 - **Print Queue** — Auto-generated from inventory needs or manually added. Priority sorting (High / Medium / Low).
 - **Sales** — Record TikTok and in-person orders. Automatic payout calculation after TikTok fees. Profit calculated per sale using actual product cost.
@@ -102,7 +102,7 @@ The app reads this value fresh on every load, so changes take effect immediately
 For each sale:
 
 ```
-Filament Cost  = Filament (kg) × Cost per Spool (from Filament tab)
+Filament Cost  = (Filament (g) / 1000) × Cost per Spool (from Filament tab)
 Electricity    = Print Time (hr) × Electricity Rate ($/hr)
 Total Cost     = Filament Cost + Electricity
 Payout         = Sale Price × (1 − TikTok Fee%)   [TikTok]
@@ -110,7 +110,28 @@ Payout         = Sale Price × (1 − TikTok Fee%)   [TikTok]
 Profit         = Payout − Total Cost
 ```
 
+**Important:** The `Filament (g)` column in the Products sheet stores the weight of filament used per print in **grams** (e.g., 90 for a product that uses 90g). The app converts this to kilograms before calculating cost. Do not enter dollars or kilograms in this column.
+
 Note: Supplies (hotends, bed plates, etc.) are not currently factored into per-sale cost — only filament and electricity.
+
+---
+
+## Products Sheet — Filament (g) Reference
+
+| Product | Filament (g) |
+|---------|-------------|
+| iPhone Stand | 85 |
+| Watch Band Holder | 170 |
+| Little Building Block (Square Drawer) | 175 |
+| Little Building Block (Rect 1 Drawer) | 315 |
+| Little Building Block (Rect 2 Drawers) | 315 |
+| Makeup Holder | 250 |
+| Jewelry Box with Lid | 175 |
+| Mini Building Block (Square Drawer) | 90 |
+| Mini Building Block (Rect 1 Drawer) | 150 |
+| Love Spinning Heart | 60 |
+| Heartbeat | 100 |
+| 3-Pack Mini Building Block (Square) | 270 |
 
 ---
 
@@ -148,7 +169,7 @@ All requests go to your Web App URL via GET or POST.
 |-----|-------------|
 | Filament | Spool inventory by type and color |
 | Supplies | Hardware, consumables, hotends, bed plates |
-| Products | Product catalog with filament usage and pricing |
+| Products | Product catalog with filament usage (in grams) and pricing |
 | Inventory | Stock levels, sold counts, build-to targets |
 | Sales | Order history for TikTok and in-person sales |
 | Queue | Print job queue (auto and manual) |
@@ -169,6 +190,13 @@ It will open full-screen without the browser UI, like a native app.
 ---
 
 ## Changelog
+
+### v1.2 — 2026-05-29
+- **Fixed filament cost calculation** — `Filament (kg)` column renamed to `Filament (g)` and now stores actual grams used per print
+- Cost formula updated: `(grams / 1000) × cost_per_kg` replaces the previous broken formula that treated a dollar value as a weight
+- All existing products updated with correct gram weights from slicer data
+- Products table now displays filament usage in grams (e.g., "90 g") instead of kg
+- Sale modal now uses cascading Filament Type → Color dropdowns filtered from the Filament tab
 
 ### v1.1 — 2026-05-23
 - Added **Settings tab** to the Google Sheet with `electricity_rate_per_hr` and `tiktok_default_fee_pct`
@@ -198,3 +226,4 @@ It will open full-screen without the browser UI, like a native app.
 - If you redeploy the Apps Script as a **new deployment**, you'll get a new URL — update it in the app's Settings page.
 - To keep the same URL across script updates, use **Deploy → Manage deployments → Edit → New version**.
 - The `seed` action skips any tab that already has data rows, so it's safe to call again without duplicating records.
+- When adding a new product, enter filament usage in **grams** as shown in your slicer (Bambu Studio, Orca Slicer, etc.). The app handles the conversion to cost automatically.
