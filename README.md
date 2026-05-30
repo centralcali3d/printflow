@@ -1,6 +1,6 @@
 # PrintFlow — 3D Print Business Manager
 
-A single-file web app for managing a 3D printing business. Tracks filament inventory, supplies, products, print queue, and sales — all synced to a Google Sheet via Apps Script so data is accessible from any device.
+A single-file web app for managing a 3D printing business. Tracks filament inventory, supplies, products, print queue, sales, and expenses — all synced to a Google Sheet via Apps Script.
 
 **Live app:** https://centralcali3d.github.io/printflow/
 
@@ -8,118 +8,46 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 
 ## Features
 
-- **Filament** — Track every spool by type, color, cost, and quantity on hand. Color swatches, reorder status, and per-gram cost calculated automatically.
-- **Supplies** — Manage hardware, hotends, bed plates, consumables, and printers with cost tracking.
-- **Products** — Product catalog with automatic cost calculation (filament + electricity). Filament usage stored in grams; cost calculated by converting to kg and multiplying by spool cost. Shows profit and margin for both TikTok and in-person sales.
-- **Inventory** — Stock levels with build-to targets, velocity tracking (sold/day), and days-remaining estimates.
-- **Print Queue** — Auto-generated from inventory needs or manually added. Priority sorting (High / Medium / Low).
-- **Sales** — Record TikTok and in-person orders. Automatic payout calculation after TikTok fees. Profit calculated per sale using actual product cost.
-- **Settings** — Configurable electricity rate ($/hr) synced to the spreadsheet. Also editable directly in the Google Sheet.
-
----
-
-## How It Works
-
-The app is a self-contained HTML file with no build step or dependencies beyond Google Fonts. All data lives in a **Google Sheet (PrintFlow DB)**, and a **Google Apps Script Web App** serves as the backend API — handling reads, writes, updates, and deletes for every tab.
-
-```
-Browser (index.html)
-      ↕ fetch (POST/GET)
-Google Apps Script Web App
-      ↕ SpreadsheetApp
-Google Sheet (PrintFlow DB)
-```
-
-On load, the app calls `getSettings` to read the electricity rate before rendering any cost data. All other tabs load in parallel.
-
----
-
-## Setup
-
-### 1 — Google Sheet
-
-Create a new Google Sheet and name it **PrintFlow DB**. Note the Sheet ID from the URL (the long string between `/d/` and `/edit`).
-
-### 2 — Apps Script
-
-1. In the spreadsheet, go to **Extensions → Apps Script**
-2. Delete any existing code
-3. Paste the contents of `PrintFlow_AppsScript.js`
-4. Update `SHEET_ID` at the top if it doesn't match yours
-5. Click **Save**
-
-### 3 — Deploy as Web App
-
-1. Click **Deploy → New deployment**
-2. Click the gear icon → select **Web app**
-3. Set **Execute as** → Me
-4. Set **Who has access** → Anyone
-5. Click **Deploy → Authorize → Allow**
-6. Copy the Web App URL
-
-### 4 — Connect the App
-
-1. Open the PrintFlow web app
-2. Click the 🔗 button in the top right
-3. Paste your Apps Script Web App URL
-4. Click **Connect**
-
-The app will initialize all sheet tabs automatically on first connect. To seed your existing data, call:
-
-```
-https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=seed
-```
-
-### 5 — Initialize Settings Tab
-
-To create the Settings tab in your spreadsheet (required for the electricity rate feature):
-
-```
-https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
-```
-
-Response should be:
-```json
-{"ok":true,"created":["Settings"],"message":"Sheets initialized"}
-```
-
----
-
-## Electricity Rate
-
-The electricity cost per hour of printing is stored in the **Settings** tab of the spreadsheet under the key `electricity_rate_per_hr`. The default is `$0.12/hr`.
-
-You can update it two ways:
-- **In the app** → Settings tab → Electricity Rate → Save Settings
-- **In the spreadsheet** → Settings tab → edit the Value column in the `electricity_rate_per_hr` row
-
-The app reads this value fresh on every load, so changes take effect immediately on the next page refresh.
+- **Filament** — Track every spool by type, color, cost, and quantity on hand.
+- **Supplies** — Manage hardware, hotends, bed plates, consumables, and printers.
+- **Products** — Full cost breakdown: filament, electricity, labor (prep time), and packaging. Profit and margin shown for TikTok and in-person.
+- **Inventory** — Stock levels with build-to targets, velocity, and days-remaining estimates.
+- **Print Queue** — Auto-generated from inventory needs or manually added.
+- **Sales** — TikTok, In-Person, and Sample channels. Affiliate/creator fees, packaging costs, and shipping trip tracking per order.
+- **Expenses** — Log hardware, marketing, software, mileage, and other overhead. IRS-compliant post office trip logger built in.
+- **Settings** — Electricity rate, labor rate, mileage rate, and post office miles — all synced to the spreadsheet.
 
 ---
 
 ## Profit Calculation
 
-For each sale:
-
 ```
-Filament Cost  = (Filament (g) / 1000) × Cost per Spool (from Filament tab)
+Filament Cost  = (Filament (g) / 1000) × Cost per Spool
 Electricity    = Print Time (hr) × Electricity Rate ($/hr)
-Total Cost     = Filament Cost + Electricity
-Payout         = Sale Price × (1 − TikTok Fee%)   [TikTok]
-               = Sale Price × Qty                  [In-Person]
-Profit         = Payout − Total Cost
+Labor          = Prep Time (hr) × Labor Rate ($/hr)
+Packaging      = Box cost (Small $1.25 / Medium $1.75 / Large $2.00 / Custom)
+Total Cost     = Filament + Electricity + Labor + Packaging
+
+Payout (TikTok)     = Subtotal × (1 − TikTok Fee%) − Affiliate Fee ($)
+Payout (In-Person)  = Sale Price × Qty
+Profit              = Payout − Total Cost
 ```
-
-**Important:** The `Filament (g)` column in the Products sheet stores the weight of filament used per print in **grams** (e.g., 90 for a product that uses 90g). The app converts this to kilograms before calculating cost. Do not enter dollars or kilograms in this column.
-
-Note: Supplies (hotends, bed plates, etc.) are not currently factored into per-sale cost — only filament and electricity.
 
 ---
 
-## Products Sheet — Filament (g) Reference
+## Products Sheet — Column Reference
 
-| Product | Filament (g) |
-|---------|-------------|
+| Column | Description |
+|--------|-------------|
+| Filament (g) | Grams of filament used per print (from slicer) |
+| Print Time (hr) | Machine print time — used for electricity |
+| Prep Time (hr) | Your hands-on time — used for labor cost |
+| Packaging | Default box size for this product |
+
+### Filament (g) values by product
+
+| Product | Grams |
+|---------|-------|
 | iPhone Stand | 85 |
 | Watch Band Holder | 170 |
 | Little Building Block (Square Drawer) | 175 |
@@ -135,95 +63,119 @@ Note: Supplies (hotends, bed plates, etc.) are not currently factored into per-s
 
 ---
 
+## Sales Sheet — New Columns
+
+| Column | Description |
+|--------|-------------|
+| Affiliate Fee (%) | TikTok creator/affiliate fee percentage |
+| Affiliate Fee ($) | Calculated dollar amount |
+| Packaging | Box type used for this order |
+| Packaging Cost ($) | Cost of packaging |
+| Shipping Trip | "Yes" if this order was included in a post office trip log |
+| Notes | Free text |
+
+---
+
+## Expenses Tab
+
+Columns: `ID | Date | Category | Description | Amount ($) | Printer | Miles | Notes`
+
+Categories: Hardware, Hotends, Bed Plates, Consumables, Marketing, Video/Editing, Software/Licensing, Mileage, Shipping, Other
+
+### Post Office Trip Logger
+
+The 🚗 **Log Post Office Trip** button on the Sales tab creates an IRS-compliant mileage entry in the Expenses tab automatically. It records: date, destination (USPS Post Office), business purpose (Shipping customer orders), round-trip miles, and cost at the IRS rate.
+
+---
+
+## Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| electricity_rate_per_hr | 0.12 | Cost per print hour ($/hr) |
+| tiktok_default_fee_pct | 10 | TikTok platform fee (%) |
+| labor_rate_per_hr | 25.00 | Your hourly prep rate ($/hr) |
+| mileage_rate | 0.70 | IRS mileage rate ($/mi) — update each tax year |
+| post_office_miles | 3.6 | Round-trip miles to post office |
+
+---
+
+## Setup
+
+### 1 — Google Sheet
+Create a new Google Sheet named **PrintFlow DB**. Note the Sheet ID from the URL.
+
+### 2 — Apps Script
+1. Go to **Extensions → Apps Script**
+2. Delete existing code, paste `PrintFlow_AppsScript.js`
+3. Update `SHEET_ID` at the top if needed
+4. Click **Save**
+
+### 3 — Deploy as Web App
+1. **Deploy → New deployment → Web app**
+2. Execute as: **Me** | Who has access: **Anyone**
+3. Deploy → Authorize → Allow → Copy the URL
+
+### 4 — Initialize Sheets
+Call the init action once to create all tabs with correct headers:
+```
+https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
+```
+
+### 5 — Connect the App
+1. Open the PrintFlow web app
+2. Click 🔗 → paste your Apps Script URL → Connect
+
+---
+
 ## Files
 
 | File | Description |
 |------|-------------|
-| `index.html` | The entire front-end application (self-contained) |
-| `PrintFlow_AppsScript.js` | Google Apps Script backend — paste into Extensions → Apps Script |
+| `index.html` | Entire front-end (self-contained) |
+| `PrintFlow_AppsScript.js` | Google Apps Script backend |
 | `README.md` | This file |
 
 ---
 
-## Apps Script API Reference
+## Tax Notes
 
-All requests go to your Web App URL via GET or POST.
-
-| Action | Description |
-|--------|-------------|
-| `ping` | Health check — returns `{ok:true, ts:...}` |
-| `init` | Creates all sheet tabs with headers if they don't exist |
-| `seed` | Populates tabs with initial data (skips tabs that already have data) |
-| `read` | Returns all rows from a tab (`?tab=Filament`) |
-| `write` | Appends a new row to a tab |
-| `update` | Updates an existing row by ID |
-| `delete` | Deletes a row by ID |
-| `getSettings` | Returns all key/value pairs from the Settings tab |
-| `updateSetting` | Updates a single setting by key |
-
----
-
-## Sheet Tabs
-
-| Tab | Description |
-|-----|-------------|
-| Filament | Spool inventory by type and color |
-| Supplies | Hardware, consumables, hotends, bed plates |
-| Products | Product catalog with filament usage (in grams) and pricing |
-| Inventory | Stock levels, sold counts, build-to targets |
-| Sales | Order history for TikTok and in-person sales |
-| Queue | Print job queue (auto and manual) |
-| Settings | App configuration (electricity rate, TikTok fee default) |
+- The Expenses tab and post office trip logger provide documentation for Schedule C deductions.
+- Keep digital copies of receipts for all expense entries.
+- Update `mileage_rate` in Settings at the start of each tax year.
+- California in-person sales may be subject to sales tax — consult a CPA.
+- Consider a CPA or QuickBooks Self-Employed for final tax filing.
 
 ---
 
 ## Mobile / Home Screen
 
-The app works on iOS and Android. To add to your iPhone home screen:
-
-1. Open the app in **Safari**
-2. Tap **Share → Add to Home Screen**
-3. Name it **PrintFlow** → tap **Add**
-
-It will open full-screen without the browser UI, like a native app.
+1. Open in **Safari** → Share → Add to Home Screen
+2. Name it **PrintFlow** → Add
 
 ---
 
 ## Changelog
 
+### v1.3 — 2026-05-29
+- Added **Expenses tab** — log hardware, marketing, software, mileage, and other overhead
+- Added **Post Office Trip Logger** — one-click IRS-compliant mileage entry for shipping runs
+- Added **Labor cost** — Prep Time (hr) × Labor Rate ($/hr) in product cost calculation
+- Added **Packaging cost** — Small Box ($1.25), Medium Box ($1.75), Large Box ($2.00), or custom per sale
+- Added **Affiliate/creator fee** — checkbox on Record Sale modal, pulls percentage and calculates dollar amount
+- Added **Sample channel** — sales at $0 with shipping cost and COGS tracked for profit reduction
+- Added **Labor Rate, Mileage Rate, Post Office Miles** to Settings (synced to spreadsheet)
+- Updated Products table to show Fil.$, Elec., Labor, Pkg, and Total Cost as separate columns
+- Updated Settings page with new rate controls
+
 ### v1.2 — 2026-05-29
-- **Fixed filament cost calculation** — `Filament (kg)` column renamed to `Filament (g)` and now stores actual grams used per print
-- Cost formula updated: `(grams / 1000) × cost_per_kg` replaces the previous broken formula that treated a dollar value as a weight
-- All existing products updated with correct gram weights from slicer data
-- Products table now displays filament usage in grams (e.g., "90 g") instead of kg
-- Sale modal now uses cascading Filament Type → Color dropdowns filtered from the Filament tab
+- Fixed filament cost: `Filament (kg)` → `Filament (g)`, stores actual grams
+- Cost formula: `(grams / 1000) × cost_per_kg`
+- All products updated with correct gram weights from slicer data
 
 ### v1.1 — 2026-05-23
-- Added **Settings tab** to the Google Sheet with `electricity_rate_per_hr` and `tiktok_default_fee_pct`
-- Added **Settings page** in the app (new nav tab) — electricity rate editable in-app and synced to sheet
-- Electricity rate now loads from the sheet on startup instead of being hardcoded at $0.12/hr
-- Cost preview in the product modal now shows the active electricity rate
-- Added `getSettings` and `updateSetting` actions to the Apps Script backend
-- Apps Script `init` now creates and styles the Settings tab automatically
-- Added reconnect option in the Settings page
+- Added Settings tab with electricity rate synced to spreadsheet
+- Electricity rate loads from sheet on startup
 
 ### v1.0 — 2026-05-15
 - Initial release
-- Full CRUD for Filament, Supplies, Products, Inventory, Sales, and Queue tabs
-- Google Sheets sync via Apps Script Web App
-- TikTok and In-Person sale channels with automatic payout calculation
-- Inventory velocity tracking (sold/day) and days-remaining estimates
-- Print queue with auto-generation from inventory needs and manual job entry
-- Color swatch support for filament
-- Mobile-optimized layout with iOS home screen support
-- GitHub Pages hosting
-
----
-
-## Notes
-
-- The Apps Script URL is stored in your browser's `localStorage`. Each device needs to be connected once.
-- If you redeploy the Apps Script as a **new deployment**, you'll get a new URL — update it in the app's Settings page.
-- To keep the same URL across script updates, use **Deploy → Manage deployments → Edit → New version**.
-- The `seed` action skips any tab that already has data rows, so it's safe to call again without duplicating records.
-- When adding a new product, enter filament usage in **grams** as shown in your slicer (Bambu Studio, Orca Slicer, etc.). The app handles the conversion to cost automatically.

@@ -11,41 +11,18 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0e0f11;
-    --surface: #161820;
-    --surface2: #1e2028;
-    --surface3: #262830;
-    --border: #2e3040;
-    --border2: #3a3d52;
-    --accent: #6c63ff;
-    --accent2: #a78bfa;
-    --accent3: #38bdf8;
-    --green: #34d399;
-    --yellow: #fbbf24;
-    --red: #f87171;
-    --orange: #fb923c;
-    --text: #e8eaf0;
-    --text2: #9ca3b8;
-    --text3: #5a607a;
-    --font-display: 'Syne', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-    --radius: 12px;
-    --radius-sm: 8px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --bg: #0e0f11; --surface: #161820; --surface2: #1e2028; --surface3: #262830;
+    --border: #2e3040; --border2: #3a3d52; --accent: #6c63ff; --accent2: #a78bfa;
+    --accent3: #38bdf8; --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+    --orange: #fb923c; --text: #e8eaf0; --text2: #9ca3b8; --text3: #5a607a;
+    --font-display: 'Syne', sans-serif; --font-mono: 'DM Mono', monospace;
+    --radius: 12px; --radius-sm: 8px; --shadow: 0 4px 24px rgba(0,0,0,0.4);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font-display); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
   #app { display: flex; flex-direction: column; min-height: 100vh; }
-
-  /* ── Header ── */
-  header {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 0 20px; height: 60px; display: flex; align-items: center;
-    justify-content: space-between; position: sticky; top: 0; z-index: 100;
-  }
-  .logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.03em;
-    background: linear-gradient(135deg, var(--accent2), var(--accent3));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, var(--accent2), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .logo span { -webkit-text-fill-color: var(--text3); font-weight: 400; font-size: 0.8rem; margin-left: 6px; }
   .sync-status { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-family: var(--font-mono); }
   .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); }
@@ -53,82 +30,40 @@
   .sync-dot.err { background: var(--red); }
   .sync-dot.loading { background: var(--yellow); animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-  /* ── Setup Banner ── */
-  #setup-banner {
-    background: linear-gradient(135deg, #1a1060, #0f1a3a);
-    border-bottom: 1px solid var(--accent); padding: 16px 20px;
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  }
+  #setup-banner { background: linear-gradient(135deg, #1a1060, #0f1a3a); border-bottom: 1px solid var(--accent); padding: 16px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   #setup-banner.hidden { display: none; }
   #setup-banner label { font-size: 0.85rem; color: var(--accent2); white-space: nowrap; }
-  #script-url-input {
-    flex: 1; min-width: 240px; background: rgba(255,255,255,0.07);
-    border: 1px solid var(--accent); border-radius: var(--radius-sm);
-    padding: 8px 12px; color: var(--text); font-family: var(--font-mono);
-    font-size: 0.8rem; outline: none;
-  }
-  #script-url-input:focus { border-color: var(--accent2); }
-
-  /* ── Nav ── */
-  nav {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    display: flex; overflow-x: auto; padding: 0 12px;
-    position: sticky; top: 60px; z-index: 99;
-  }
+  #script-url-input { flex: 1; min-width: 240px; background: rgba(255,255,255,0.07); border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-family: var(--font-mono); font-size: 0.8rem; outline: none; }
+  nav { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; padding: 0 12px; position: sticky; top: 60px; z-index: 99; }
   nav::-webkit-scrollbar { display: none; }
-  .nav-btn {
-    padding: 14px 16px; font-family: var(--font-display); font-size: 0.8rem;
-    font-weight: 600; color: var(--text3); background: none; border: none;
-    border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap;
-    transition: all .2s; letter-spacing: 0.05em; text-transform: uppercase;
-  }
+  .nav-btn { padding: 14px 16px; font-family: var(--font-display); font-size: 0.8rem; font-weight: 600; color: var(--text3); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: all .2s; letter-spacing: 0.05em; text-transform: uppercase; }
   .nav-btn:hover { color: var(--text2); }
   .nav-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
-
-  /* ── Main ── */
   main { flex: 1; padding: 24px 20px; max-width: 1400px; margin: 0 auto; width: 100%; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
-
-  /* ── Page Header ── */
   .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
   .page-title { font-size: 1.4rem; font-weight: 800; }
   .page-subtitle { font-size: 0.8rem; color: var(--text3); margin-top: 2px; }
   .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-  /* ── KPI Cards ── */
   .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
   .kpi { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
   .kpi-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
   .kpi-value { font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); }
-  .kpi-value.green { color: var(--green); }
-  .kpi-value.yellow { color: var(--yellow); }
-  .kpi-value.red { color: var(--red); }
-  .kpi-value.blue { color: var(--accent3); }
-
-  /* ── Buttons ── */
+  .kpi-value.green { color: var(--green); } .kpi-value.yellow { color: var(--yellow); }
+  .kpi-value.red { color: var(--red); } .kpi-value.blue { color: var(--accent3); }
   .btn { padding: 8px 16px; border-radius: var(--radius-sm); border: none; font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all .2s; letter-spacing: 0.03em; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #5a52e0; }
-  .btn-secondary { background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); }
-  .btn-secondary:hover { background: var(--border); }
+  .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { background: #5a52e0; }
+  .btn-secondary { background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); } .btn-secondary:hover { background: var(--border); }
   .btn-warn { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
   .btn-danger { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
   .btn-xs { padding: 4px 10px; font-size: 0.72rem; }
   .btn-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
-
-  /* ── Filters ── */
+  .btn-orange { background: rgba(251,146,60,0.15); color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
   .filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-  .filter-input {
-    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 7px 12px; color: var(--text); font-family: var(--font-display); font-size: 0.82rem;
-    outline: none; min-width: 160px;
-  }
+  .filter-input { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 12px; color: var(--text); font-family: var(--font-display); font-size: 0.82rem; outline: none; min-width: 160px; }
   .filter-input:focus { border-color: var(--accent); }
   select.filter-input { cursor: pointer; }
-
-  /* ── Table ── */
   .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
   table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
   thead th { background: var(--surface2); color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; font-size: 0.7rem; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
@@ -138,8 +73,6 @@
   tbody td { padding: 10px 12px; color: var(--text); vertical-align: middle; }
   .mono { font-family: var(--font-mono); }
   .actions-cell { display: flex; gap: 6px; }
-
-  /* ── Badge ── */
   .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; }
   .badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
   .badge-yellow { background: rgba(251,191,36,0.15); color: var(--yellow); }
@@ -147,35 +80,27 @@
   .badge-blue { background: rgba(56,189,248,0.15); color: var(--accent3); }
   .badge-purple { background: rgba(167,139,250,0.15); color: var(--accent2); }
   .badge-gray { background: rgba(156,163,184,0.1); color: var(--text3); }
-
-  /* ── Profit ── */
-  .profit-pos { color: var(--green); }
-  .profit-neg { color: var(--red); }
-
-  /* ── Color swatch ── */
+  .badge-orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .profit-pos { color: var(--green); } .profit-neg { color: var(--red); }
   .swatch { width: 18px; height: 18px; border-radius: 50%; display: inline-block; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; }
-
-  /* ── Modal ── */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
   .modal h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .form-grid .full { grid-column: 1 / -1; }
   .form-group { display: flex; flex-direction: column; gap: 5px; }
   .form-group label { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
-  .form-group input, .form-group select, .form-group textarea {
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); padding: 9px 12px;
-    color: var(--text); font-family: var(--font-display); font-size: 0.85rem; outline: none;
-  }
+  .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text); font-family: var(--font-display); font-size: 0.85rem; outline: none; }
   .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
   .cost-preview { background: var(--surface3); border-radius: var(--radius-sm); padding: 14px; margin-top: 4px; }
   .cost-preview-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 3px 0; }
   .cost-preview-row.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-weight: 700; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
-
-  /* ── Settings ── */
+  .section-divider { font-size: 0.72rem; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.1em; padding: 8px 0 4px; border-bottom: 1px solid var(--border); margin-bottom: 4px; grid-column: 1 / -1; }
+  .checkbox-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+  .checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .checkbox-row label { font-size: 0.85rem; color: var(--text2); cursor: pointer; margin: 0; text-transform: none; letter-spacing: 0; }
   .settings-section { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
   .settings-section h3 { font-size: 0.85rem; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
   .setting-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border); }
@@ -184,45 +109,28 @@
   .setting-name { font-size: 0.85rem; font-weight: 600; }
   .setting-desc { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
   .setting-control { display: flex; align-items: center; gap: 8px; }
-  .setting-input {
-    background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--radius-sm);
-    padding: 7px 12px; color: var(--green); font-family: var(--font-mono); font-size: 0.9rem;
-    outline: none; width: 100px; text-align: right;
-  }
+  .setting-input { background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 7px 12px; color: var(--green); font-family: var(--font-mono); font-size: 0.9rem; outline: none; width: 100px; text-align: right; }
   .setting-input:focus { border-color: var(--accent); }
   .setting-unit { font-size: 0.78rem; color: var(--text3); }
-
-  /* ── Queue ── */
   .queue-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
   .queue-priority { font-size: 1.1rem; flex-shrink: 0; }
   .queue-info { flex: 1; }
   .queue-name { font-weight: 700; font-size: 0.9rem; }
   .queue-meta { font-size: 0.75rem; color: var(--text3); margin-top: 3px; }
   .queue-actions { display: flex; gap: 6px; }
-
-  /* ── Empty state ── */
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
   .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
   .empty-state p { font-size: 0.9rem; }
-
-  /* ── Velocity dot ── */
   .vel-bar { display: flex; align-items: center; gap: 6px; }
   .vel-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-  @media (max-width: 600px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .kpi-row { grid-template-columns: 1fr 1fr; }
-    main { padding: 16px; }
-  }
+  .trip-modal { background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius); padding: 24px; width: 100%; max-width: 480px; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: 1fr 1fr; } main { padding: 16px; } }
 </style>
 </head>
 <body>
 <div id="app">
-
   <header>
-    <div>
-      <div class="logo">PrintFlow<span>3D Business Manager</span></div>
-    </div>
+    <div><div class="logo">PrintFlow<span>3D Business Manager</span></div></div>
     <div class="sync-status">
       <div class="sync-dot loading" id="sync-dot"></div>
       <span id="sync-label">Connecting…</span>
@@ -230,7 +138,7 @@
     </div>
   </header>
 
-  <div id="setup-banner">
+  <div id="setup-banner" class="hidden">
     <label>Apps Script URL</label>
     <input type="url" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec">
     <button class="btn btn-primary" onclick="connectScript()">Connect</button>
@@ -244,6 +152,7 @@
     <button class="nav-btn" onclick="showTab('inventory', this)">Inventory</button>
     <button class="nav-btn" onclick="showTab('queue', this)">Queue</button>
     <button class="nav-btn" onclick="showTab('sales', this)">Sales</button>
+    <button class="nav-btn" onclick="showTab('expenses', this)">Expenses</button>
     <button class="nav-btn" onclick="showTab('settings', this)">Settings</button>
   </nav>
 
@@ -253,9 +162,7 @@
     <div class="tab-panel active" id="tab-filament">
       <div class="page-header">
         <div><div class="page-title">Filament</div><div class="page-subtitle">Stock · Cost · Reorder tracking</div></div>
-        <div class="header-actions">
-          <button class="btn btn-primary" onclick="openFilamentModal()">＋ Add Filament</button>
-        </div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="openFilamentModal()">＋ Add Filament</button></div>
       </div>
       <div class="filters">
         <input class="filter-input" type="text" id="fil-search" placeholder="⌕" oninput="renderFilament()" style="max-width:180px;">
@@ -267,16 +174,12 @@
           <option>TPU for AMS</option><option>Elegoo</option>
         </select>
         <select class="filter-input" id="fil-status-filter" onchange="renderFilament()">
-          <option value="">All</option>
-          <option>In Stock</option><option>Low</option><option>Out</option><option>Ordered</option>
+          <option value="">All</option><option>In Stock</option><option>Low</option><option>Out</option><option>Ordered</option>
         </select>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr>
-            <th>Color</th><th>Type</th><th>On Hand</th><th>Cost/Spool</th>
-            <th>$/g</th><th>Build To</th><th>Status</th><th>Vendor</th><th></th>
-          </tr></thead>
+          <thead><tr><th>Color</th><th>Type</th><th>On Hand</th><th>Cost/Spool</th><th>$/g</th><th>Build To</th><th>Status</th><th>Vendor</th><th></th></tr></thead>
           <tbody id="filament-tbody"></tbody>
         </table>
       </div>
@@ -286,23 +189,16 @@
     <div class="tab-panel" id="tab-supplies">
       <div class="page-header">
         <div><div class="page-title">Supplies</div><div class="page-subtitle">Hardware · Consumables · Hotends · Bed Plates</div></div>
-        <div class="header-actions">
-          <button class="btn btn-primary" onclick="openSupplyModal()">＋ Add Supply</button>
-        </div>
+        <div class="header-actions"><button class="btn btn-primary" onclick="openSupplyModal()">＋ Add Supply</button></div>
       </div>
       <div class="filters">
         <select class="filter-input" id="sup-cat-filter" onchange="renderSupplies()">
-          <option value="">All</option>
-          <option>Hardware</option><option>Hotends</option><option>Bed Plates</option>
-          <option>Consumables</option><option>Printers</option>
+          <option value="">All</option><option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option><option>Printers</option>
         </select>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr>
-            <th>Item</th><th>Category</th><th>Qty</th><th>Cost</th>
-            <th>Extended</th><th>Printer</th><th>Status</th><th></th>
-          </tr></thead>
+          <thead><tr><th>Item</th><th>Category</th><th>Qty</th><th>Cost</th><th>Extended</th><th>Printer</th><th>Status</th><th></th></tr></thead>
           <tbody id="supplies-tbody"></tbody>
         </table>
       </div>
@@ -317,9 +213,9 @@
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Product</th><th>Dimensions</th><th>Filament</th><th>Time</th>
-            <th>Fil. Cost</th><th>Elec.</th><th>Total Cost</th><th>Price</th>
-            <th>TikTok</th><th>Profit</th><th>Margin</th><th></th>
+            <th>Product</th><th>Dimensions</th><th>Filament</th><th>Print</th><th>Prep</th>
+            <th>Fil.$</th><th>Elec.</th><th>Labor</th><th>Pkg</th><th>Total Cost</th>
+            <th>Price</th><th>TikTok</th><th>Profit</th><th>Margin</th><th></th>
           </tr></thead>
           <tbody id="products-tbody"></tbody>
         </table>
@@ -334,19 +230,14 @@
           <label style="font-size:.78rem;color:var(--text3);">Velocity:</label>
           <select class="filter-input" id="vel-days" onchange="renderInventory()" style="width:auto;">
             <option value="7">7 days</option><option value="14">14 days</option>
-            <option value="30" selected>30 days</option><option value="60">60 days</option>
-            <option value="90">90 days</option>
+            <option value="30" selected>30 days</option><option value="60">60 days</option><option value="90">90 days</option>
           </select>
           <button class="btn btn-primary" onclick="openInventoryModal()">＋ Add Stock</button>
         </div>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr>
-            <th>Product</th><th>Filament / Color</th><th>Stock</th><th>Sold</th>
-            <th>Loan</th><th>Vel/day</th><th>Days Left</th><th>Build To</th>
-            <th>Print</th><th>Time</th><th></th>
-          </tr></thead>
+          <thead><tr><th>Product</th><th>Filament / Color</th><th>Stock</th><th>Sold</th><th>Loan</th><th>Vel/day</th><th>Days Left</th><th>Build To</th><th>Print</th><th>Time</th><th></th></tr></thead>
           <tbody id="inventory-tbody"></tbody>
         </table>
       </div>
@@ -368,17 +259,19 @@
     <div class="tab-panel" id="tab-sales">
       <div class="page-header">
         <div><div class="page-title">Sales</div><div class="page-subtitle">Orders · Revenue · Profit</div></div>
-        <button class="btn btn-primary" onclick="openSaleModal()">＋ Record Sale</button>
+        <div class="header-actions">
+          <button class="btn btn-orange btn-xs" onclick="openTripModal()">🚗 Log Post Office Trip</button>
+          <button class="btn btn-primary" onclick="openSaleModal()">＋ Record Sale</button>
+        </div>
       </div>
       <div class="kpi-row" id="sales-kpis"></div>
       <div class="filters">
         <input class="filter-input" type="text" id="sale-search" placeholder="⌕" oninput="renderSales()" style="max-width:180px;">
         <select class="filter-input" id="sale-channel-filter" onchange="renderSales()">
-          <option value="">All Channels</option><option>TikTok</option><option>In-Person</option>
+          <option value="">All Channels</option><option>TikTok</option><option>In-Person</option><option>Sample</option>
         </select>
         <select class="filter-input" id="sale-period-filter" onchange="renderSales()">
-          <option value="">All Time</option>
-          <option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option>
+          <option value="">All Time</option><option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option>
         </select>
       </div>
       <div class="table-wrap">
@@ -386,9 +279,35 @@
           <thead><tr>
             <th>Date</th><th>Order #</th><th>Channel</th><th>Product</th><th>Color</th>
             <th>Qty</th><th>Price</th><th>Subtotal</th><th>Payout</th>
-            <th>Cost</th><th>Profit</th><th>Status</th><th></th>
+            <th>Cost</th><th>Affiliate</th><th>Pkg</th><th>Profit</th><th>Status</th><th></th>
           </tr></thead>
           <tbody id="sales-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ EXPENSES ═══ -->
+    <div class="tab-panel" id="tab-expenses">
+      <div class="page-header">
+        <div><div class="page-title">Expenses</div><div class="page-subtitle">Overhead · Hardware · Marketing · Mileage</div></div>
+        <button class="btn btn-primary" onclick="openExpenseModal()">＋ Add Expense</button>
+      </div>
+      <div class="filters">
+        <select class="filter-input" id="exp-cat-filter" onchange="renderExpenses()">
+          <option value="">All Categories</option>
+          <option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option>
+          <option>Marketing</option><option>Video/Editing</option><option>Software/Licensing</option>
+          <option>Mileage</option><option>Shipping</option><option>Other</option>
+        </select>
+        <select class="filter-input" id="exp-period-filter" onchange="renderExpenses()">
+          <option value="">All Time</option><option value="30">30 days</option><option value="90">90 days</option><option value="365">This year</option>
+        </select>
+      </div>
+      <div class="kpi-row" id="expense-kpis"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Miles</th><th>Printer</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="expenses-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -402,24 +321,29 @@
       <div class="settings-section">
         <h3>⚡ Electricity &amp; Costs</h3>
         <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Electricity Rate</div>
-            <div class="setting-desc">Cost per hour of printing. Check your electric bill — US average is ~$0.12–$0.16/hr per printer.</div>
-          </div>
-          <div class="setting-control">
-            <span class="setting-unit">$</span>
-            <input class="setting-input" id="setting-electricity-rate" type="number" step="0.01" min="0" value="0.12">
-            <span class="setting-unit">/ hr</span>
-          </div>
+          <div class="setting-info"><div class="setting-name">Electricity Rate</div><div class="setting-desc">Cost per hour of printing. US average ~$0.12–$0.16/hr per printer.</div></div>
+          <div class="setting-control"><span class="setting-unit">$</span><input class="setting-input" id="setting-electricity-rate" type="number" step="0.01" min="0" value="0.12"><span class="setting-unit">/ hr</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">Labor Rate</div><div class="setting-desc">Your hourly rate for prep time (setup, filament change, removal, packaging).</div></div>
+          <div class="setting-control"><span class="setting-unit">$</span><input class="setting-input" id="setting-labor-rate" type="number" step="0.50" min="0" value="25.00"><span class="setting-unit">/ hr</span></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>🚗 Mileage</h3>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">IRS Mileage Rate</div><div class="setting-desc">Current IRS standard mileage rate. Update each tax year.</div></div>
+          <div class="setting-control"><span class="setting-unit">$</span><input class="setting-input" id="setting-mileage-rate" type="number" step="0.01" min="0" value="0.70"><span class="setting-unit">/ mi</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-name">Post Office Miles</div><div class="setting-desc">Round-trip miles to the post office for shipping runs.</div></div>
+          <div class="setting-control"><input class="setting-input" id="setting-po-miles" type="number" step="0.1" min="0" value="3.6"><span class="setting-unit">mi</span></div>
         </div>
       </div>
       <div class="settings-section">
         <h3>🔗 Connection</h3>
         <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Apps Script URL</div>
-            <div class="setting-desc">The Google Apps Script Web App URL used to sync data with your PrintFlow DB spreadsheet.</div>
-          </div>
+          <div class="setting-info"><div class="setting-name">Apps Script URL</div><div class="setting-desc">Google Apps Script Web App URL for syncing with PrintFlow DB.</div></div>
           <div class="setting-control" style="flex-direction:column;align-items:flex-end;gap:6px;">
             <input class="setting-input" id="setting-script-url" type="url" placeholder="https://script.google.com/…" style="width:300px;text-align:left;font-size:0.72rem;">
             <button class="btn btn-secondary btn-xs" onclick="reconnectFromSettings()">Reconnect</button>
@@ -427,7 +351,7 @@
         </div>
       </div>
       <p style="font-size:0.75rem;color:var(--text3);margin-top:12px;">
-        💡 You can also edit <strong>electricity_rate_per_hr</strong> directly in the <em>Settings</em> tab of your PrintFlow DB spreadsheet — the app reads from there on every load.
+        💡 You can also edit settings directly in the <em>Settings</em> tab of your PrintFlow DB spreadsheet.
       </p>
     </div>
 
@@ -442,27 +366,19 @@
     <h2 id="filament-modal-title">Add Filament</h2>
     <input type="hidden" id="fil-edit-id">
     <div class="form-grid">
-      <div class="form-group full">
-        <label>Type</label>
+      <div class="form-group full"><label>Type</label>
         <select id="fil-type">
           <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
           <option>PLA Translucent</option><option>PLA Wood</option><option>PETG HF</option>
-          <option>PETG, SunLu</option><option>ABS</option><option>TPU for AMS</option>
-          <option>Elegoo</option><option>Other</option>
+          <option>PETG, SunLu</option><option>ABS</option><option>TPU for AMS</option><option>Elegoo</option><option>Other</option>
         </select>
       </div>
       <div class="form-group full"><label>Color Name</label><input type="text" id="fil-color"></div>
       <div class="form-group"><label>On Hand (kg)</label><input type="number" step="0.1" id="fil-onhand"></div>
       <div class="form-group"><label>Cost/Spool ($)</label><input type="number" step="0.01" id="fil-cost"></div>
       <div class="form-group"><label>Build To (spools)</label><input type="number" id="fil-buildto" value="1"></div>
-      <div class="form-group">
-        <label>Vendor</label>
-        <select id="fil-vendor"><option>Bambu</option><option>Amazon</option><option>Eric</option><option>Other</option></select>
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select id="fil-status"><option>Up to date</option><option>Ordered</option><option>Low</option><option>Backorder</option></select>
-      </div>
+      <div class="form-group"><label>Vendor</label><select id="fil-vendor"><option>Bambu</option><option>Amazon</option><option>Eric</option><option>Other</option></select></div>
+      <div class="form-group"><label>Status</label><select id="fil-status"><option>Up to date</option><option>Ordered</option><option>Low</option><option>Backorder</option></select></div>
       <div class="form-group"><label>Swatch Color</label><input type="color" id="fil-swatch" value="#ffffff"></div>
     </div>
     <div class="modal-actions">
@@ -479,20 +395,11 @@
     <input type="hidden" id="sup-edit-id">
     <div class="form-grid">
       <div class="form-group full"><label>Item Name</label><input type="text" id="sup-name"></div>
-      <div class="form-group">
-        <label>Category</label>
-        <select id="sup-cat"><option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option><option>Printers</option></select>
-      </div>
+      <div class="form-group"><label>Category</label><select id="sup-cat"><option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option><option>Printers</option></select></div>
       <div class="form-group"><label>Qty</label><input type="number" id="sup-qty" value="1"></div>
       <div class="form-group"><label>Unit Cost ($)</label><input type="number" step="0.01" id="sup-cost"></div>
-      <div class="form-group">
-        <label>Printer</label>
-        <select id="sup-printer"><option>All</option><option>H2C</option><option>P1S</option><option>P2S</option></select>
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select id="sup-status"><option>Received</option><option>Ordered</option><option>Shipped</option><option>Delivered</option></select>
-      </div>
+      <div class="form-group"><label>Printer</label><select id="sup-printer"><option>All</option><option>H2C</option><option>P1S</option><option>P2S</option></select></div>
+      <div class="form-group"><label>Status</label><select id="sup-status"><option>Received</option><option>Ordered</option><option>Shipped</option><option>Delivered</option></select></div>
       <div class="form-group full"><label>Order Date</label><input type="date" id="sup-date"></div>
     </div>
     <div class="modal-actions">
@@ -513,14 +420,21 @@
       <div class="form-group"><label>Depth (in)</label><input type="number" step="0.01" id="prod-d"></div>
       <div class="form-group"><label>Height (in)</label><input type="number" step="0.01" id="prod-h"></div>
       <div class="form-group"><label>Weight (lb)</label><input type="number" step="0.01" id="prod-wt"></div>
-      <!-- CHANGED: label now says "Filament (g)" — stores grams, not kg or dollars -->
       <div class="form-group"><label>Filament (g)</label><input type="number" step="1" id="prod-fil-g" oninput="updateCostPreview()"></div>
-      <div class="form-group"><label>Print Time (hr)</label><input type="number" step="0.01" id="prod-time" oninput="updateCostPreview()"></div>
-      <div class="form-group">
-        <label>Filament Type</label>
+      <div class="form-group"><label>Filament Type</label>
         <select id="prod-fil-type" onchange="updateCostPreview()">
           <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
           <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Print Time (hr)</label><input type="number" step="0.01" id="prod-time" oninput="updateCostPreview()"></div>
+      <div class="form-group"><label>Prep Time (hr)</label><input type="number" step="0.01" id="prod-prep" oninput="updateCostPreview()"></div>
+      <div class="form-group"><label>Default Packaging</label>
+        <select id="prod-packaging" onchange="updateCostPreview()">
+          <option value="Small Box">Small Box ($1.25)</option>
+          <option value="Medium Box">Medium Box ($1.75)</option>
+          <option value="Large Box">Large Box ($2.00)</option>
+          <option value="Other">Other (custom)</option>
         </select>
       </div>
       <div class="form-group"><label>Sale Price ($)</label><input type="number" step="0.01" id="prod-price" oninput="updateCostPreview()"></div>
@@ -528,8 +442,10 @@
       <div class="form-group full">
         <label>Cost Preview</label>
         <div class="cost-preview">
-          <div class="cost-preview-row"><span>Fil. Cost</span><span id="prev-fil">—</span></div>
+          <div class="cost-preview-row"><span>Filament</span><span id="prev-fil">—</span></div>
           <div class="cost-preview-row"><span>Electricity</span><span id="prev-elec">—</span></div>
+          <div class="cost-preview-row"><span>Labor (prep)</span><span id="prev-labor">—</span></div>
+          <div class="cost-preview-row"><span>Packaging</span><span id="prev-pkg">—</span></div>
           <div class="cost-preview-row total"><span>Total Cost</span><span id="prev-total">—</span></div>
           <div class="cost-preview-row"><span style="color:var(--text3)">TikTok Fee</span><span id="prev-ttfee" style="color:var(--red)">—</span></div>
           <div class="cost-preview-row"><span style="font-weight:700">Net Profit</span><span id="prev-profit" style="color:var(--green)">—</span></div>
@@ -550,12 +466,8 @@
     <h2 id="inventory-modal-title">Add Stock</h2>
     <input type="hidden" id="inv-edit-id">
     <div class="form-grid">
-      <div class="form-group full">
-        <label>Product</label>
-        <select id="inv-product"></select>
-      </div>
-      <div class="form-group">
-        <label>Filament Type</label>
+      <div class="form-group full"><label>Product</label><select id="inv-product"></select></div>
+      <div class="form-group"><label>Filament Type</label>
         <select id="inv-fil-type">
           <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
           <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
@@ -581,36 +493,123 @@
     <input type="hidden" id="sale-edit-id">
     <div class="form-grid">
       <div class="form-group"><label>Date</label><input type="date" id="sale-date"></div>
-      <div class="form-group">
-        <label>Channel</label>
-        <select id="sale-channel" onchange="updatePayoutPreview()">
-          <option>TikTok</option><option>In-Person</option>
+      <div class="form-group"><label>Channel</label>
+        <select id="sale-channel" onchange="onSaleChannelChange()">
+          <option>TikTok</option><option>In-Person</option><option>Sample</option>
         </select>
       </div>
       <div class="form-group full"><label>Order / Ref #</label><input type="text" id="sale-order"></div>
-      <div class="form-group full">
-        <label>Product</label>
-        <select id="sale-product" onchange="onSaleProductChange()"></select>
-      </div>
-      <div class="form-group">
-        <label>Filament Type</label>
-        <select id="sale-filtype" onchange="updateSaleColors()"></select>
-      </div>
-      <div class="form-group">
-        <label>Color</label>
-        <select id="sale-color"></select>
-      </div>
+      <div class="form-group full"><label>Product</label><select id="sale-product" onchange="onSaleProductChange()"></select></div>
+      <div class="form-group"><label>Filament Type</label><select id="sale-filtype" onchange="updateSaleColors()"></select></div>
+      <div class="form-group"><label>Color</label><select id="sale-color"></select></div>
       <div class="form-group"><label>Qty</label><input type="number" id="sale-qty" value="1" oninput="updatePayoutPreview()"></div>
       <div class="form-group"><label>Sale Price ($)</label><input type="number" step="0.01" id="sale-price" oninput="updatePayoutPreview()"></div>
       <div class="form-group"><label>Payout (auto)</label><input type="number" step="0.01" id="sale-payout" placeholder="Auto-calculated"></div>
-      <div class="form-group">
-        <label>Status</label>
-        <select id="sale-status"><option>Paid</option><option>Shipped</option><option>Delivered</option><option>Pending</option></select>
+      <div class="form-group"><label>Status</label>
+        <select id="sale-status"><option>Paid</option><option>Shipped</option><option>Delivered</option><option>Pending</option><option>Sample</option></select>
       </div>
+
+      <div class="section-divider">Packaging</div>
+      <div class="form-group"><label>Packaging Type</label>
+        <select id="sale-packaging" onchange="onPackagingChange()">
+          <option value="Small Box">Small Box ($1.25)</option>
+          <option value="Medium Box">Medium Box ($1.75)</option>
+          <option value="Large Box">Large Box ($2.00)</option>
+          <option value="Other">Other (custom)</option>
+        </select>
+      </div>
+      <div class="form-group" id="pkg-custom-group" style="display:none;">
+        <label>Custom Pkg Cost ($)</label>
+        <input type="number" step="0.01" id="sale-pkg-custom" value="0" oninput="updatePayoutPreview()">
+      </div>
+
+      <div class="section-divider">TikTok Options</div>
+      <div class="form-group full">
+        <div class="checkbox-row">
+          <input type="checkbox" id="sale-has-affiliate" onchange="onAffiliateToggle()">
+          <label for="sale-has-affiliate">This sale has an affiliate/creator fee</label>
+        </div>
+      </div>
+      <div class="form-group" id="affiliate-pct-group" style="display:none;">
+        <label>Affiliate Fee %</label>
+        <input type="number" step="0.1" id="sale-affiliate-pct" value="0" oninput="updatePayoutPreview()">
+      </div>
+      <div class="form-group" id="affiliate-amt-group" style="display:none;">
+        <label>Affiliate Fee ($)</label>
+        <input type="number" step="0.01" id="sale-affiliate-amt" placeholder="Auto-calculated" readonly style="opacity:0.7;">
+      </div>
+
+      <div class="section-divider">Shipping</div>
+      <div class="form-group full">
+        <div class="checkbox-row">
+          <input type="checkbox" id="sale-shipping-trip">
+          <label for="sale-shipping-trip">Include in next post office trip log</label>
+        </div>
+      </div>
+      <div id="sample-shipping-group" style="display:none;" class="form-group full">
+        <label>Shipping Cost Paid ($) — for samples</label>
+        <input type="number" step="0.01" id="sale-shipping-cost" value="0">
+      </div>
+      <div class="form-group full"><label>Notes</label><input type="text" id="sale-notes"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('sale-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveSale()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Post Office Trip Modal -->
+<div class="modal-overlay" id="trip-modal">
+  <div class="trip-modal modal">
+    <h2>🚗 Log Post Office Trip</h2>
+    <p style="font-size:0.85rem;color:var(--text2);margin-bottom:20px;">Records a mileage expense in the Expenses tab for IRS documentation.</p>
+    <div class="form-grid">
+      <div class="form-group full"><label>Trip Date</label><input type="date" id="trip-date"></div>
+      <div class="form-group"><label>Number of Orders</label><input type="number" id="trip-order-count" value="1" min="1"></div>
+      <div class="form-group"><label>Order Ref #s (optional)</label><input type="text" id="trip-order-refs" placeholder="e.g. TT-001, TT-002"></div>
+      <div class="form-group full">
+        <label>Trip Summary (auto-filled)</label>
+        <div class="cost-preview">
+          <div class="cost-preview-row"><span>Miles (round trip)</span><span id="trip-miles-display">3.6 mi</span></div>
+          <div class="cost-preview-row"><span>IRS Rate</span><span id="trip-rate-display">$0.70/mi</span></div>
+          <div class="cost-preview-row total"><span>Mileage Deduction</span><span id="trip-total-display" style="color:var(--green)">$2.52</span></div>
+          <div style="font-size:0.72rem;color:var(--text3);margin-top:8px;">Destination: USPS Post Office · Purpose: Shipping customer orders</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('trip-modal')">Cancel</button>
+      <button class="btn btn-orange" onclick="saveTripLog()">Log Trip</button>
+    </div>
+  </div>
+</div>
+
+<!-- Expense Modal -->
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal">
+    <h2 id="expense-modal-title">Add Expense</h2>
+    <input type="hidden" id="exp-edit-id">
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input type="date" id="exp-date"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="exp-cat">
+          <option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option>
+          <option>Marketing</option><option>Video/Editing</option><option>Software/Licensing</option>
+          <option>Mileage</option><option>Shipping</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Description</label><input type="text" id="exp-desc"></div>
+      <div class="form-group"><label>Amount ($)</label><input type="number" step="0.01" id="exp-amount"></div>
+      <div class="form-group"><label>Miles (if mileage)</label><input type="number" step="0.1" id="exp-miles" value="0"></div>
+      <div class="form-group"><label>Printer (if applicable)</label>
+        <select id="exp-printer"><option value="">N/A</option><option>H2C</option><option>P1S</option><option>P2S</option><option>All</option></select>
+      </div>
+      <div class="form-group full"><label>Notes</label><input type="text" id="exp-notes"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('expense-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()">Save</button>
     </div>
   </div>
 </div>
@@ -620,21 +619,16 @@
   <div class="modal">
     <h2>Add Manual Print Job</h2>
     <div class="form-grid">
-      <div class="form-group full">
-        <label>Product</label>
-        <select id="q-product"></select>
-      </div>
+      <div class="form-group full"><label>Product</label><select id="q-product"></select></div>
       <div class="form-group"><label>Qty to Print</label><input type="number" id="q-qty" value="1"></div>
-      <div class="form-group">
-        <label>Filament Type</label>
+      <div class="form-group"><label>Filament Type</label>
         <select id="q-filtype">
           <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
           <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
         </select>
       </div>
       <div class="form-group full"><label>Color</label><input type="text" id="q-color"></div>
-      <div class="form-group full">
-        <label>Priority</label>
+      <div class="form-group full"><label>Priority</label>
         <select id="q-priority"><option value="High">🔴 High</option><option value="Medium" selected>🟡 Medium</option><option value="Low">🟢 Low</option></select>
       </div>
       <div class="form-group full"><label>Notes</label><input type="text" id="q-notes"></div>
@@ -648,14 +642,18 @@
 
 <script>
 // ═══ STATE ═══
-const DB = { filament:[], supplies:[], products:[], inventory:[], sales:[], queue:[] };
+const DB = { filament:[], supplies:[], products:[], inventory:[], sales:[], queue:[], expenses:[] };
 let SCRIPT_URL = localStorage.getItem('pf_script_url') || '';
 
-// Settings — defaults, overridden by sheet on load
 let SETTINGS = {
   electricity_rate_per_hr: 0.12,
   tiktok_default_fee_pct:  10,
+  labor_rate_per_hr:       25.00,
+  mileage_rate:            0.70,
+  post_office_miles:       3.6,
 };
+
+const PACKAGING_COSTS = { 'Small Box': 1.25, 'Medium Box': 1.75, 'Large Box': 2.00, 'Other': 0 };
 
 // ═══ INIT ═══
 async function initApp() {
@@ -676,12 +674,10 @@ async function loadAll() {
   try {
     await loadSettings();
     await Promise.all([
-      loadTab('filament','Filament'),
-      loadTab('supplies','Supplies'),
-      loadTab('products','Products'),
-      loadTab('inventory','Inventory'),
-      loadTab('sales','Sales'),
-      loadTab('queue','Queue'),
+      loadTab('filament','Filament'), loadTab('supplies','Supplies'),
+      loadTab('products','Products'), loadTab('inventory','Inventory'),
+      loadTab('sales','Sales'),       loadTab('queue','Queue'),
+      loadTab('expenses','Expenses'),
     ]);
     renderAll();
     setSyncStatus('ok', 'Synced');
@@ -693,20 +689,20 @@ async function loadAll() {
 
 async function loadSettings() {
   try {
-    const res  = await api({ action: 'getSettings' });
+    const res = await api({ action: 'getSettings' });
     if (res.ok && res.settings) {
       const s = res.settings;
-      if (s.electricity_rate_per_hr !== undefined) {
-        SETTINGS.electricity_rate_per_hr = parseFloat(s.electricity_rate_per_hr) || 0.12;
-      }
-      if (s.tiktok_default_fee_pct !== undefined) {
-        SETTINGS.tiktok_default_fee_pct = parseFloat(s.tiktok_default_fee_pct) || 10;
-      }
+      if (s.electricity_rate_per_hr !== undefined) SETTINGS.electricity_rate_per_hr = parseFloat(s.electricity_rate_per_hr) || 0.12;
+      if (s.tiktok_default_fee_pct  !== undefined) SETTINGS.tiktok_default_fee_pct  = parseFloat(s.tiktok_default_fee_pct)  || 10;
+      if (s.labor_rate_per_hr       !== undefined) SETTINGS.labor_rate_per_hr       = parseFloat(s.labor_rate_per_hr)       || 25;
+      if (s.mileage_rate            !== undefined) SETTINGS.mileage_rate            = parseFloat(s.mileage_rate)            || 0.70;
+      if (s.post_office_miles       !== undefined) SETTINGS.post_office_miles       = parseFloat(s.post_office_miles)       || 3.6;
       document.getElementById('setting-electricity-rate').value = SETTINGS.electricity_rate_per_hr;
+      document.getElementById('setting-labor-rate').value       = SETTINGS.labor_rate_per_hr;
+      document.getElementById('setting-mileage-rate').value     = SETTINGS.mileage_rate;
+      document.getElementById('setting-po-miles').value         = SETTINGS.post_office_miles;
     }
-  } catch(e) {
-    console.warn('Could not load settings, using defaults', e);
-  }
+  } catch(e) { console.warn('Could not load settings, using defaults', e); }
 }
 
 async function loadTab(key, tabName) {
@@ -718,49 +714,53 @@ async function loadTab(key, tabName) {
 async function api(payload) {
   if (!SCRIPT_URL) throw new Error('No script URL configured');
   const url = SCRIPT_URL + '?action=' + payload.action + (payload.tab ? '&tab=' + payload.tab : '');
-  const res = await fetch(url, {
-    method: 'POST',
-    body:   JSON.stringify(payload),
-  });
+  const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
   return res.json();
 }
 
 // ═══ SETTINGS ═══
 async function saveSettings() {
   const rate    = parseFloat(document.getElementById('setting-electricity-rate').value);
+  const labor   = parseFloat(document.getElementById('setting-labor-rate').value);
+  const mileage = parseFloat(document.getElementById('setting-mileage-rate').value);
+  const poMiles = parseFloat(document.getElementById('setting-po-miles').value);
   const urlVal  = document.getElementById('setting-script-url').value.trim();
+
   if (isNaN(rate) || rate < 0) { alert('Please enter a valid electricity rate.'); return; }
   SETTINGS.electricity_rate_per_hr = rate;
+  SETTINGS.labor_rate_per_hr       = labor;
+  SETTINGS.mileage_rate            = mileage;
+  SETTINGS.post_office_miles       = poMiles;
+
   setSyncStatus('loading', 'Saving…');
   try {
     await api({ action: 'updateSetting', key: 'electricity_rate_per_hr', value: rate.toString() });
+    await api({ action: 'updateSetting', key: 'labor_rate_per_hr',       value: labor.toString() });
+    await api({ action: 'updateSetting', key: 'mileage_rate',            value: mileage.toString() });
+    await api({ action: 'updateSetting', key: 'post_office_miles',       value: poMiles.toString() });
+    if (urlVal && urlVal !== SCRIPT_URL) { SCRIPT_URL = urlVal; localStorage.setItem('pf_script_url', urlVal); }
     setSyncStatus('ok', 'Saved');
-    if (urlVal && urlVal !== SCRIPT_URL) {
-      SCRIPT_URL = urlVal;
-      localStorage.setItem('pf_script_url', urlVal);
-    }
-    renderProducts();
-    renderSales();
-    alert('Settings saved! Electricity rate updated to $' + rate.toFixed(2) + '/hr.');
-  } catch(e) {
-    setSyncStatus('error', 'Save failed');
-    alert('Error saving settings: ' + e.message);
-  }
+    renderProducts(); renderSales();
+    alert('Settings saved!');
+  } catch(e) { setSyncStatus('error', 'Save failed'); alert('Error: ' + e.message); }
 }
 
 async function reconnectFromSettings() {
   const urlVal = document.getElementById('setting-script-url').value.trim();
   if (!urlVal) { alert('Paste your Apps Script URL first.'); return; }
-  SCRIPT_URL = urlVal;
-  localStorage.setItem('pf_script_url', urlVal);
+  SCRIPT_URL = urlVal; localStorage.setItem('pf_script_url', urlVal);
   document.getElementById('script-url-input').value = urlVal;
   await loadAll();
 }
 
 // ═══ HELPERS ═══
 function fmt$(n)  { return '$' + (+n||0).toFixed(2); }
-// NEW: display grams cleanly
 function fmtG(n)  { return (+n||0).toFixed(0) + ' g'; }
+
+function pkgCost(pkgLabel, customVal) {
+  if (pkgLabel === 'Other') return parseFloat(customVal) || 0;
+  return PACKAGING_COSTS[pkgLabel] || 1.25;
+}
 
 function setSyncStatus(state, label) {
   const dot = document.getElementById('sync-dot');
@@ -775,55 +775,58 @@ function showTab(id, btn) {
   btn.classList.add('active');
   if (id==='settings') {
     document.getElementById('setting-electricity-rate').value = SETTINGS.electricity_rate_per_hr;
+    document.getElementById('setting-labor-rate').value       = SETTINGS.labor_rate_per_hr;
+    document.getElementById('setting-mileage-rate').value     = SETTINGS.mileage_rate;
+    document.getElementById('setting-po-miles').value         = SETTINGS.post_office_miles;
     document.getElementById('setting-script-url').value       = SCRIPT_URL;
   }
 }
-
-function toggleSetup() {
-  document.getElementById('setup-banner').classList.toggle('hidden');
-}
-
+function toggleSetup() { document.getElementById('setup-banner').classList.toggle('hidden'); }
 async function connectScript() {
   const url = document.getElementById('script-url-input').value.trim();
   if (!url) return;
-  SCRIPT_URL = url;
-  localStorage.setItem('pf_script_url', url);
+  SCRIPT_URL = url; localStorage.setItem('pf_script_url', url);
   document.getElementById('setting-script-url').value = url;
   document.getElementById('setup-banner').classList.add('hidden');
   await loadAll();
 }
-
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function renderAll() {
-  renderFilament(); renderSupplies(); renderProducts();
-  renderInventory(); renderQueue(); renderSales();
-}
+function renderAll() { renderFilament(); renderSupplies(); renderProducts(); renderInventory(); renderQueue(); renderSales(); renderExpenses(); }
 
 // ═══ COST CALC ═══
-// Returns the cost per kg for a given filament type (spool cost / 1 kg)
 function filCostPerKg(type) {
   const match = DB.filament.find(f => f['Type'] === type);
-  if (!match) return 12.99; // fallback $12.99/kg
+  if (!match) return 12.99;
   return parseFloat(match['Cost per Spool ($)']) || 12.99;
 }
 
-// FIXED: now reads 'Filament (g)' and divides by 1000 to get kg before multiplying
 function productCost(p) {
-  const filG     = parseFloat(p['Filament (g)'])   || 0;  // grams
+  const filG     = parseFloat(p['Filament (g)'])   || 0;
   const time     = parseFloat(p['Print Time (hr)']) || 0;
+  const prep     = parseFloat(p['Prep Time (hr)'])  || 0;
   const type     = p['Filament Type'] || 'PLA Basic';
+  const pkgLabel = p['Packaging'] || 'Small Box';
   const cPerKg   = filCostPerKg(type);
-  const filCost  = (filG / 1000) * cPerKg;               // convert g → kg → $
-  const elecCost = time * SETTINGS.electricity_rate_per_hr;
-  return { filCost, elecCost, total: filCost + elecCost };
+  const filCost  = (filG / 1000) * cPerKg;
+  const elecCost = time  * SETTINGS.electricity_rate_per_hr;
+  const laborCost= prep  * SETTINGS.labor_rate_per_hr;
+  const packCost = PACKAGING_COSTS[pkgLabel] || 1.25;
+  return { filCost, elecCost, laborCost, packCost, total: filCost + elecCost + laborCost + packCost };
 }
 
 function saleCost(s) {
   const prod = DB.products.find(p => p['Product Name'] === s['Product Name']);
-  if (!prod) return 0;
-  return productCost(prod).total * (parseFloat(s['Qty']) || 1);
+  const qty  = parseFloat(s['Qty']) || 1;
+  const prodTotal = prod ? productCost(prod).total * qty : 0;
+  // Override packaging cost if sale has a specific packaging entry
+  const salePkg   = s['Packaging'];
+  const salePkgCost = parseFloat(s['Packaging Cost ($)']) || 0;
+  const affiliateCost = parseFloat(s['Affiliate Fee ($)']) || 0;
+  const shippingCost  = parseFloat(s['Shipping Cost Paid ($)']) || 0;
+  // If sale has explicit packaging cost recorded, use it; otherwise use product default * qty
+  const pkgAdjust = salePkg && salePkgCost > 0 ? (salePkgCost - (prod ? (PACKAGING_COSTS[prod['Packaging']] || 1.25) * qty : 0)) : 0;
+  return prodTotal + pkgAdjust + affiliateCost + shippingCost;
 }
 
 // ═══ FILAMENT ═══
@@ -847,21 +850,16 @@ function renderFilament() {
     const spool = parseFloat(f['Cost per Spool ($)']) || 0;
     const perG  = spool > 0 ? (spool / 1000).toFixed(4) : '—';
     return `<tr>
-      <td><div style="display:flex;align-items:center;gap:8px;">
-        <span class="swatch" style="background:${hex}"></span>${f['Color']}
-      </div></td>
-      <td>${f['Type']}</td>
-      <td class="mono">${f['On Hand (kg)']} kg</td>
-      <td class="mono">${fmt$(spool)}</td>
-      <td class="mono">$${perG}</td>
+      <td><div style="display:flex;align-items:center;gap:8px;"><span class="swatch" style="background:${hex}"></span>${f['Color']}</div></td>
+      <td>${f['Type']}</td><td class="mono">${f['On Hand (kg)']} kg</td>
+      <td class="mono">${fmt$(spool)}</td><td class="mono">$${perG}</td>
       <td>${f['Build To (spools)']}</td>
       <td><span class="badge ${badgeMap[f['Status']]||'badge-gray'}">${f['Status']}</span></td>
       <td>${f['Vendor']}</td>
       <td><div class="actions-cell">
         <button class="btn btn-warn btn-xs" onclick="openFilamentModal('${f['ID']}')">Edit</button>
         <button class="btn btn-danger btn-xs" onclick="deleteItem('filament','Filament','${f['ID']}')">✕</button>
-      </div></td>
-    </tr>`;
+      </div></td></tr>`;
   }).join('') || '<tr><td colspan="9"><div class="empty-state"><div class="icon">🧵</div><p>No filament found</p></div></td></tr>';
 }
 
@@ -893,20 +891,15 @@ async function saveFilament() {
   const color = document.getElementById('fil-color').value.trim();
   if (!color) { alert('Color name required'); return; }
   const row = {
-    'ID':                id || 'fil_' + Date.now(),
-    'Type':              document.getElementById('fil-type').value,
-    'Color':             color,
-    'On Hand (kg)':      parseFloat(document.getElementById('fil-onhand').value) || 0,
-    'Cost per Spool ($)':parseFloat(document.getElementById('fil-cost').value)   || 0,
-    'Build To (spools)': parseInt(document.getElementById('fil-buildto').value)  || 0,
-    'Vendor':            document.getElementById('fil-vendor').value,
-    'Status':            document.getElementById('fil-status').value,
-    'Swatch Hex':        document.getElementById('fil-swatch').value,
+    'ID': id || 'fil_' + Date.now(), 'Type': document.getElementById('fil-type').value,
+    'Color': color, 'On Hand (kg)': parseFloat(document.getElementById('fil-onhand').value)||0,
+    'Cost per Spool ($)': parseFloat(document.getElementById('fil-cost').value)||0,
+    'Build To (spools)': parseInt(document.getElementById('fil-buildto').value)||0,
+    'Vendor': document.getElementById('fil-vendor').value, 'Status': document.getElementById('fil-status').value,
+    'Swatch Hex': document.getElementById('fil-swatch').value,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Filament', row });
-  closeModal('filament-modal');
-  await loadTab('filament','Filament');
-  renderFilament();
+  closeModal('filament-modal'); await loadTab('filament','Filament'); renderFilament();
 }
 
 // ═══ SUPPLIES ═══
@@ -915,18 +908,14 @@ function renderSupplies() {
   const rows = DB.supplies.filter(s => !cat || s['Category'] === cat);
   const badgeMap = { Received:'badge-green', Ordered:'badge-blue', Shipped:'badge-yellow', Delivered:'badge-green' };
   document.getElementById('supplies-tbody').innerHTML = rows.map(s => `<tr>
-    <td>${s['Item Name']}</td>
-    <td><span class="badge badge-purple">${s['Category']}</span></td>
-    <td class="mono">${s['Qty']}</td>
-    <td class="mono">${fmt$(s['Unit Cost ($)'])}</td>
-    <td class="mono">${fmt$(s['Extended ($)'])}</td>
-    <td>${s['Printer']}</td>
+    <td>${s['Item Name']}</td><td><span class="badge badge-purple">${s['Category']}</span></td>
+    <td class="mono">${s['Qty']}</td><td class="mono">${fmt$(s['Unit Cost ($)'])}</td>
+    <td class="mono">${fmt$(s['Extended ($)'])}</td><td>${s['Printer']}</td>
     <td><span class="badge ${badgeMap[s['Status']]||'badge-gray'}">${s['Status']}</span></td>
     <td><div class="actions-cell">
       <button class="btn btn-warn btn-xs" onclick="openSupplyModal('${s['ID']}')">Edit</button>
       <button class="btn btn-danger btn-xs" onclick="deleteItem('supplies','Supplies','${s['ID']}')">✕</button>
-    </div></td>
-  </tr>`).join('') || '<tr><td colspan="8"><div class="empty-state"><div class="icon">🔧</div><p>No supplies found</p></div></td></tr>';
+    </div></td></tr>`).join('') || '<tr><td colspan="8"><div class="empty-state"><div class="icon">🔧</div><p>No supplies found</p></div></td></tr>';
 }
 
 function openSupplyModal(id) {
@@ -944,56 +933,52 @@ function openSupplyModal(id) {
       document.getElementById('sup-date').value    = s['Order Date'] || '';
     }
   } else {
-    document.getElementById('sup-name').value = '';
-    document.getElementById('sup-qty').value  = '1';
-    document.getElementById('sup-cost').value = '';
-    document.getElementById('sup-date').value = '';
+    document.getElementById('sup-name').value = ''; document.getElementById('sup-qty').value = '1';
+    document.getElementById('sup-cost').value = ''; document.getElementById('sup-date').value = '';
   }
   openModal('supply-modal');
 }
 
 async function saveSupply() {
-  const id   = document.getElementById('sup-edit-id').value;
+  const id = document.getElementById('sup-edit-id').value;
   const name = document.getElementById('sup-name').value.trim();
   if (!name) { alert('Item name required'); return; }
-  const qty  = parseInt(document.getElementById('sup-qty').value)  || 0;
-  const cost = parseFloat(document.getElementById('sup-cost').value) || 0;
+  const qty = parseInt(document.getElementById('sup-qty').value)||0;
+  const cost = parseFloat(document.getElementById('sup-cost').value)||0;
   const row = {
-    'ID':           id || 'sup_' + Date.now(),
-    'Item Name':    name,
-    'Category':     document.getElementById('sup-cat').value,
-    'Qty':          qty,
-    'Unit Cost ($)':cost,
-    'Extended ($)': qty * cost,
-    'Printer':      document.getElementById('sup-printer').value,
-    'Status':       document.getElementById('sup-status').value,
-    'Order Date':   document.getElementById('sup-date').value,
+    'ID': id || 'sup_' + Date.now(), 'Item Name': name,
+    'Category': document.getElementById('sup-cat').value, 'Qty': qty,
+    'Unit Cost ($)': cost, 'Extended ($)': qty * cost,
+    'Printer': document.getElementById('sup-printer').value,
+    'Status': document.getElementById('sup-status').value,
+    'Order Date': document.getElementById('sup-date').value,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Supplies', row });
-  closeModal('supply-modal');
-  await loadTab('supplies','Supplies');
-  renderSupplies();
+  closeModal('supply-modal'); await loadTab('supplies','Supplies'); renderSupplies();
 }
 
 // ═══ PRODUCTS ═══
 function renderProducts() {
   document.getElementById('products-tbody').innerHTML = DB.products.map(p => {
-    const { filCost, elecCost, total } = productCost(p);
-    const price   = parseFloat(p['Sale Price ($)'])  || 0;
-    const ttPct   = parseFloat(p['TikTok Fee (%)'])  || 0;
-    const ttFee   = price * (ttPct / 100);
-    const profit  = price - ttFee - total;
-    const margin  = price > 0 ? ((profit / price) * 100).toFixed(1) + '%' : '—';
-    const dim     = [p['Width (in)'],p['Depth (in)'],p['Height (in)']].map(v=>parseFloat(v)||0).join('×');
-    // CHANGED: show grams in the filament column
-    const filG    = parseFloat(p['Filament (g)']) || 0;
+    const { filCost, elecCost, laborCost, packCost, total } = productCost(p);
+    const price  = parseFloat(p['Sale Price ($)']) || 0;
+    const ttPct  = parseFloat(p['TikTok Fee (%)']) || 0;
+    const ttFee  = price * (ttPct / 100);
+    const profit = price - ttFee - total;
+    const margin = price > 0 ? ((profit / price) * 100).toFixed(1) + '%' : '—';
+    const dim    = [p['Width (in)'],p['Depth (in)'],p['Height (in)']].map(v=>parseFloat(v)||0).join('×');
+    const filG   = parseFloat(p['Filament (g)']) || 0;
+    const prep   = parseFloat(p['Prep Time (hr)']) || 0;
     return `<tr>
       <td style="font-weight:600">${p['Product Name']}</td>
       <td class="mono" style="font-size:0.75rem;">${dim} in</td>
       <td>${p['Filament Type']}<br><small style="color:var(--text3)">${fmtG(filG)}</small></td>
       <td class="mono">${p['Print Time (hr)']} hr</td>
+      <td class="mono">${prep} hr</td>
       <td class="mono">${fmt$(filCost)}</td>
       <td class="mono">${fmt$(elecCost)}</td>
+      <td class="mono">${fmt$(laborCost)}</td>
+      <td class="mono">${fmt$(packCost)}</td>
       <td class="mono" style="font-weight:700">${fmt$(total)}</td>
       <td class="mono">${fmt$(price)}</td>
       <td class="mono" style="color:var(--text3)">${fmt$(ttFee)}</td>
@@ -1002,27 +987,31 @@ function renderProducts() {
       <td><div class="actions-cell">
         <button class="btn btn-warn btn-xs" onclick="openProductModal('${p['ID']}')">Edit</button>
         <button class="btn btn-danger btn-xs" onclick="deleteItem('products','Products','${p['ID']}')">✕</button>
-      </div></td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="12"><div class="empty-state"><div class="icon">📦</div><p>No products yet</p></div></td></tr>';
+      </div></td></tr>`;
+  }).join('') || '<tr><td colspan="15"><div class="empty-state"><div class="icon">📦</div><p>No products yet</p></div></td></tr>';
 }
 
 function updateCostPreview() {
-  // CHANGED: reads from prod-fil-g (grams), divides by 1000
-  const filG    = parseFloat(document.getElementById('prod-fil-g').value)   || 0;
-  const time    = parseFloat(document.getElementById('prod-time').value)     || 0;
-  const type    = document.getElementById('prod-fil-type').value;
-  const price   = parseFloat(document.getElementById('prod-price').value)   || 0;
-  const ttPct   = parseFloat(document.getElementById('prod-tiktok').value)  || 0;
-  const cPerKg  = filCostPerKg(type);
-  const filCost = (filG / 1000) * cPerKg;
-  const elec    = time * SETTINGS.electricity_rate_per_hr;
-  const total   = filCost + elec;
-  const ttFee   = price * (ttPct / 100);
-  const profit  = price - ttFee - total;
-  const margin  = price > 0 ? ((profit / price) * 100).toFixed(1) + '%' : '—';
+  const filG     = parseFloat(document.getElementById('prod-fil-g').value)   || 0;
+  const time     = parseFloat(document.getElementById('prod-time').value)     || 0;
+  const prep     = parseFloat(document.getElementById('prod-prep').value)     || 0;
+  const type     = document.getElementById('prod-fil-type').value;
+  const price    = parseFloat(document.getElementById('prod-price').value)    || 0;
+  const ttPct    = parseFloat(document.getElementById('prod-tiktok').value)   || 0;
+  const pkgLabel = document.getElementById('prod-packaging').value;
+  const cPerKg   = filCostPerKg(type);
+  const filCost  = (filG / 1000) * cPerKg;
+  const elec     = time * SETTINGS.electricity_rate_per_hr;
+  const labor    = prep * SETTINGS.labor_rate_per_hr;
+  const pkg      = PACKAGING_COSTS[pkgLabel] || 1.25;
+  const total    = filCost + elec + labor + pkg;
+  const ttFee    = price * (ttPct / 100);
+  const profit   = price - ttFee - total;
+  const margin   = price > 0 ? ((profit / price) * 100).toFixed(1) + '%' : '—';
   document.getElementById('prev-fil').textContent    = fmt$(filCost);
   document.getElementById('prev-elec').textContent   = fmt$(elec) + ' ($' + SETTINGS.electricity_rate_per_hr.toFixed(2) + '/hr)';
+  document.getElementById('prev-labor').textContent  = fmt$(labor) + ' ($' + SETTINGS.labor_rate_per_hr.toFixed(0) + '/hr)';
+  document.getElementById('prev-pkg').textContent    = fmt$(pkg) + ' (' + pkgLabel + ')';
   document.getElementById('prev-total').textContent  = fmt$(total);
   document.getElementById('prev-ttfee').textContent  = '-' + fmt$(ttFee);
   document.getElementById('prev-profit').textContent = fmt$(profit);
@@ -1040,16 +1029,18 @@ function openProductModal(id) {
       document.getElementById('prod-d').value        = p['Depth (in)'];
       document.getElementById('prod-h').value        = p['Height (in)'];
       document.getElementById('prod-wt').value       = p['Weight (lb)'];
-      // CHANGED: reads from 'Filament (g)'
       document.getElementById('prod-fil-g').value    = p['Filament (g)'];
-      document.getElementById('prod-time').value     = p['Print Time (hr)'];
       document.getElementById('prod-fil-type').value = p['Filament Type'];
+      document.getElementById('prod-time').value     = p['Print Time (hr)'];
+      document.getElementById('prod-prep').value     = p['Prep Time (hr)'] || 0;
+      document.getElementById('prod-packaging').value= p['Packaging'] || 'Small Box';
       document.getElementById('prod-price').value    = p['Sale Price ($)'];
       document.getElementById('prod-tiktok').value   = p['TikTok Fee (%)'];
     }
   } else {
-    ['prod-name','prod-w','prod-d','prod-h','prod-wt','prod-fil-g','prod-time','prod-price'].forEach(i => document.getElementById(i).value='');
+    ['prod-name','prod-w','prod-d','prod-h','prod-wt','prod-fil-g','prod-time','prod-prep','prod-price'].forEach(i => document.getElementById(i).value='');
     document.getElementById('prod-tiktok').value = '10';
+    document.getElementById('prod-packaging').value = 'Small Box';
   }
   updateCostPreview();
   openModal('product-modal');
@@ -1060,50 +1051,42 @@ async function saveProduct() {
   const name = document.getElementById('prod-name').value.trim();
   if (!name) { alert('Product name required'); return; }
   const row = {
-    'ID':              id || 'prod_' + Date.now(),
-    'Product Name':    name,
-    'Width (in)':      parseFloat(document.getElementById('prod-w').value)      || 0,
-    'Depth (in)':      parseFloat(document.getElementById('prod-d').value)      || 0,
-    'Height (in)':     parseFloat(document.getElementById('prod-h').value)      || 0,
-    'Weight (lb)':     parseFloat(document.getElementById('prod-wt').value)     || 0,
-    // CHANGED: saves as 'Filament (g)' in integer grams
-    'Filament (g)':    parseFloat(document.getElementById('prod-fil-g').value)  || 0,
+    'ID': id || 'prod_' + Date.now(), 'Product Name': name,
+    'Width (in)':      parseFloat(document.getElementById('prod-w').value)        || 0,
+    'Depth (in)':      parseFloat(document.getElementById('prod-d').value)        || 0,
+    'Height (in)':     parseFloat(document.getElementById('prod-h').value)        || 0,
+    'Weight (lb)':     parseFloat(document.getElementById('prod-wt').value)       || 0,
+    'Filament (g)':    parseFloat(document.getElementById('prod-fil-g').value)    || 0,
     'Filament Type':   document.getElementById('prod-fil-type').value,
-    'Print Time (hr)': parseFloat(document.getElementById('prod-time').value)   || 0,
-    'Sale Price ($)':  parseFloat(document.getElementById('prod-price').value)  || 0,
-    'TikTok Fee (%)':  parseFloat(document.getElementById('prod-tiktok').value) || 0,
+    'Print Time (hr)': parseFloat(document.getElementById('prod-time').value)     || 0,
+    'Prep Time (hr)':  parseFloat(document.getElementById('prod-prep').value)     || 0,
+    'Packaging':       document.getElementById('prod-packaging').value,
+    'Sale Price ($)':  parseFloat(document.getElementById('prod-price').value)    || 0,
+    'TikTok Fee (%)':  parseFloat(document.getElementById('prod-tiktok').value)   || 0,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Products', row });
-  closeModal('product-modal');
-  await loadTab('products','Products');
-  renderProducts();
+  closeModal('product-modal'); await loadTab('products','Products'); renderProducts();
 }
 
 // ═══ INVENTORY ═══
 function renderInventory() {
   const velDays = parseInt(document.getElementById('vel-days').value) || 30;
-  const prodSel = document.getElementById('inv-product');
   const names   = [...new Set(DB.products.map(p => p['Product Name']))];
-  prodSel.innerHTML = names.map(n => `<option>${n}</option>`).join('');
-
+  document.getElementById('inv-product').innerHTML = names.map(n => `<option>${n}</option>`).join('');
   document.getElementById('inventory-tbody').innerHTML = DB.inventory.map(inv => {
-    const sold     = parseFloat(inv['Qty Sold'])      || 0;
-    const avail    = parseFloat(inv['Qty Available'])  || 0;
-    const buildTo  = parseFloat(inv['Build To'])       || 0;
-    const vel      = sold / velDays;
-    const daysLeft = vel > 0 ? Math.round(avail / vel) : '∞';
-    const needed   = Math.max(0, buildTo - avail);
-    const prod     = DB.products.find(p => p['Product Name'] === inv['Product Name']);
-    const pTime    = prod ? parseFloat(prod['Print Time (hr)']) || 0 : 0;
-    const estTime  = (needed * pTime).toFixed(2);
+    const sold = parseFloat(inv['Qty Sold'])||0, avail = parseFloat(inv['Qty Available'])||0;
+    const buildTo = parseFloat(inv['Build To'])||0;
+    const vel = sold / velDays, daysLeft = vel > 0 ? Math.round(avail / vel) : '∞';
+    const needed = Math.max(0, buildTo - avail);
+    const prod   = DB.products.find(p => p['Product Name'] === inv['Product Name']);
+    const pTime  = prod ? parseFloat(prod['Print Time (hr)'])||0 : 0;
+    const estTime= (needed * pTime).toFixed(2);
     let velColor = 'var(--text3)';
-    if (vel > 0.2) velColor = 'var(--green)';
-    else if (vel > 0.05) velColor = 'var(--yellow)';
+    if (vel > 0.2) velColor = 'var(--green)'; else if (vel > 0.05) velColor = 'var(--yellow)';
     return `<tr>
       <td style="font-weight:600">${inv['Product Name']}</td>
       <td>${inv['Filament Type']}<br><small style="color:var(--text3)">${inv['Color']}</small></td>
-      <td class="mono" style="font-weight:700">${avail}</td>
-      <td class="mono">${sold}</td>
+      <td class="mono" style="font-weight:700">${avail}</td><td class="mono">${sold}</td>
       <td class="mono">${inv['On Loan']||0}</td>
       <td><div class="vel-bar"><div class="vel-dot" style="background:${velColor}"></div><span class="mono" style="color:${velColor}">${vel.toFixed(3)}</span></div></td>
       <td class="mono" style="color:${typeof daysLeft==='number'&&daysLeft<7?'var(--red)':typeof daysLeft==='number'&&daysLeft<14?'var(--yellow)':'var(--text)'}">${daysLeft}</td>
@@ -1113,8 +1096,7 @@ function renderInventory() {
       <td><div class="actions-cell">
         <button class="btn btn-warn btn-xs" onclick="openInventoryModal('${inv['ID']}')">Edit</button>
         <button class="btn btn-danger btn-xs" onclick="deleteItem('inventory','Inventory','${inv['ID']}')">✕</button>
-      </div></td>
-    </tr>`;
+      </div></td></tr>`;
   }).join('') || '<tr><td colspan="11"><div class="empty-state"><div class="icon">📊</div><p>No inventory records</p></div></td></tr>';
 }
 
@@ -1135,11 +1117,9 @@ function openInventoryModal(id) {
       document.getElementById('inv-buildto').value  = inv['Build To'];
     }
   } else {
-    document.getElementById('inv-color').value   = '';
-    document.getElementById('inv-qty').value     = '0';
-    document.getElementById('inv-sold').value    = '0';
-    document.getElementById('inv-loan').value    = '0';
-    document.getElementById('inv-buildto').value = '2';
+    document.getElementById('inv-color').value=''; document.getElementById('inv-qty').value='0';
+    document.getElementById('inv-sold').value='0'; document.getElementById('inv-loan').value='0';
+    document.getElementById('inv-buildto').value='2';
   }
   openModal('inventory-modal');
 }
@@ -1147,19 +1127,17 @@ function openInventoryModal(id) {
 async function saveInventory() {
   const id = document.getElementById('inv-edit-id').value;
   const row = {
-    'ID':            id || 'inv_' + Date.now(),
+    'ID': id || 'inv_' + Date.now(),
     'Product Name':  document.getElementById('inv-product').value,
     'Filament Type': document.getElementById('inv-fil-type').value,
     'Color':         document.getElementById('inv-color').value,
-    'Qty Available': parseInt(document.getElementById('inv-qty').value)     || 0,
-    'Qty Sold':      parseInt(document.getElementById('inv-sold').value)    || 0,
-    'On Loan':       parseInt(document.getElementById('inv-loan').value)    || 0,
-    'Build To':      parseInt(document.getElementById('inv-buildto').value) || 0,
+    'Qty Available': parseInt(document.getElementById('inv-qty').value)||0,
+    'Qty Sold':      parseInt(document.getElementById('inv-sold').value)||0,
+    'On Loan':       parseInt(document.getElementById('inv-loan').value)||0,
+    'Build To':      parseInt(document.getElementById('inv-buildto').value)||0,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Inventory', row });
-  closeModal('inventory-modal');
-  await loadTab('inventory','Inventory');
-  renderInventory();
+  closeModal('inventory-modal'); await loadTab('inventory','Inventory'); renderInventory();
 }
 
 // ═══ QUEUE ═══
@@ -1180,67 +1158,71 @@ function renderQueue() {
         <button class="btn btn-green btn-xs" onclick="completeQueueJob('${q['ID']}')">✓ Done</button>
         <button class="btn btn-danger btn-xs" onclick="deleteItem('queue','Queue','${q['ID']}')">✕</button>
       </div>
-    </div>
-  `).join('') || '<div class="empty-state"><div class="icon">🖨️</div><p>Queue is empty — refresh from Inventory or add a manual job</p></div>';
+    </div>`).join('') || '<div class="empty-state"><div class="icon">🖨️</div><p>Queue is empty — refresh from Inventory or add a manual job</p></div>';
 }
 
 function openManualQueueModal() { openModal('queue-modal'); }
+async function completeQueueJob(id) { await deleteItem('queue','Queue',id); }
 
 async function saveQueueJob() {
   const prod = DB.products.find(p => p['Product Name'] === document.getElementById('q-product').value);
   const qty  = parseInt(document.getElementById('q-qty').value) || 1;
   const row = {
-    'ID':                   'q_' + Date.now(),
-    'Product Name':          document.getElementById('q-product').value,
-    'Filament Type':         document.getElementById('q-filtype').value,
-    'Color':                 document.getElementById('q-color').value,
-    'Qty':                   qty,
+    'ID': 'q_' + Date.now(), 'Product Name': document.getElementById('q-product').value,
+    'Filament Type': document.getElementById('q-filtype').value,
+    'Color': document.getElementById('q-color').value, 'Qty': qty,
     'Est. Print Time (hr)': prod ? (parseFloat(prod['Print Time (hr)']) * qty).toFixed(2) : '',
-    'Priority':              document.getElementById('q-priority').value,
-    'Status':               'Pending',
-    'Notes':                 document.getElementById('q-notes').value,
-    'Date Added':            new Date().toISOString().slice(0,10),
-    'Auto Generated':       'No',
+    'Priority': document.getElementById('q-priority').value, 'Status': 'Pending',
+    'Notes': document.getElementById('q-notes').value,
+    'Date Added': new Date().toISOString().slice(0,10), 'Auto Generated': 'No',
   };
   await api({ action: 'write', tab: 'Queue', row });
-  closeModal('queue-modal');
-  await loadTab('queue','Queue');
-  renderQueue();
-}
-
-async function completeQueueJob(id) {
-  await deleteItem('queue','Queue',id);
+  closeModal('queue-modal'); await loadTab('queue','Queue'); renderQueue();
 }
 
 async function refreshQueue() {
-  const toAdd = DB.inventory.filter(inv => {
-    const avail   = parseFloat(inv['Qty Available']) || 0;
-    const buildTo = parseFloat(inv['Build To'])      || 0;
-    return avail < buildTo;
-  });
+  const toAdd = DB.inventory.filter(inv => (parseFloat(inv['Qty Available'])||0) < (parseFloat(inv['Build To'])||0));
   for (const inv of toAdd) {
     const needed = Math.max(0, (parseFloat(inv['Build To'])||0) - (parseFloat(inv['Qty Available'])||0));
     const prod   = DB.products.find(p => p['Product Name'] === inv['Product Name']);
     const row = {
-      'ID':                   'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
-      'Product Name':          inv['Product Name'],
-      'Filament Type':         inv['Filament Type'],
-      'Color':                 inv['Color'],
-      'Qty':                   needed,
+      'ID': 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      'Product Name': inv['Product Name'], 'Filament Type': inv['Filament Type'],
+      'Color': inv['Color'], 'Qty': needed,
       'Est. Print Time (hr)': prod ? (parseFloat(prod['Print Time (hr)']) * needed).toFixed(2) : '',
-      'Priority':             'Medium',
-      'Status':               'Pending',
-      'Notes':                'Auto-generated',
-      'Date Added':            new Date().toISOString().slice(0,10),
-      'Auto Generated':       'Yes',
+      'Priority': 'Medium', 'Status': 'Pending', 'Notes': 'Auto-generated',
+      'Date Added': new Date().toISOString().slice(0,10), 'Auto Generated': 'Yes',
     };
     await api({ action: 'write', tab: 'Queue', row });
   }
-  await loadTab('queue','Queue');
-  renderQueue();
+  await loadTab('queue','Queue'); renderQueue();
 }
 
 // ═══ SALES ═══
+function onSaleChannelChange() {
+  const channel = document.getElementById('sale-channel').value;
+  const isSample = channel === 'Sample';
+  document.getElementById('sample-shipping-group').style.display = isSample ? 'block' : 'none';
+  if (isSample) {
+    document.getElementById('sale-price').value = '0';
+    document.getElementById('sale-status').value = 'Sample';
+  }
+  updatePayoutPreview();
+}
+
+function onPackagingChange() {
+  const val = document.getElementById('sale-packaging').value;
+  document.getElementById('pkg-custom-group').style.display = val === 'Other' ? 'block' : 'none';
+  updatePayoutPreview();
+}
+
+function onAffiliateToggle() {
+  const checked = document.getElementById('sale-has-affiliate').checked;
+  document.getElementById('affiliate-pct-group').style.display  = checked ? 'block' : 'none';
+  document.getElementById('affiliate-amt-group').style.display  = checked ? 'block' : 'none';
+  updatePayoutPreview();
+}
+
 function renderSales() {
   const search  = document.getElementById('sale-search').value.toLowerCase();
   const channel = document.getElementById('sale-channel-filter').value;
@@ -1249,12 +1231,8 @@ function renderSales() {
 
   let rows = DB.sales.filter(s => {
     if (channel && s['Channel'] !== channel) return false;
-    if (cutoff) {
-      const d = new Date(s['Date']);
-      if (d < cutoff) return false;
-    }
-    if (search && !s['Product Name'].toLowerCase().includes(search) &&
-        !s['Order / Ref #'].toLowerCase().includes(search)) return false;
+    if (cutoff && new Date(s['Date']) < cutoff) return false;
+    if (search && !s['Product Name'].toLowerCase().includes(search) && !s['Order / Ref #'].toLowerCase().includes(search)) return false;
     return true;
   });
 
@@ -1273,31 +1251,35 @@ function renderSales() {
     <div class="kpi"><div class="kpi-label">Orders</div><div class="kpi-value">${rows.length}</div></div>
   `;
 
-  const badgeMap = { Paid:'badge-green', Delivered:'badge-green', Shipped:'badge-blue', Pending:'badge-yellow' };
+  const badgeMap = { Paid:'badge-green', Delivered:'badge-green', Shipped:'badge-blue', Pending:'badge-yellow', Sample:'badge-orange' };
+  const chBadge  = { TikTok:'badge-purple', 'In-Person':'badge-blue', Sample:'badge-orange' };
   document.getElementById('sales-tbody').innerHTML = rows.map(s => {
-    const cost   = saleCost(s);
-    const payout = parseFloat(s['Payout ($)']) || 0;
-    const profit = payout - cost;
-    const sb     = badgeMap[s['Status']] || 'badge-gray';
+    const sc      = saleCost(s);
+    const pay     = parseFloat(s['Payout ($)']) || 0;
+    const prf     = pay - sc;
+    const affAmt  = parseFloat(s['Affiliate Fee ($)']) || 0;
+    const pkgCst  = parseFloat(s['Packaging Cost ($)']) || 0;
+    const sb      = badgeMap[s['Status']] || 'badge-gray';
     return `<tr>
       <td class="mono" style="font-size:0.78rem">${s['Date']}</td>
       <td class="mono" style="font-size:0.75rem;color:var(--text3)">${s['Order / Ref #']}</td>
-      <td><span class="badge ${s['Channel']==='TikTok'?'badge-purple':'badge-blue'}">${s['Channel']}</span></td>
+      <td><span class="badge ${chBadge[s['Channel']]||'badge-gray'}">${s['Channel']}</span></td>
       <td style="font-weight:600">${s['Product Name']}</td>
       <td style="font-size:0.78rem;color:var(--text3)">${s['Color']}</td>
       <td class="mono">${s['Qty']}</td>
       <td class="mono">${fmt$(s['Sale Price ($)'])}</td>
       <td class="mono">${fmt$(s['Subtotal ($)'])}</td>
-      <td class="mono">${fmt$(payout)}</td>
-      <td class="mono" style="color:var(--yellow)">${fmt$(cost)}</td>
-      <td class="mono ${profit>=0?'profit-pos':'profit-neg'}" style="font-weight:700">${fmt$(profit)}</td>
+      <td class="mono">${fmt$(pay)}</td>
+      <td class="mono" style="color:var(--yellow)">${fmt$(sc)}</td>
+      <td class="mono" style="color:var(--red);font-size:0.75rem">${affAmt > 0 ? '-'+fmt$(affAmt) : '—'}</td>
+      <td class="mono" style="font-size:0.75rem;color:var(--text3)">${s['Packaging']||'—'}</td>
+      <td class="mono ${prf>=0?'profit-pos':'profit-neg'}" style="font-weight:700">${fmt$(prf)}</td>
       <td><span class="badge ${sb}">${s['Status']}</span></td>
       <td><div class="actions-cell">
         <button class="btn btn-warn btn-xs" onclick="openSaleModal('${s['ID']}')">Edit</button>
         <button class="btn btn-danger btn-xs" onclick="deleteItem('sales','Sales','${s['ID']}')">✕</button>
-      </div></td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="13"><div class="empty-state"><div class="icon">💰</div><p>No sales recorded</p></div></td></tr>';
+      </div></td></tr>`;
+  }).join('') || '<tr><td colspan="15"><div class="empty-state"><div class="icon">💰</div><p>No sales recorded</p></div></td></tr>';
 }
 
 function openSaleModal(id) {
@@ -1305,21 +1287,45 @@ function openSaleModal(id) {
   document.getElementById('sale-product').innerHTML = names.map(n=>`<option>${n}</option>`).join('');
   document.getElementById('sale-modal-title').textContent = id ? 'Edit Sale' : 'Record Sale';
   document.getElementById('sale-edit-id').value = id || '';
+  // Reset conditional fields
+  document.getElementById('sale-has-affiliate').checked = false;
+  document.getElementById('affiliate-pct-group').style.display = 'none';
+  document.getElementById('affiliate-amt-group').style.display = 'none';
+  document.getElementById('pkg-custom-group').style.display = 'none';
+  document.getElementById('sample-shipping-group').style.display = 'none';
+  document.getElementById('sale-shipping-cost').value = '0';
   if (id) {
     const s = DB.sales.find(x => x['ID'] === id);
     if (s) {
-      document.getElementById('sale-date').value    = s['Date'];
-      document.getElementById('sale-channel').value = s['Channel'];
-      document.getElementById('sale-order').value   = s['Order / Ref #'];
-      document.getElementById('sale-product').value = s['Product Name'];
+      document.getElementById('sale-date').value      = s['Date'];
+      document.getElementById('sale-channel').value   = s['Channel'];
+      document.getElementById('sale-order').value     = s['Order / Ref #'];
+      document.getElementById('sale-product').value   = s['Product Name'];
       updateSaleFilaments();
       if (s['Filament Type']) document.getElementById('sale-filtype').value = s['Filament Type'];
       updateSaleColors();
       if (s['Color']) document.getElementById('sale-color').value = s['Color'];
-      document.getElementById('sale-qty').value     = s['Qty'];
-      document.getElementById('sale-price').value   = s['Sale Price ($)'];
-      document.getElementById('sale-payout').value  = s['Payout ($)'];
-      document.getElementById('sale-status').value  = s['Status'];
+      document.getElementById('sale-qty').value       = s['Qty'];
+      document.getElementById('sale-price').value     = s['Sale Price ($)'];
+      document.getElementById('sale-payout').value    = s['Payout ($)'];
+      document.getElementById('sale-status').value    = s['Status'];
+      document.getElementById('sale-packaging').value = s['Packaging'] || 'Small Box';
+      document.getElementById('sale-shipping-trip').checked = s['Shipping Trip'] === 'Yes';
+      document.getElementById('sale-notes').value     = s['Notes'] || '';
+      if (s['Affiliate Fee (%)'] && parseFloat(s['Affiliate Fee (%)']) > 0) {
+        document.getElementById('sale-has-affiliate').checked = true;
+        document.getElementById('affiliate-pct-group').style.display = 'block';
+        document.getElementById('affiliate-amt-group').style.display = 'block';
+        document.getElementById('sale-affiliate-pct').value = s['Affiliate Fee (%)'];
+        document.getElementById('sale-affiliate-amt').value = s['Affiliate Fee ($)'];
+      }
+      if (s['Packaging'] === 'Other') {
+        document.getElementById('pkg-custom-group').style.display = 'block';
+        document.getElementById('sale-pkg-custom').value = s['Packaging Cost ($)'] || 0;
+      }
+      if (s['Channel'] === 'Sample') {
+        document.getElementById('sample-shipping-group').style.display = 'block';
+      }
     }
   } else {
     document.getElementById('sale-date').value   = new Date().toISOString().slice(0,10);
@@ -1327,6 +1333,9 @@ function openSaleModal(id) {
     document.getElementById('sale-qty').value    = '1';
     document.getElementById('sale-price').value  = '';
     document.getElementById('sale-payout').value = '';
+    document.getElementById('sale-shipping-trip').checked = false;
+    document.getElementById('sale-notes').value  = '';
+    document.getElementById('sale-packaging').value = 'Small Box';
     updateSaleFilaments();
   }
   openModal('sale-modal');
@@ -1341,7 +1350,10 @@ function updateSaleFilaments() {
   const sel   = document.getElementById('sale-filtype');
   sel.innerHTML = types.map(t => `<option>${t}</option>`).join('');
   if (prod && prod['Filament Type']) sel.value = prod['Filament Type'];
-  if (prod) document.getElementById('sale-price').value = prod['Sale Price ($)'];
+  if (prod) {
+    document.getElementById('sale-price').value = prod['Sale Price ($)'];
+    document.getElementById('sale-packaging').value = prod['Packaging'] || 'Small Box';
+  }
   updateSaleColors();
 }
 
@@ -1362,30 +1374,160 @@ function updatePayoutPreview() {
   const subtotal = price * qty;
   const payout   = channel === 'TikTok' ? subtotal * (1 - ttPct / 100) : subtotal;
   document.getElementById('sale-payout').value = payout.toFixed(2);
+
+  // Update affiliate amount
+  if (document.getElementById('sale-has-affiliate').checked) {
+    const affPct = parseFloat(document.getElementById('sale-affiliate-pct').value) || 0;
+    const affAmt = subtotal * (affPct / 100);
+    document.getElementById('sale-affiliate-amt').value = affAmt.toFixed(2);
+  }
 }
 
 async function saveSale() {
-  const id    = document.getElementById('sale-edit-id').value;
-  const price = parseFloat(document.getElementById('sale-price').value) || 0;
-  const qty   = parseInt(document.getElementById('sale-qty').value) || 1;
+  const id     = document.getElementById('sale-edit-id').value;
+  const price  = parseFloat(document.getElementById('sale-price').value) || 0;
+  const qty    = parseInt(document.getElementById('sale-qty').value) || 1;
+  const pkgLabel = document.getElementById('sale-packaging').value;
+  const pkgCostVal = pkgLabel === 'Other'
+    ? parseFloat(document.getElementById('sale-pkg-custom').value) || 0
+    : (PACKAGING_COSTS[pkgLabel] || 1.25);
+  const hasAffiliate = document.getElementById('sale-has-affiliate').checked;
+  const affPct = hasAffiliate ? parseFloat(document.getElementById('sale-affiliate-pct').value)||0 : 0;
+  const affAmt = hasAffiliate ? parseFloat(document.getElementById('sale-affiliate-amt').value)||0 : 0;
+  const shippingTrip = document.getElementById('sale-shipping-trip').checked;
   const row = {
-    'ID':             id || 'sale_' + Date.now(),
-    'Date':           document.getElementById('sale-date').value,
-    'Order / Ref #':  document.getElementById('sale-order').value,
-    'Channel':        document.getElementById('sale-channel').value,
-    'Product Name':   document.getElementById('sale-product').value,
-    'Filament Type':  document.getElementById('sale-filtype').value,
-    'Color':          document.getElementById('sale-color').value,
-    'Qty':            qty,
-    'Sale Price ($)': price,
-    'Subtotal ($)':   price * qty,
-    'Payout ($)':     parseFloat(document.getElementById('sale-payout').value) || 0,
-    'Status':         document.getElementById('sale-status').value,
+    'ID':               id || 'sale_' + Date.now(),
+    'Date':             document.getElementById('sale-date').value,
+    'Order / Ref #':    document.getElementById('sale-order').value,
+    'Channel':          document.getElementById('sale-channel').value,
+    'Product Name':     document.getElementById('sale-product').value,
+    'Filament Type':    document.getElementById('sale-filtype').value,
+    'Color':            document.getElementById('sale-color').value,
+    'Qty':              qty,
+    'Sale Price ($)':   price,
+    'Subtotal ($)':     price * qty,
+    'Payout ($)':       parseFloat(document.getElementById('sale-payout').value) || 0,
+    'Status':           document.getElementById('sale-status').value,
+    'Affiliate Fee (%)':affPct,
+    'Affiliate Fee ($)':affAmt,
+    'Packaging':        pkgLabel,
+    'Packaging Cost ($)':pkgCostVal,
+    'Shipping Trip':    shippingTrip ? 'Yes' : 'No',
+    'Notes':            document.getElementById('sale-notes').value,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Sales', row });
-  closeModal('sale-modal');
-  await loadTab('sales','Sales');
-  renderSales();
+  closeModal('sale-modal'); await loadTab('sales','Sales'); renderSales();
+}
+
+// ═══ POST OFFICE TRIP ═══
+function openTripModal() {
+  document.getElementById('trip-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('trip-order-count').value = '1';
+  document.getElementById('trip-order-refs').value = '';
+  const miles = SETTINGS.post_office_miles;
+  const rate  = SETTINGS.mileage_rate;
+  document.getElementById('trip-miles-display').textContent = miles + ' mi';
+  document.getElementById('trip-rate-display').textContent  = '$' + rate.toFixed(2) + '/mi';
+  document.getElementById('trip-total-display').textContent = '$' + (miles * rate).toFixed(2);
+  openModal('trip-modal');
+}
+
+async function saveTripLog() {
+  const date       = document.getElementById('trip-date').value;
+  const orderCount = parseInt(document.getElementById('trip-order-count').value) || 1;
+  const orderRefs  = document.getElementById('trip-order-refs').value.trim();
+  setSyncStatus('loading', 'Logging…');
+  try {
+    await api({ action: 'logTrip', date, orderCount, orderRefs });
+    closeModal('trip-modal');
+    await loadTab('expenses','Expenses');
+    renderExpenses();
+    setSyncStatus('ok', 'Synced');
+    alert('Trip logged! $' + (SETTINGS.post_office_miles * SETTINGS.mileage_rate).toFixed(2) + ' mileage expense added.');
+  } catch(e) { setSyncStatus('error', 'Error'); alert('Error: ' + e.message); }
+}
+
+// ═══ EXPENSES ═══
+function renderExpenses() {
+  const catFilter    = document.getElementById('exp-cat-filter').value;
+  const periodFilter = parseInt(document.getElementById('exp-period-filter').value) || 0;
+  const cutoff       = periodFilter ? new Date(Date.now() - periodFilter * 86400000) : null;
+
+  let rows = DB.expenses.filter(e => {
+    if (catFilter && e['Category'] !== catFilter) return false;
+    if (cutoff && new Date(e['Date']) < cutoff) return false;
+    return true;
+  });
+
+  const total = rows.reduce((s, e) => s + (parseFloat(e['Amount ($)']) || 0), 0);
+  const miles = rows.reduce((s, e) => s + (parseFloat(e['Miles']) || 0), 0);
+
+  document.getElementById('expense-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Total Expenses</div><div class="kpi-value red">${fmt$(total)}</div></div>
+    <div class="kpi"><div class="kpi-label">Total Miles</div><div class="kpi-value blue">${miles.toFixed(1)} mi</div></div>
+    <div class="kpi"><div class="kpi-label">Entries</div><div class="kpi-value">${rows.length}</div></div>
+  `;
+
+  const catColors = {
+    Hardware:'badge-blue', Hotends:'badge-blue', 'Bed Plates':'badge-blue', Consumables:'badge-blue',
+    Marketing:'badge-purple', 'Video/Editing':'badge-purple', 'Software/Licensing':'badge-gray',
+    Mileage:'badge-green', Shipping:'badge-yellow', Other:'badge-gray'
+  };
+  document.getElementById('expenses-tbody').innerHTML = rows.map(e => `<tr>
+    <td class="mono" style="font-size:0.78rem">${e['Date']}</td>
+    <td><span class="badge ${catColors[e['Category']]||'badge-gray'}">${e['Category']}</span></td>
+    <td style="max-width:260px;font-size:0.82rem">${e['Description']}</td>
+    <td class="mono" style="color:var(--red);font-weight:700">${fmt$(e['Amount ($)'])}</td>
+    <td class="mono" style="color:var(--text3)">${e['Miles'] ? e['Miles'] + ' mi' : '—'}</td>
+    <td style="color:var(--text3)">${e['Printer']||'—'}</td>
+    <td style="font-size:0.78rem;color:var(--text3)">${e['Notes']||''}</td>
+    <td><div class="actions-cell">
+      <button class="btn btn-warn btn-xs" onclick="openExpenseModal('${e['ID']}')">Edit</button>
+      <button class="btn btn-danger btn-xs" onclick="deleteItem('expenses','Expenses','${e['ID']}')">✕</button>
+    </div></td></tr>`).join('') || '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No expenses recorded</p></div></td></tr>';
+}
+
+function openExpenseModal(id) {
+  document.getElementById('expense-modal-title').textContent = id ? 'Edit Expense' : 'Add Expense';
+  document.getElementById('exp-edit-id').value = id || '';
+  if (id) {
+    const e = DB.expenses.find(x => x['ID'] === id);
+    if (e) {
+      document.getElementById('exp-date').value    = e['Date'];
+      document.getElementById('exp-cat').value     = e['Category'];
+      document.getElementById('exp-desc').value    = e['Description'];
+      document.getElementById('exp-amount').value  = e['Amount ($)'];
+      document.getElementById('exp-miles').value   = e['Miles'] || 0;
+      document.getElementById('exp-printer').value = e['Printer'] || '';
+      document.getElementById('exp-notes').value   = e['Notes'] || '';
+    }
+  } else {
+    document.getElementById('exp-date').value    = new Date().toISOString().slice(0,10);
+    document.getElementById('exp-desc').value    = '';
+    document.getElementById('exp-amount').value  = '';
+    document.getElementById('exp-miles').value   = '0';
+    document.getElementById('exp-printer').value = '';
+    document.getElementById('exp-notes').value   = '';
+  }
+  openModal('expense-modal');
+}
+
+async function saveExpense() {
+  const id = document.getElementById('exp-edit-id').value;
+  const desc = document.getElementById('exp-desc').value.trim();
+  if (!desc) { alert('Description required'); return; }
+  const row = {
+    'ID':          id || 'exp_' + Date.now(),
+    'Date':        document.getElementById('exp-date').value,
+    'Category':    document.getElementById('exp-cat').value,
+    'Description': desc,
+    'Amount ($)':  parseFloat(document.getElementById('exp-amount').value) || 0,
+    'Printer':     document.getElementById('exp-printer').value,
+    'Miles':       parseFloat(document.getElementById('exp-miles').value) || 0,
+    'Notes':       document.getElementById('exp-notes').value,
+  };
+  await api({ action: id ? 'update' : 'write', tab: 'Expenses', row });
+  closeModal('expense-modal'); await loadTab('expenses','Expenses'); renderExpenses();
 }
 
 // ═══ DELETE ═══
@@ -1399,6 +1541,7 @@ async function deleteItem(key, tab, id) {
   if (key==='inventory') renderInventory();
   if (key==='sales')     renderSales();
   if (key==='queue')     renderQueue();
+  if (key==='expenses')  renderExpenses();
 }
 
 // ═══ BOOT ═══
