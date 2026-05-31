@@ -157,6 +157,9 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 
 ## Changelog
 
+### v1.5 — 2026-05-30
+- **Inventory color dropdown** — Add Stock modal now uses a dropdown for Color (populated from filament inventory by type), matching the behavior of the Record Sale modal
+
 ### v1.4 — 2026-05-30
 - **Inventory Value KPIs** — Inventory tab now shows Units in Stock, Inventory Value (cost basis for taxes), Retail Value, Potential Profit, and Active SKUs
 - Added tax tip note explaining how to use Inventory Value on Schedule C at year end

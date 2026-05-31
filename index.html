@@ -472,12 +472,12 @@
     <div class="form-grid">
       <div class="form-group full"><label>Product</label><select id="inv-product"></select></div>
       <div class="form-group"><label>Filament Type</label>
-        <select id="inv-fil-type">
+        <select id="inv-fil-type" onchange="updateInvColors()">
           <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
           <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
         </select>
       </div>
-      <div class="form-group full"><label>Color</label><input type="text" id="inv-color"></div>
+      <div class="form-group full"><label>Color</label><select id="inv-color"></select></div>
       <div class="form-group"><label>Qty Available</label><input type="number" id="inv-qty" value="0"></div>
       <div class="form-group"><label>Qty Sold</label><input type="number" id="inv-sold" value="0"></div>
       <div class="form-group"><label>On Loan</label><input type="number" id="inv-loan" value="0"></div>
@@ -597,19 +597,15 @@
     <div class="form-grid">
       <div class="form-group"><label>Date</label><input type="date" id="exp-date"></div>
       <div class="form-group"><label>Category</label>
-        <select id="exp-cat" onchange="onExpenseCatChange()">
+        <select id="exp-cat">
           <option>Hardware</option><option>Hotends</option><option>Bed Plates</option><option>Consumables</option>
           <option>Marketing</option><option>Video/Editing</option><option>Software/Licensing</option>
           <option>Mileage</option><option>Shipping</option><option>Other</option>
         </select>
       </div>
       <div class="form-group full"><label>Description</label><input type="text" id="exp-desc"></div>
-      <div class="form-group" id="exp-miles-row"><label>Miles (if mileage)</label><input type="number" step="0.1" id="exp-miles" value="0" oninput="onExpenseMilesInput()"></div>
-      <div class="form-group" id="exp-amount-row">
-        <label>Amount ($)</label>
-        <input type="number" step="0.01" id="exp-amount">
-        <div id="exp-mileage-hint" style="font-size:0.72rem;color:var(--green);margin-top:3px;font-family:var(--font-mono);"></div>
-      </div>
+      <div class="form-group"><label>Amount ($)</label><input type="number" step="0.01" id="exp-amount"></div>
+      <div class="form-group"><label>Miles (if mileage)</label><input type="number" step="0.1" id="exp-miles" value="0"></div>
       <div class="form-group"><label>Printer (if applicable)</label>
         <select id="exp-printer"><option value="">N/A</option><option>H2C</option><option>P1S</option><option>P2S</option><option>All</option></select>
       </div>
@@ -722,8 +718,7 @@ async function loadTab(key, tabName) {
 async function api(payload) {
   if (!SCRIPT_URL) throw new Error('No script URL configured');
   const url = SCRIPT_URL + '?action=' + payload.action + (payload.tab ? '&tab=' + payload.tab : '');
-  const res = await fetch(url, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
   return res.json();
 }
 
@@ -1133,6 +1128,13 @@ function renderInventory() {
   }).join('') || '<tr><td colspan="11"><div class="empty-state"><div class="icon">📊</div><p>No inventory records</p></div></td></tr>';
 }
 
+function updateInvColors() {
+  const type   = document.getElementById('inv-fil-type').value;
+  const colors = DB.filament.filter(f => f['Type'] === type).map(f => f['Color']).sort();
+  const sel    = document.getElementById('inv-color');
+  sel.innerHTML = colors.map(c => `<option>${c}</option>`).join('');
+}
+
 function openInventoryModal(id) {
   const names = [...new Set(DB.products.map(p => p['Product Name']))];
   document.getElementById('inv-product').innerHTML = names.map(n=>`<option>${n}</option>`).join('');
@@ -1143,14 +1145,16 @@ function openInventoryModal(id) {
     if (inv) {
       document.getElementById('inv-product').value  = inv['Product Name'];
       document.getElementById('inv-fil-type').value = inv['Filament Type'];
-      document.getElementById('inv-color').value    = inv['Color'];
+      updateInvColors();
+      if (inv['Color']) document.getElementById('inv-color').value = inv['Color'];
       document.getElementById('inv-qty').value      = inv['Qty Available'];
       document.getElementById('inv-sold').value     = inv['Qty Sold'];
       document.getElementById('inv-loan').value     = inv['On Loan'];
       document.getElementById('inv-buildto').value  = inv['Build To'];
     }
   } else {
-    document.getElementById('inv-color').value=''; document.getElementById('inv-qty').value='0';
+    updateInvColors();
+    document.getElementById('inv-qty').value='0';
     document.getElementById('inv-sold').value='0'; document.getElementById('inv-loan').value='0';
     document.getElementById('inv-buildto').value='2';
   }
@@ -1520,44 +1524,9 @@ function renderExpenses() {
     </div></td></tr>`).join('') || '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No expenses recorded</p></div></td></tr>';
 }
 
-function onExpenseCatChange() {
-  const cat = document.getElementById('exp-cat').value;
-  const isMileage = cat === 'Mileage';
-  const amountInput = document.getElementById('exp-amount');
-  const milesInput  = document.getElementById('exp-miles');
-  const amountRow   = document.getElementById('exp-amount-row');
-  const milesRow    = document.getElementById('exp-miles-row');
-  if (isMileage) {
-    amountRow.style.opacity = '0.5';
-    amountInput.placeholder = 'Auto-calculated from miles';
-    amountInput.readOnly = true;
-    milesRow.querySelector('label').textContent = 'Miles (round trip)';
-    onExpenseMilesInput();
-  } else {
-    amountRow.style.opacity = '1';
-    amountInput.placeholder = '';
-    amountInput.readOnly = false;
-    milesRow.querySelector('label').textContent = 'Miles (if mileage)';
-  }
-}
-
-function onExpenseMilesInput() {
-  const cat = document.getElementById('exp-cat').value;
-  if (cat !== 'Mileage') return;
-  const miles = parseFloat(document.getElementById('exp-miles').value) || 0;
-  const cost  = (miles * SETTINGS.mileage_rate).toFixed(2);
-  document.getElementById('exp-amount').value = cost;
-  document.getElementById('exp-mileage-hint').textContent =
-    miles > 0 ? `${miles} mi × $${SETTINGS.mileage_rate.toFixed(2)}/mi = $${cost}` : '';
-}
-
 function openExpenseModal(id) {
   document.getElementById('expense-modal-title').textContent = id ? 'Edit Expense' : 'Add Expense';
   document.getElementById('exp-edit-id').value = id || '';
-  // Reset amount field state first
-  document.getElementById('exp-amount').readOnly = false;
-  document.getElementById('exp-amount-row').style.opacity = '1';
-  document.getElementById('exp-mileage-hint').textContent = '';
   if (id) {
     const e = DB.expenses.find(x => x['ID'] === id);
     if (e) {
@@ -1571,14 +1540,12 @@ function openExpenseModal(id) {
     }
   } else {
     document.getElementById('exp-date').value    = new Date().toISOString().slice(0,10);
-    document.getElementById('exp-cat').value     = 'Hardware';
     document.getElementById('exp-desc').value    = '';
     document.getElementById('exp-amount').value  = '';
     document.getElementById('exp-miles').value   = '0';
     document.getElementById('exp-printer').value = '';
     document.getElementById('exp-notes').value   = '';
   }
-  onExpenseCatChange();
   openModal('expense-modal');
 }
 
@@ -1586,35 +1553,18 @@ async function saveExpense() {
   const id = document.getElementById('exp-edit-id').value;
   const desc = document.getElementById('exp-desc').value.trim();
   if (!desc) { alert('Description required'); return; }
-  const cat   = document.getElementById('exp-cat').value;
-  const miles = parseFloat(document.getElementById('exp-miles').value) || 0;
-  let amount  = parseFloat(document.getElementById('exp-amount').value) || 0;
-  // Auto-calc mileage amount if somehow still 0
-  if (cat === 'Mileage' && amount === 0 && miles > 0) {
-    amount = miles * SETTINGS.mileage_rate;
-  }
   const row = {
     'ID':          id || 'exp_' + Date.now(),
     'Date':        document.getElementById('exp-date').value,
-    'Category':    cat,
+    'Category':    document.getElementById('exp-cat').value,
     'Description': desc,
-    'Amount ($)':  amount,
+    'Amount ($)':  parseFloat(document.getElementById('exp-amount').value) || 0,
     'Printer':     document.getElementById('exp-printer').value,
-    'Miles':       miles,
+    'Miles':       parseFloat(document.getElementById('exp-miles').value) || 0,
     'Notes':       document.getElementById('exp-notes').value,
   };
-  setSyncStatus('loading', 'Saving…');
-  try {
-    const result = await api({ action: id ? 'update' : 'write', tab: 'Expenses', row });
-    if (result.error) throw new Error(result.error);
-    closeModal('expense-modal');
-    await loadTab('expenses','Expenses');
-    renderExpenses();
-    setSyncStatus('ok', 'Synced');
-  } catch(e) {
-    setSyncStatus('error', 'Save failed');
-    alert('Failed to save expense: ' + e.message + '\n\nCheck that your Apps Script URL is connected (🔗 in the header).');
-  }
+  await api({ action: id ? 'update' : 'write', tab: 'Expenses', row });
+  closeModal('expense-modal'); await loadTab('expenses','Expenses'); renderExpenses();
 }
 
 // ═══ DELETE ═══
