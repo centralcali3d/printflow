@@ -157,6 +157,9 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 
 ## Changelog
 
+### v1.6 — 2026-05-30
+- **Auto filament deduction** — Adding new stock automatically subtracts filament usage from the Filament tab (`Filament (g) × Qty / 1000` kg). Warns if the result would go negative (and lets you proceed). Warns if no matching filament record is found for the type/color combination. Edit existing stock does not trigger deduction.
+
 ### v1.5 — 2026-05-30
 - **Inventory color dropdown** — Add Stock modal now uses a dropdown for Color (populated from filament inventory by type), matching the behavior of the Record Sale modal
 

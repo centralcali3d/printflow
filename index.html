@@ -1162,19 +1162,76 @@ function openInventoryModal(id) {
 }
 
 async function saveInventory() {
-  const id = document.getElementById('inv-edit-id').value;
+  const id          = document.getElementById('inv-edit-id').value;
+  const productName = document.getElementById('inv-product').value;
+  const filType     = document.getElementById('inv-fil-type').value;
+  const color       = document.getElementById('inv-color').value;
+  const qty         = parseInt(document.getElementById('inv-qty').value) || 0;
+
   const row = {
-    'ID': id || 'inv_' + Date.now(),
-    'Product Name':  document.getElementById('inv-product').value,
-    'Filament Type': document.getElementById('inv-fil-type').value,
-    'Color':         document.getElementById('inv-color').value,
-    'Qty Available': parseInt(document.getElementById('inv-qty').value)||0,
-    'Qty Sold':      parseInt(document.getElementById('inv-sold').value)||0,
-    'On Loan':       parseInt(document.getElementById('inv-loan').value)||0,
-    'Build To':      parseInt(document.getElementById('inv-buildto').value)||0,
+    'ID':            id || 'inv_' + Date.now(),
+    'Product Name':  productName,
+    'Filament Type': filType,
+    'Color':         color,
+    'Qty Available': qty,
+    'Qty Sold':      parseInt(document.getElementById('inv-sold').value) || 0,
+    'On Loan':       parseInt(document.getElementById('inv-loan').value) || 0,
+    'Build To':      parseInt(document.getElementById('inv-buildto').value) || 0,
   };
+
+  // ── Filament deduction (new stock only) ──────────────────────────
+  if (!id && qty > 0) {
+    const prod      = DB.products.find(p => p['Product Name'] === productName);
+    const filG      = prod ? (parseFloat(prod['Filament (g)']) || 0) : 0;
+    const deductKg  = (filG * qty) / 1000;
+
+    if (filG > 0 && deductKg > 0) {
+      // Find matching filament row by type AND color
+      const filRow = DB.filament.find(f =>
+        f['Type'] === filType &&
+        f['Color'].toLowerCase() === color.toLowerCase()
+      );
+
+      if (!filRow) {
+        // No matching filament record found — warn but continue
+        const proceed = confirm(
+          `⚠️ No filament record found for "${filType} — ${color}".\n\n` +
+          `Filament inventory will NOT be updated automatically.\n\n` +
+          `Save the inventory record anyway?`
+        );
+        if (!proceed) return;
+      } else {
+        const currentKg  = parseFloat(filRow['On Hand (kg)']) || 0;
+        const newKg      = currentKg - deductKg;
+        const deductDisp = deductKg.toFixed(3);
+        const newDisp    = newKg.toFixed(3);
+
+        if (newKg < 0) {
+          // Would go negative — warn but allow
+          const proceed = confirm(
+            `⚠️ This will bring "${color}" below zero.\n\n` +
+            `Current: ${currentKg.toFixed(3)} kg\n` +
+            `Deducting: ${deductDisp} kg (${filG}g × ${qty} unit${qty>1?'s':''})\n` +
+            `Result: ${newDisp} kg\n\n` +
+            `You may need to update your filament inventory manually.\n\n` +
+            `Proceed anyway?`
+          );
+          if (!proceed) return;
+        }
+
+        // Update the filament row
+        const updatedFil = Object.assign({}, filRow, { 'On Hand (kg)': Math.round(newKg * 1000) / 1000 });
+        await api({ action: 'update', tab: 'Filament', row: updatedFil });
+        await loadTab('filament', 'Filament');
+        renderFilament();
+      }
+    }
+  }
+
   await api({ action: id ? 'update' : 'write', tab: 'Inventory', row });
-  closeModal('inventory-modal'); await loadTab('inventory','Inventory'); renderInventory();
+  closeModal('inventory-modal');
+  await loadTab('inventory', 'Inventory');
+  renderInventory();
 }
 
 // ═══ QUEUE ═══
