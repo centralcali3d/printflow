@@ -95,7 +95,7 @@ The 🚗 **Log Post Office Trip** button on the Sales tab creates an IRS-complia
 | electricity_rate_per_hr | 0.12 | Cost per print hour ($/hr) |
 | tiktok_default_fee_pct | 10 | TikTok platform fee (%) |
 | labor_rate_per_hr | 25.00 | Your hourly prep rate ($/hr) |
-| mileage_rate | 0.70 | IRS mileage rate ($/mi) — update each tax year |
+| mileage_rate | 0.725 | IRS mileage rate ($/mi) — update each tax year |
 | post_office_miles | 3.6 | Round-trip miles to post office |
 
 ---
