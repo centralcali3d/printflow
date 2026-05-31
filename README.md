@@ -157,6 +157,11 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 
 ## Changelog
 
+### v1.7 — 2026-05-30
+- **Fixed: duplicate inventory rows** — Adding stock for an existing product/type/color combo now merges qty into the existing row instead of creating a new row
+- **Fixed: Save button spam** — Save button disables immediately on click and shows "Saving…" to prevent double-submits
+- **Fixed: filament deduction extracted** to a reusable helper so it works correctly in both the new-row and merge-into-existing paths
+
 ### v1.6 — 2026-05-30
 - **Auto filament deduction** — Adding new stock automatically subtracts filament usage from the Filament tab (`Filament (g) × Qty / 1000` kg). Warns if the result would go negative (and lets you proceed). Warns if no matching filament record is found for the type/color combination. Edit existing stock does not trigger deduction.
 
