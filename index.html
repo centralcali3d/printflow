@@ -326,7 +326,7 @@
         <h3>⚡ Electricity &amp; Costs</h3>
         <div class="setting-row">
           <div class="setting-info"><div class="setting-name">Electricity Rate</div><div class="setting-desc">Cost per hour of printing. Your electricity rate. US average ~$0.12–$0.16/hr; update to match your actual rate.</div></div>
-          <div class="setting-control"><span class="setting-unit">$</span><input class="setting-input" id="setting-electricity-rate" type="number" step="0.01" min="0" value="0.46"><span class="setting-unit">/ hr</span></div>
+          <div class="setting-control"><span class="setting-unit">$</span><input class="setting-input" id="setting-electricity-rate" type="number" step="0.01" min="0" value="0.17"><span class="setting-unit">/ hr</span></div>
         </div>
         <div class="setting-row">
           <div class="setting-info"><div class="setting-name">Labor Rate</div><div class="setting-desc">Your hourly rate for prep time (setup, filament change, removal, packaging).</div></div>
@@ -650,7 +650,7 @@ const DB = { filament:[], supplies:[], products:[], inventory:[], sales:[], queu
 let SCRIPT_URL = localStorage.getItem('pf_script_url') || '';
 
 let SETTINGS = {
-  electricity_rate_per_hr: 0.46,
+  electricity_rate_per_hr: 0.17,
   tiktok_default_fee_pct:  10,
   labor_rate_per_hr:       25.00,
   mileage_rate:            0.70,
@@ -696,7 +696,7 @@ async function loadSettings() {
     const res = await api({ action: 'getSettings' });
     if (res.ok && res.settings) {
       const s = res.settings;
-      if (s.electricity_rate_per_hr !== undefined) SETTINGS.electricity_rate_per_hr = parseFloat(s.electricity_rate_per_hr) || 0.46;
+      if (s.electricity_rate_per_hr !== undefined) SETTINGS.electricity_rate_per_hr = parseFloat(s.electricity_rate_per_hr) || 0.17;
       if (s.tiktok_default_fee_pct  !== undefined) SETTINGS.tiktok_default_fee_pct  = parseFloat(s.tiktok_default_fee_pct)  || 10;
       if (s.labor_rate_per_hr       !== undefined) SETTINGS.labor_rate_per_hr       = parseFloat(s.labor_rate_per_hr)       || 25;
       if (s.mileage_rate            !== undefined) SETTINGS.mileage_rate            = parseFloat(s.mileage_rate)            || 0.70;

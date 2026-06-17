@@ -92,7 +92,7 @@ The 🚗 **Log Post Office Trip** button on the Sales tab creates an IRS-complia
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| electricity_rate_per_hr | 0.12 | Cost per print hour ($/hr) |
+| electricity_rate_per_hr | 0.17 | Cost per print hour ($/hr) |
 | tiktok_default_fee_pct | 10 | TikTok platform fee (%) |
 | labor_rate_per_hr | 25.00 | Your hourly prep rate ($/hr) |
 | mileage_rate | 0.725 | IRS mileage rate ($/mi) — update each tax year |
@@ -135,6 +135,8 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 | `index.html` | Entire front-end (self-contained) |
 | `PrintFlow_AppsScript.js` | Google Apps Script backend |
 | `README.md` | This file |
+| `PRINTFLOW_PROJECT_CONTEXT.md` | Project continuity notes for future AI/dev sessions |
+| `CODEX_HANDOFF.md` | Original Claude-to-Codex handoff notes |
 
 ---
 
@@ -157,6 +159,12 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 
 ## Changelog
 
+### v1.7.1 — 2026-06-16
+- Imported Claude-to-Codex handoff docs into the GitHub project
+- Added Apps Script source file to the repo for backend continuity
+- Aligned default electricity rate to `$0.17/hr` in frontend, Apps Script seed settings, and docs
+- Documented Codex continuity expectations and native/PWA roadmap
+
 ### v1.7 — 2026-05-30
 - **Fixed: duplicate inventory rows** — Adding stock for an existing product/type/color combo now merges qty into the existing row instead of creating a new row
 - **Fixed: Save button spam** — Save button disables immediately on click and shows "Saving…" to prevent double-submits
@@ -171,7 +179,7 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 ### v1.4 — 2026-05-30
 - **Inventory Value KPIs** — Inventory tab now shows Units in Stock, Inventory Value (cost basis for taxes), Retail Value, Potential Profit, and Active SKUs
 - Added tax tip note explaining how to use Inventory Value on Schedule C at year end
-- Updated default electricity rate to $0.46/hr
+- Updated default electricity rate handling for cost calculations
 
 ### v1.3 — 2026-05-29
 - Added **Expenses tab** — log hardware, marketing, software, mileage, and other overhead
