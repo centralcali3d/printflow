@@ -3,9 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#161820">
+<meta name="application-name" content="PrintFlow">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PrintFlow">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
 <title>PrintFlow — 3D Print Business Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -1686,6 +1692,16 @@ async function deleteItem(key, tab, id) {
 }
 
 // ═══ BOOT ═══
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.warn('Service worker registration failed', err);
+    });
+  });
+}
+
+registerServiceWorker();
 initApp();
 </script>
 </body>

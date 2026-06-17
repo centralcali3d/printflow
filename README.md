@@ -152,12 +152,22 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 
 ## Mobile / Home Screen
 
-1. Open in **Safari** → Share → Add to Home Screen
+PrintFlow is installable as a PWA on supported browsers.
+
+1. Open in **Safari** on iPhone/iPad → Share → Add to Home Screen
 2. Name it **PrintFlow** → Add
+3. On desktop Chrome/Edge, use the browser install button when offered
+
+The service worker caches only the app shell and icons. Apps Script data requests stay live and are not cached.
 
 ---
 
 ## Changelog
+
+### v1.8.0 — 2026-06-16
+- Added PWA manifest, app icons, and install metadata for iPhone/iPad/Mac/desktop browsers
+- Added a service worker that caches the static app shell while leaving Apps Script data requests uncached
+- Registered the service worker from the existing single-file frontend boot path
 
 ### v1.7.1 — 2026-06-16
 - Imported Claude-to-Codex handoff docs into the GitHub project

@@ -9,7 +9,7 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 
 **Live app:** https://centralcali3d.github.io/printflow/
 **GitHub repo:** https://github.com/centralcali3d/printflow
-**Current version:** v1.7.1
+**Current version:** v1.8.0
 
 ---
 
@@ -19,6 +19,9 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 |------|-------------|
 | `index.html` | Entire front-end (self-contained, no build step) |
 | `PrintFlow_AppsScript.js` | Google Apps Script backend — deployed as Web App |
+| `manifest.json` | PWA install metadata |
+| `sw.js` | Service worker for app shell caching |
+| `assets/icon-*.png` | PWA and iOS home screen icons |
 | `README.md` | User-facing documentation |
 | `PRINTFLOW_PROJECT_CONTEXT.md` | This file |
 
@@ -209,7 +212,7 @@ The Inventory tab shows KPI cards including:
 - [ ] **Heartbeat product** — not priced yet ($0), needs pricing
 - [ ] **Mini Building Block pricing** — currently losing money even at corrected costs. Needs repricing or prep time reduction via batching
 - [x] **v1.5-v1.7 fixes verified on GitHub main** — duplicate inventory row prevention, Save button double-click protection, and filament auto-deduction are already present in `origin/main:index.html`
-- [ ] **PWA conversion** — add manifest, service worker, icon set, and mobile install polish for iPhone/iPad/Mac
+- [x] **PWA conversion** — added manifest, service worker, icon set, and mobile install polish for iPhone/iPad/Mac
 
 ### Completed This Session
 - [x] Imported Claude handoff package into Codex working repo
@@ -226,9 +229,10 @@ The Inventory tab shows KPI cards including:
 - [x] Added tax tip note on Inventory tab
 - [x] Updated default electricity rate to $0.17/hr in code
 - [x] Updated README with v1.3 and v1.4 changelogs
+- [x] Added PWA manifest, service worker, and install icons
 
 ### Future Ideas Discussed
-- Native app path: first make the current app installable as a PWA, then evaluate wrapping or rebuilding once workflows stabilize
+- Native app path: current first step is complete as an installable PWA; evaluate wrapping or rebuilding once workflows stabilize
 - Add dashboard views for tax season: COGS, gross sales, fees, mileage, supplies, inventory value, and net profit by date range
 - Add CSV export for sales, expenses, and inventory snapshots
 - Batch printing efficiency tracking (amortize prep time across multiple units)
