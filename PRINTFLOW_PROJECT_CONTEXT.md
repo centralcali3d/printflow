@@ -205,6 +205,35 @@ The Inventory tab shows KPI cards including:
 
 ---
 
+## Codex Resume Notes
+
+Current local workspace:
+- `C:\Users\thaberman\Documents\CC3D-PrintFlow`
+
+Current Git state at handoff:
+- Branch: `main`
+- Remote: `origin https://github.com/centralcali3d/printflow.git`
+- Latest pushed commit: `5df80e3 Add PWA install support`
+- Previous handoff commit: `917346a Document Codex handoff`
+
+What was verified in the Codex takeover:
+- The GitHub `main` branch already contained the v1.5-v1.7 inventory fixes, including duplicate-row prevention, Save button double-click protection, `deductFilament()`, and filament auto-deduction.
+- The PWA pass added install metadata, service worker shell caching, and generated icons.
+- Static validation passed for `manifest.json`, `sw.js`, and the inline JavaScript in `index.html`.
+- Local HTTP checks returned `200` for `/`, `/manifest.json`, `/sw.js`, and `/assets/icon-192.png`.
+
+PWA cache behavior:
+- `sw.js` caches only same-origin static app shell files and icons.
+- Apps Script API requests are cross-origin and are intentionally not cached.
+- If the live app appears stale after a push, hard refresh or remove/re-add the Home Screen app so iOS picks up the latest manifest/service worker.
+
+Recommended next starting point:
+1. Add a tax dashboard/export view for date-range sales, expenses, COGS, mileage, fees, inventory value, and net profit.
+2. Add CSV export for sales, expenses, and inventory snapshots.
+3. Improve pricing tools for Mini Building Blocks and unpriced Heartbeat product.
+
+---
+
 ## Known Issues & Things To Do
 
 ### In Progress / Pending
@@ -250,13 +279,3 @@ The Inventory tab shows KPI cards including:
 - IRS mileage log requirements: date, destination, business purpose, miles — all auto-filled by trip logger
 - Schedule C uses: Beginning Inventory + Goods Produced − Ending Inventory = COGS
 - Small businesses may qualify for cash method accounting (deduct materials when purchased)
-
----
-
-## Working Files Location (Claude's Session)
-
-When working in a Claude session, the live working files are at:
-- `/home/claude/index_v13.html` — current index.html
-- `/home/claude/PrintFlow_AppsScript.js` — current Apps Script
-
-Always copy to `/mnt/user-data/outputs/` before presenting to user.
