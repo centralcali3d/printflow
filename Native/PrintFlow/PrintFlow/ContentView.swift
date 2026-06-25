@@ -1,19 +1,17 @@
 import SwiftUI
 
 struct ContentView: View {
-    private let appURL = URL(string: "https://centralcali3d.github.io/printflow/")!
-
     @State private var isLoading = true
     @State private var errorMessage: String?
 
     var body: some View {
         ZStack {
             PrintFlowWebView(
-                url: appURL,
+                url: AppConfig.printFlowURL,
+                defaultScriptURL: AppConfig.defaultScriptURL,
                 isLoading: $isLoading,
                 errorMessage: $errorMessage
             )
-            .ignoresSafeArea()
 
             if isLoading {
                 LoadingOverlay()

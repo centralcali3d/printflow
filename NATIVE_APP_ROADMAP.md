@@ -100,7 +100,8 @@ Current progress:
 - Added a SwiftUI shell that loads the live PrintFlow PWA in `WKWebView`
 - Added loading/error overlay states
 - Verified compile with `xcodebuild` against `iphonesimulator26.5`
-- Remaining local setup: install an iOS simulator runtime/device from Xcode Settings before interactive launch testing
+- Verified interactive launch on iPhone 17 Pro Simulator
+- Prefills the current Apps Script `/exec` URL on first launch so the hosted app can sync immediately
 
 ### Phase 2: Native enhancements
 
@@ -165,9 +166,9 @@ Recommended structure:
 ## Immediate Next Work
 
 The next practical tasks are:
-- install an iOS simulator runtime/device in Xcode Settings
-- run the `PrintFlow` scheme in Simulator and verify the hosted web app loads
-- add native settings for the Apps Script URL after the shell launch is verified
+- add native settings for viewing/updating the Apps Script URL
+- add native share/export hooks for CSV files
+- test the shell on iPad and Mac targets
 
 ## Decision
 

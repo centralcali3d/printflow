@@ -237,9 +237,9 @@ Recommended next starting point:
 3. Add richer tax reporting if needed, such as monthly/quarterly breakdowns or Schedule C category mapping.
 
 Latest local update on 2026-06-25:
-- Added the initial native Apple app shell under `Native/PrintFlow`.
-- The SwiftUI shell loads the live PrintFlow PWA in `WKWebView` and includes loading/error states.
-- Command-line compile against `iphonesimulator26.5` passes. Interactive simulator launch still needs an installed iOS simulator runtime/device in Xcode.
+- Verified the native Apple app shell on iPhone 17 Pro Simulator.
+- The SwiftUI shell loads the live PrintFlow PWA in `WKWebView`, preloads the current Apps Script URL, and syncs live data.
+- Command-line compile against `iphonesimulator26.5` passes.
 
 ---
 
