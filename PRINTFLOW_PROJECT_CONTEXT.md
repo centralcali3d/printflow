@@ -19,6 +19,7 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 |------|-------------|
 | `index.html` | Entire front-end (self-contained, no build step) |
 | `PrintFlow_AppsScript.js` | Google Apps Script backend — deployed as Web App |
+| `Native/PrintFlow` | SwiftUI + `WKWebView` Apple app shell |
 | `manifest.json` | PWA install metadata |
 | `sw.js` | Service worker for app shell caching |
 | `assets/icon-*.png` | PWA and iOS home screen icons |
@@ -236,9 +237,9 @@ Recommended next starting point:
 3. Add richer tax reporting if needed, such as monthly/quarterly breakdowns or Schedule C category mapping.
 
 Latest local update on 2026-06-25:
-- Added sale-level cost, profit, and margin snapshots in `index.html`.
-- Updated `PrintFlow_AppsScript.js` Sales headers and made `init` append missing headers to existing sheets.
-- This changes the Sales sheet structure. Deploy a new Apps Script version, update the app's backend URL, then run `?action=init`.
+- Added the initial native Apple app shell under `Native/PrintFlow`.
+- The SwiftUI shell loads the live PrintFlow PWA in `WKWebView` and includes loading/error states.
+- Command-line compile against `iphonesimulator26.5` passes. Interactive simulator launch still needs an installed iOS simulator runtime/device in Xcode.
 
 ---
 
@@ -253,6 +254,7 @@ Latest local update on 2026-06-25:
 - [x] **Tax Summary and CSV exports** — date-range rollups for sales, COGS, fees, mileage, expenses, inventory value, and net profit
 - [x] **Pricing review tools** — target-margin recommendations and flags for unpriced/losing/below-target products
 - [x] **Sale profit snapshots** — new sales store unit cost, total cost, profit, and margin so historical promo profit/loss stays fixed
+- [x] **Native app shell scaffold** — SwiftUI + `WKWebView` project added under `Native/PrintFlow`
 
 ### Completed This Session
 - [x] Imported Claude handoff package into Codex working repo
@@ -273,6 +275,7 @@ Latest local update on 2026-06-25:
 - [x] Added Tax Summary tab and CSV exports
 - [x] Added Pricing tab with target margin recommendations
 - [x] Added sale-level cost/profit snapshots
+- [x] Added native SwiftUI `WKWebView` shell and verified compile
 
 ### Future Ideas Discussed
 - Native app path: current first step is complete as an installable PWA; evaluate wrapping or rebuilding once workflows stabilize

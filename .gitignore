@@ -1,2 +1,8 @@
 printflow-handoff.zip
 printflow-handoff/
+.build/
+.derivedData/
+.xcodebuildmcp/
+DerivedData/
+*.xcuserstate
+xcuserdata/

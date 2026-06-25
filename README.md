@@ -142,6 +142,7 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 |------|-------------|
 | `index.html` | Entire front-end (self-contained) |
 | `PrintFlow_AppsScript.js` | Google Apps Script backend |
+| `Native/PrintFlow` | SwiftUI + WKWebView Apple app shell |
 | `README.md` | This file |
 | `PRINTFLOW_PROJECT_CONTEXT.md` | Project continuity notes for future AI/dev sessions |
 | `CODEX_HANDOFF.md` | Original Claude-to-Codex handoff notes |
@@ -177,6 +178,11 @@ The service worker caches only the app shell and icons. Apps Script data request
 - Added sale-level cost, profit, and margin snapshots so historical profit/loss stays tied to the sale price and costs at save time
 - Updated Sales and Tax reporting to prefer stored sale snapshots, with fallback calculations for older sales
 - Updated Apps Script Sales headers; deploy a new Apps Script version and run `?action=init` to append the new columns
+
+### Native app shell — 2026-06-25
+- Added initial SwiftUI `WKWebView` shell under `Native/PrintFlow`
+- Verified command-line compile against the iOS Simulator SDK
+- Interactive simulator launch still requires installing an iOS simulator runtime/device in Xcode
 
 ### v1.10.0 — 2026-06-25
 - Added a Pricing tab with channel-aware target price recommendations

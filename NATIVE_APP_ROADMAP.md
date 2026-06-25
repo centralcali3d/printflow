@@ -95,6 +95,13 @@ Success criteria:
 - all existing CRUD flows still work
 - current PWA remains unchanged and usable
 
+Current progress:
+- Created `Native/PrintFlow/PrintFlow.xcodeproj`
+- Added a SwiftUI shell that loads the live PrintFlow PWA in `WKWebView`
+- Added loading/error overlay states
+- Verified compile with `xcodebuild` against `iphonesimulator26.5`
+- Remaining local setup: install an iOS simulator runtime/device from Xcode Settings before interactive launch testing
+
 ### Phase 2: Native enhancements
 
 Target:
@@ -158,9 +165,9 @@ Recommended structure:
 ## Immediate Next Work
 
 The next practical tasks are:
-- document the backend API contract in-repo
-- add a native-app track to the project context
-- define the first Xcode milestone for a hybrid Apple app
+- install an iOS simulator runtime/device in Xcode Settings
+- run the `PrintFlow` scheme in Simulator and verify the hosted web app loads
+- add native settings for the Apps Script URL after the shell launch is verified
 
 ## Decision
 
