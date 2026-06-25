@@ -26,15 +26,15 @@ struct ContentView: View {
                         isSettingsPresented = true
                     } label: {
                         Image(systemName: "gearshape.fill")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(.white)
-                            .frame(width: 48, height: 48)
+                            .frame(width: 32, height: 32)
                             .background(.ultraThinMaterial, in: Circle())
-                            .overlay(Circle().strokeBorder(.white.opacity(0.18)))
-                            .shadow(radius: 10, y: 3)
+                            .overlay(Circle().strokeBorder(.white.opacity(0.14)))
+                            .shadow(radius: 5, y: 2)
                     }
                     .accessibilityLabel("Native settings")
-                    .padding(18)
+                    .padding(10)
                 }
             }
 

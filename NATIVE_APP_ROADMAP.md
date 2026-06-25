@@ -103,6 +103,7 @@ Current progress:
 - Verified interactive launch on iPhone 17 Pro Simulator
 - Added native settings for viewing/updating the Apps Script `/exec` URL
 - Injects the saved Apps Script URL on launch/reload so the hosted app can sync immediately
+- Added the CC3D logo as the native app icon and reduced the settings button footprint
 
 ### Phase 2: Native enhancements
 

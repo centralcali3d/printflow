@@ -240,6 +240,7 @@ Latest local update on 2026-06-25:
 - Verified the native Apple app shell on iPhone 17 Pro Simulator.
 - The SwiftUI shell loads the live PrintFlow PWA in `WKWebView`, injects the saved Apps Script URL, and syncs live data.
 - Added native settings for viewing/updating the Apps Script `/exec` deployment URL and reloading the hosted app.
+- Added the CC3D logo as the native app icon and reduced the settings button footprint.
 - Command-line compile against `iphonesimulator26.5` passes.
 
 ---
@@ -257,6 +258,7 @@ Latest local update on 2026-06-25:
 - [x] **Sale profit snapshots** — new sales store unit cost, total cost, profit, and margin so historical promo profit/loss stays fixed
 - [x] **Native app shell scaffold** — SwiftUI + `WKWebView` project added under `Native/PrintFlow`
 - [x] **Native backend settings** — iOS settings sheet can save/reset the Apps Script deployment URL
+- [x] **Native icon and settings polish** — CC3D icon asset added and gear button reduced
 
 ### Completed This Session
 - [x] Imported Claude handoff package into Codex working repo
@@ -279,6 +281,7 @@ Latest local update on 2026-06-25:
 - [x] Added sale-level cost/profit snapshots
 - [x] Added native SwiftUI `WKWebView` shell and verified compile
 - [x] Added native backend URL settings and reload support
+- [x] Added CC3D native app icon and compact settings button
 
 ### Future Ideas Discussed
 - Native app path: current first step is complete as an installable PWA; evaluate wrapping or rebuilding once workflows stabilize

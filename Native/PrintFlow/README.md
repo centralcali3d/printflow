@@ -6,6 +6,7 @@ SwiftUI shell for the existing PrintFlow web app.
 
 - Loads `https://centralcali3d.github.io/printflow/` in `WKWebView`
 - Stores the current Apps Script `/exec` URL in native settings and injects it into web storage on each launch
+- Uses the CC3D logo as the native app icon
 - Keeps the current PWA and Apps Script backend as the production source of truth
 - Adds a native app container that can later grow sharing and richer offline/error handling
 
@@ -31,4 +32,4 @@ xcodebuild \
 
 The project compiles against the iOS Simulator SDK and has been verified launching on iPhone 17 Pro Simulator with live PrintFlow data synced through Apps Script.
 
-Use the native gear button to view or update the Apps Script deployment URL after creating a new `/exec` deployment.
+Use the compact native gear button to view or update the Apps Script deployment URL after creating a new `/exec` deployment.
