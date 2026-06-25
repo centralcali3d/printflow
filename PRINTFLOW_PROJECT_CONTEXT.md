@@ -1,5 +1,5 @@
 # PrintFlow — Project Context & Continuity Document
-*Last updated: 2026-06-16*
+*Last updated: 2026-06-25*
 
 ---
 
@@ -9,7 +9,7 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 
 **Live app:** https://centralcali3d.github.io/printflow/
 **GitHub repo:** https://github.com/centralcali3d/printflow
-**Current version:** v1.8.0
+**Current version:** v1.9.0
 
 ---
 
@@ -62,6 +62,9 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 
 ### Expenses
 `ID | Date | Category | Description | Amount ($) | Printer | Miles | Notes`
+
+### Tax Summary
+Frontend-only dashboard. No sheet tab is required. It rolls up Sales, Expenses, Products, Inventory, and Settings data, then exports CSV files for tax review.
 
 ### Settings
 `Setting | Value | Description`
@@ -228,9 +231,14 @@ PWA cache behavior:
 - If the live app appears stale after a push, hard refresh or remove/re-add the Home Screen app so iOS picks up the latest manifest/service worker.
 
 Recommended next starting point:
-1. Add a tax dashboard/export view for date-range sales, expenses, COGS, mileage, fees, inventory value, and net profit.
-2. Add CSV export for sales, expenses, and inventory snapshots.
-3. Improve pricing tools for Mini Building Blocks and unpriced Heartbeat product.
+1. Improve pricing tools for Mini Building Blocks and unpriced Heartbeat product.
+2. Start the Apple app track as a hybrid SwiftUI + `WKWebView` shell around the existing app, keeping the PWA as production until parity is proven.
+3. Add richer tax reporting if needed, such as monthly/quarterly breakdowns or Schedule C category mapping.
+
+Latest local update on 2026-06-25:
+- Added the Tax Summary tab in `index.html`.
+- Added CSV exports for summary, sales detail, expenses detail, and current inventory snapshot.
+- This was a frontend-only change; Apps Script tabs/headers/actions were not changed, so no new Apps Script deployment is required.
 
 ---
 
@@ -242,6 +250,7 @@ Recommended next starting point:
 - [ ] **Mini Building Block pricing** — currently losing money even at corrected costs. Needs repricing or prep time reduction via batching
 - [x] **v1.5-v1.7 fixes verified on GitHub main** — duplicate inventory row prevention, Save button double-click protection, and filament auto-deduction are already present in `origin/main:index.html`
 - [x] **PWA conversion** — added manifest, service worker, icon set, and mobile install polish for iPhone/iPad/Mac
+- [x] **Tax Summary and CSV exports** — date-range rollups for sales, COGS, fees, mileage, expenses, inventory value, and net profit
 
 ### Completed This Session
 - [x] Imported Claude handoff package into Codex working repo
@@ -259,14 +268,25 @@ Recommended next starting point:
 - [x] Updated default electricity rate to $0.17/hr in code
 - [x] Updated README with v1.3 and v1.4 changelogs
 - [x] Added PWA manifest, service worker, and install icons
+- [x] Added Tax Summary tab and CSV exports
 
 ### Future Ideas Discussed
 - Native app path: current first step is complete as an installable PWA; evaluate wrapping or rebuilding once workflows stabilize
-- Add dashboard views for tax season: COGS, gross sales, fees, mileage, supplies, inventory value, and net profit by date range
-- Add CSV export for sales, expenses, and inventory snapshots
+- Native app direction chosen for next phase: hybrid SwiftUI + `WKWebView` shell first, full native rewrite later only if usage proves it is worth the extra maintenance
+- Add richer tax dashboard views if needed: monthly/quarterly breakdowns or Schedule C category mapping
 - Batch printing efficiency tracking (amortize prep time across multiple units)
 - Consider separating "machine time" rate from labor rate more explicitly
 - Possible repricing strategy for small items with long print times
+
+### Native App Track
+
+- Goal: deliver a real Apple-platform app for iPhone, iPad, and Mac while preserving the current GitHub Pages workflow during build-out
+- Recommended first implementation: SwiftUI shell hosting the existing PrintFlow UI in `WKWebView`
+- Reason: fastest path to a testable app without duplicating business logic in the next month
+- Keep production path unchanged until the app reaches feature parity on CRUD flows and sync stability
+- New docs added for this track:
+  - `NATIVE_APP_ROADMAP.md`
+  - `API_CONTRACT.md`
 
 ---
 

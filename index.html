@@ -159,6 +159,7 @@
     <button class="nav-btn" onclick="showTab('queue', this)">Queue</button>
     <button class="nav-btn" onclick="showTab('sales', this)">Sales</button>
     <button class="nav-btn" onclick="showTab('expenses', this)">Expenses</button>
+    <button class="nav-btn" onclick="showTab('tax', this)">Tax</button>
     <button class="nav-btn" onclick="showTab('settings', this)">Settings</button>
   </nav>
 
@@ -320,6 +321,44 @@
           <tbody id="expenses-tbody"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- ═══ TAX ═══ -->
+    <div class="tab-panel" id="tab-tax">
+      <div class="page-header">
+        <div><div class="page-title">Tax Summary</div><div class="page-subtitle">Date range · COGS · Fees · Mileage · Exports</div></div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="exportTaxSummary()">Export Summary</button>
+          <button class="btn btn-primary" onclick="exportTaxBundle()">Export CSVs</button>
+        </div>
+      </div>
+      <div class="filters">
+        <select class="filter-input" id="tax-period-filter" onchange="setTaxPeriod(this.value)">
+          <option value="year" selected>This year</option>
+          <option value="last30">Last 30 days</option>
+          <option value="last90">Last 90 days</option>
+          <option value="all">All time</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input class="filter-input" type="date" id="tax-start-date" onchange="renderTax()" style="max-width:170px;">
+        <input class="filter-input" type="date" id="tax-end-date" onchange="renderTax()" style="max-width:170px;">
+      </div>
+      <div class="kpi-row" id="tax-kpis"></div>
+      <div class="table-wrap" style="margin-bottom:16px;">
+        <table>
+          <thead><tr><th>Category</th><th>Amount</th><th>Notes</th></tr></thead>
+          <tbody id="tax-summary-tbody"></tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Export</th><th>Rows</th><th>Use</th><th></th></tr></thead>
+          <tbody id="tax-export-tbody"></tbody>
+        </table>
+      </div>
+      <p style="font-size:0.72rem;color:var(--text3);margin-top:12px;">
+        Tax totals are estimates from PrintFlow records. Review with receipts and your CPA before filing.
+      </p>
     </div>
 
     <!-- ═══ SETTINGS ═══ -->
@@ -750,7 +789,7 @@ async function saveSettings() {
     await api({ action: 'updateSetting', key: 'post_office_miles',       value: poMiles.toString() });
     if (urlVal && urlVal !== SCRIPT_URL) { SCRIPT_URL = urlVal; localStorage.setItem('pf_script_url', urlVal); }
     setSyncStatus('ok', 'Saved');
-    renderProducts(); renderSales();
+    renderProducts(); renderSales(); renderInventory(); renderTax();
     alert('Settings saved!');
   } catch(e) { setSyncStatus('error', 'Save failed'); alert('Error: ' + e.message); }
 }
@@ -766,10 +805,42 @@ async function reconnectFromSettings() {
 // ═══ HELPERS ═══
 function fmt$(n)  { return '$' + (+n||0).toFixed(2); }
 function fmtG(n)  { return (+n||0).toFixed(0) + ' g'; }
+function todayISO() { return new Date().toISOString().slice(0,10); }
+function startOfYearISO() { return new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0,10); }
 
 function pkgCost(pkgLabel, customVal) {
   if (pkgLabel === 'Other') return parseFloat(customVal) || 0;
   return PACKAGING_COSTS[pkgLabel] || 1.25;
+}
+
+function isWithinRange(dateVal, startVal, endVal) {
+  if (!dateVal) return false;
+  const d = new Date(dateVal + 'T00:00:00');
+  if (Number.isNaN(d.getTime())) return false;
+  if (startVal && d < new Date(startVal + 'T00:00:00')) return false;
+  if (endVal && d > new Date(endVal + 'T23:59:59')) return false;
+  return true;
+}
+
+function csvEscape(value) {
+  const text = value === undefined || value === null ? '' : String(value);
+  return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+}
+
+function downloadCSV(filename, headers, rows) {
+  const body = [
+    headers.map(csvEscape).join(','),
+    ...rows.map(row => headers.map(h => csvEscape(row[h])).join(',')),
+  ].join('\n');
+  const blob = new Blob([body], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function setSyncStatus(state, label) {
@@ -783,6 +854,7 @@ function showTab(id, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
+  if (id==='tax') renderTax();
   if (id==='settings') {
     document.getElementById('setting-electricity-rate').value = SETTINGS.electricity_rate_per_hr;
     document.getElementById('setting-labor-rate').value       = SETTINGS.labor_rate_per_hr;
@@ -802,7 +874,7 @@ async function connectScript() {
 }
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function renderAll() { renderFilament(); renderSupplies(); renderProducts(); renderInventory(); renderQueue(); renderSales(); renderExpenses(); }
+function renderAll() { renderFilament(); renderSupplies(); renderProducts(); renderInventory(); renderQueue(); renderSales(); renderExpenses(); renderTax(); }
 
 // ═══ COST CALC ═══
 function filCostPerKg(type) {
@@ -1075,7 +1147,7 @@ async function saveProduct() {
     'TikTok Fee (%)':  parseFloat(document.getElementById('prod-tiktok').value)   || 0,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Products', row });
-  closeModal('product-modal'); await loadTab('products','Products'); renderProducts();
+  closeModal('product-modal'); await loadTab('products','Products'); renderProducts(); renderInventory(); renderSales(); renderTax();
 }
 
 // ═══ INVENTORY ═══
@@ -1210,7 +1282,7 @@ async function saveInventory() {
         await api({ action: 'update', tab: 'Inventory', row: merged });
         closeModal('inventory-modal');
         await loadTab('inventory', 'Inventory');
-        renderInventory();
+        renderInventory(); renderTax();
         return; // unlock happens in finally
       }
     }
@@ -1235,7 +1307,7 @@ async function saveInventory() {
     await api({ action: id ? 'update' : 'write', tab: 'Inventory', row });
     closeModal('inventory-modal');
     await loadTab('inventory', 'Inventory');
-    renderInventory();
+    renderInventory(); renderTax();
 
   } catch(e) {
     alert('Error saving: ' + e.message);
@@ -1563,7 +1635,7 @@ async function saveSale() {
     'Notes':            document.getElementById('sale-notes').value,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Sales', row });
-  closeModal('sale-modal'); await loadTab('sales','Sales'); renderSales();
+  closeModal('sale-modal'); await loadTab('sales','Sales'); renderSales(); renderTax();
 }
 
 // ═══ POST OFFICE TRIP ═══
@@ -1588,7 +1660,7 @@ async function saveTripLog() {
     await api({ action: 'logTrip', date, orderCount, orderRefs });
     closeModal('trip-modal');
     await loadTab('expenses','Expenses');
-    renderExpenses();
+    renderExpenses(); renderTax();
     setSyncStatus('ok', 'Synced');
     alert('Trip logged! $' + (SETTINGS.post_office_miles * SETTINGS.mileage_rate).toFixed(2) + ' mileage expense added.');
   } catch(e) { setSyncStatus('error', 'Error'); alert('Error: ' + e.message); }
@@ -1634,6 +1706,195 @@ function renderExpenses() {
     </div></td></tr>`).join('') || '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No expenses recorded</p></div></td></tr>';
 }
 
+// ═══ TAX ═══
+function setTaxPeriod(period) {
+  const start = document.getElementById('tax-start-date');
+  const end   = document.getElementById('tax-end-date');
+  if (period === 'year') {
+    start.value = startOfYearISO();
+    end.value = todayISO();
+  } else if (period === 'last30' || period === 'last90') {
+    const days = period === 'last30' ? 30 : 90;
+    start.value = new Date(Date.now() - days * 86400000).toISOString().slice(0,10);
+    end.value = todayISO();
+  } else if (period === 'all') {
+    start.value = '';
+    end.value = '';
+  } else if (!start.value && !end.value) {
+    start.value = startOfYearISO();
+    end.value = todayISO();
+  }
+  renderTax();
+}
+
+function getTaxRange() {
+  const start = document.getElementById('tax-start-date');
+  const end   = document.getElementById('tax-end-date');
+  if (!start || !end) return { start: '', end: '' };
+  if (!start.value && !end.value && document.getElementById('tax-period-filter').value === 'year') {
+    start.value = startOfYearISO();
+    end.value = todayISO();
+  }
+  return { start: start.value, end: end.value };
+}
+
+function getInventorySnapshotRows() {
+  return DB.inventory.map(inv => {
+    const prod = DB.products.find(p => p['Product Name'] === inv['Product Name']);
+    const qty = parseFloat(inv['Qty Available']) || 0;
+    const unitCost = prod ? productCost(prod).total : 0;
+    const retail = prod ? parseFloat(prod['Sale Price ($)']) || 0 : 0;
+    return {
+      'Product Name': inv['Product Name'],
+      'Filament Type': inv['Filament Type'],
+      'Color': inv['Color'],
+      'Qty Available': qty,
+      'Unit Cost ($)': unitCost.toFixed(2),
+      'Inventory Value ($)': (qty * unitCost).toFixed(2),
+      'Retail Value ($)': (qty * retail).toFixed(2),
+    };
+  });
+}
+
+function buildTaxSummary() {
+  const { start, end } = getTaxRange();
+  const sales = DB.sales.filter(s => isWithinRange(s['Date'], start, end));
+  const expenses = DB.expenses.filter(e => isWithinRange(e['Date'], start, end));
+  const inventoryRows = getInventorySnapshotRows();
+  let revenue = 0, payout = 0, cogs = 0, affiliate = 0, packaging = 0;
+  sales.forEach(s => {
+    revenue   += parseFloat(s['Subtotal ($)']) || 0;
+    payout    += parseFloat(s['Payout ($)']) || 0;
+    cogs      += saleCost(s);
+    affiliate += parseFloat(s['Affiliate Fee ($)']) || 0;
+    packaging += parseFloat(s['Packaging Cost ($)']) || 0;
+  });
+
+  let expenseTotal = 0, mileage = 0, miles = 0;
+  const expenseByCategory = {};
+  expenses.forEach(e => {
+    const amount = parseFloat(e['Amount ($)']) || 0;
+    const cat = e['Category'] || 'Other';
+    expenseTotal += amount;
+    expenseByCategory[cat] = (expenseByCategory[cat] || 0) + amount;
+    if (cat === 'Mileage') {
+      mileage += amount;
+      miles += parseFloat(e['Miles']) || 0;
+    }
+  });
+
+  const inventoryValue = inventoryRows.reduce((sum, row) => sum + (parseFloat(row['Inventory Value ($)']) || 0), 0);
+  const grossProfit = payout - cogs;
+  const netProfit = grossProfit - expenseTotal;
+  return { start, end, sales, expenses, inventoryRows, revenue, payout, cogs, affiliate, packaging, expenseTotal, expenseByCategory, mileage, miles, inventoryValue, grossProfit, netProfit };
+}
+
+function renderTax() {
+  if (!document.getElementById('tax-kpis')) return;
+  const t = buildTaxSummary();
+  document.getElementById('tax-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Revenue</div><div class="kpi-value blue">${fmt$(t.revenue)}</div></div>
+    <div class="kpi"><div class="kpi-label">Payout</div><div class="kpi-value">${fmt$(t.payout)}</div></div>
+    <div class="kpi"><div class="kpi-label">COGS</div><div class="kpi-value yellow">${fmt$(t.cogs)}</div></div>
+    <div class="kpi"><div class="kpi-label">Expenses</div><div class="kpi-value red">${fmt$(t.expenseTotal)}</div></div>
+    <div class="kpi"><div class="kpi-label">Net Profit</div><div class="kpi-value ${t.netProfit>=0?'green':'red'}">${fmt$(t.netProfit)}</div></div>
+    <div class="kpi"><div class="kpi-label">Inventory Value</div><div class="kpi-value yellow">${fmt$(t.inventoryValue)}</div></div>
+  `;
+
+  const expenseLines = Object.keys(t.expenseByCategory).sort().map(cat => ({
+    label: 'Expense: ' + cat,
+    amount: t.expenseByCategory[cat],
+    note: 'Deduction category from Expenses tab',
+  }));
+  const summaryRows = [
+    { label: 'Gross sales', amount: t.revenue, note: `${t.sales.length} sales in range` },
+    { label: 'Payment payouts', amount: t.payout, note: 'After platform fees recorded in Sales' },
+    { label: 'Cost of goods sold', amount: t.cogs, note: 'Product cost plus sale-level fees and packaging' },
+    { label: 'Affiliate fees', amount: t.affiliate, note: 'Included in COGS/profit calculation' },
+    { label: 'Packaging costs', amount: t.packaging, note: 'Included in COGS/profit calculation' },
+    { label: 'Gross profit', amount: t.grossProfit, note: 'Payout minus COGS' },
+    ...expenseLines,
+    { label: 'Mileage', amount: t.mileage, note: `${t.miles.toFixed(1)} miles logged` },
+    { label: 'Net profit estimate', amount: t.netProfit, note: 'Gross profit minus Expenses tab total' },
+    { label: 'Ending inventory value', amount: t.inventoryValue, note: 'Current cost basis snapshot, not date-specific' },
+  ];
+  document.getElementById('tax-summary-tbody').innerHTML = summaryRows.map(row => `<tr>
+    <td style="font-weight:600">${row.label}</td>
+    <td class="mono ${row.amount < 0 ? 'profit-neg' : ''}" style="font-weight:700">${fmt$(row.amount)}</td>
+    <td style="color:var(--text3)">${row.note}</td>
+  </tr>`).join('');
+
+  document.getElementById('tax-export-tbody').innerHTML = `
+    <tr><td style="font-weight:600">Sales detail</td><td class="mono">${t.sales.length}</td><td>Orders with calculated COGS and profit</td><td><button class="btn btn-secondary btn-xs" onclick="exportTaxSales()">Download</button></td></tr>
+    <tr><td style="font-weight:600">Expenses detail</td><td class="mono">${t.expenses.length}</td><td>Expense and mileage log for the range</td><td><button class="btn btn-secondary btn-xs" onclick="exportTaxExpenses()">Download</button></td></tr>
+    <tr><td style="font-weight:600">Inventory snapshot</td><td class="mono">${t.inventoryRows.length}</td><td>Current ending inventory cost basis</td><td><button class="btn btn-secondary btn-xs" onclick="exportInventorySnapshot()">Download</button></td></tr>
+    <tr><td style="font-weight:600">Summary</td><td class="mono">1</td><td>One-file tax rollup</td><td><button class="btn btn-secondary btn-xs" onclick="exportTaxSummary()">Download</button></td></tr>
+  `;
+}
+
+function taxFileSuffix() {
+  const t = buildTaxSummary();
+  return (t.start || 'all') + '_to_' + (t.end || 'all');
+}
+
+function exportTaxSales() {
+  const t = buildTaxSummary();
+  const rows = t.sales.map(s => {
+    const cogs = saleCost(s);
+    const payout = parseFloat(s['Payout ($)']) || 0;
+    return {
+      'Date': s['Date'], 'Order / Ref #': s['Order / Ref #'], 'Channel': s['Channel'],
+      'Product Name': s['Product Name'], 'Color': s['Color'], 'Qty': s['Qty'],
+      'Subtotal ($)': s['Subtotal ($)'], 'Payout ($)': payout.toFixed(2),
+      'COGS ($)': cogs.toFixed(2), 'Profit ($)': (payout - cogs).toFixed(2),
+      'Affiliate Fee ($)': s['Affiliate Fee ($)'] || 0, 'Packaging Cost ($)': s['Packaging Cost ($)'] || 0,
+      'Status': s['Status'], 'Notes': s['Notes'] || '',
+    };
+  });
+  const headers = ['Date','Order / Ref #','Channel','Product Name','Color','Qty','Subtotal ($)','Payout ($)','COGS ($)','Profit ($)','Affiliate Fee ($)','Packaging Cost ($)','Status','Notes'];
+  downloadCSV('printflow_sales_' + taxFileSuffix() + '.csv', headers, rows);
+}
+
+function exportTaxExpenses() {
+  const t = buildTaxSummary();
+  const headers = ['Date','Category','Description','Amount ($)','Miles','Printer','Notes'];
+  downloadCSV('printflow_expenses_' + taxFileSuffix() + '.csv', headers, t.expenses);
+}
+
+function exportInventorySnapshot() {
+  const rows = getInventorySnapshotRows();
+  downloadCSV('printflow_inventory_snapshot_' + todayISO() + '.csv', ['Product Name','Filament Type','Color','Qty Available','Unit Cost ($)','Inventory Value ($)','Retail Value ($)'], rows);
+}
+
+function exportTaxSummary() {
+  const t = buildTaxSummary();
+  const rows = [
+    { 'Metric': 'Start Date', 'Amount': t.start || 'All', 'Notes': '' },
+    { 'Metric': 'End Date', 'Amount': t.end || 'All', 'Notes': '' },
+    { 'Metric': 'Gross Sales', 'Amount': t.revenue.toFixed(2), 'Notes': `${t.sales.length} sales` },
+    { 'Metric': 'Payment Payouts', 'Amount': t.payout.toFixed(2), 'Notes': '' },
+    { 'Metric': 'COGS', 'Amount': t.cogs.toFixed(2), 'Notes': 'Includes sale-level affiliate, packaging, and shipping costs where recorded' },
+    { 'Metric': 'Affiliate Fees', 'Amount': t.affiliate.toFixed(2), 'Notes': '' },
+    { 'Metric': 'Packaging Costs', 'Amount': t.packaging.toFixed(2), 'Notes': '' },
+    { 'Metric': 'Expense Total', 'Amount': t.expenseTotal.toFixed(2), 'Notes': `${t.expenses.length} expenses` },
+    { 'Metric': 'Mileage Deduction', 'Amount': t.mileage.toFixed(2), 'Notes': `${t.miles.toFixed(1)} miles` },
+    { 'Metric': 'Gross Profit', 'Amount': t.grossProfit.toFixed(2), 'Notes': 'Payout minus COGS' },
+    { 'Metric': 'Net Profit Estimate', 'Amount': t.netProfit.toFixed(2), 'Notes': 'Gross profit minus Expenses tab total' },
+    { 'Metric': 'Current Inventory Value', 'Amount': t.inventoryValue.toFixed(2), 'Notes': 'Current cost basis snapshot, not date-specific' },
+  ];
+  Object.keys(t.expenseByCategory).sort().forEach(cat => {
+    rows.push({ 'Metric': 'Expense: ' + cat, 'Amount': t.expenseByCategory[cat].toFixed(2), 'Notes': '' });
+  });
+  downloadCSV('printflow_tax_summary_' + taxFileSuffix() + '.csv', ['Metric','Amount','Notes'], rows);
+}
+
+function exportTaxBundle() {
+  exportTaxSummary();
+  exportTaxSales();
+  exportTaxExpenses();
+  exportInventorySnapshot();
+}
+
 function openExpenseModal(id) {
   document.getElementById('expense-modal-title').textContent = id ? 'Edit Expense' : 'Add Expense';
   document.getElementById('exp-edit-id').value = id || '';
@@ -1674,7 +1935,7 @@ async function saveExpense() {
     'Notes':       document.getElementById('exp-notes').value,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Expenses', row });
-  closeModal('expense-modal'); await loadTab('expenses','Expenses'); renderExpenses();
+  closeModal('expense-modal'); await loadTab('expenses','Expenses'); renderExpenses(); renderTax();
 }
 
 // ═══ DELETE ═══
@@ -1689,6 +1950,7 @@ async function deleteItem(key, tab, id) {
   if (key==='sales')     renderSales();
   if (key==='queue')     renderQueue();
   if (key==='expenses')  renderExpenses();
+  if (['products','inventory','sales','expenses'].includes(key)) renderTax();
 }
 
 // ═══ BOOT ═══

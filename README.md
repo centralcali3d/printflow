@@ -4,6 +4,8 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 
 **Live app:** https://centralcali3d.github.io/printflow/
 
+**Current version:** v1.9.0
+
 ---
 
 ## Features
@@ -15,6 +17,7 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 - **Print Queue** — Auto-generated from inventory needs or manually added.
 - **Sales** — TikTok, In-Person, and Sample channels. Affiliate/creator fees, packaging costs, and shipping trip tracking per order.
 - **Expenses** — Log hardware, marketing, software, mileage, and other overhead. IRS-compliant post office trip logger built in.
+- **Tax Summary** — Date-range rollups for sales, COGS, expenses, mileage, net profit, inventory value, and CSV exports.
 - **Settings** — Electricity rate, labor rate, mileage rate, and post office miles — all synced to the spreadsheet.
 
 ---
@@ -142,6 +145,7 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 
 ## Tax Notes
 
+- The Tax Summary tab exports CSV files for sales detail, expenses detail, current inventory snapshot, and a summary rollup.
 - The Expenses tab and post office trip logger provide documentation for Schedule C deductions.
 - Keep digital copies of receipts for all expense entries.
 - Update `mileage_rate` in Settings at the start of each tax year.
@@ -163,6 +167,11 @@ The service worker caches only the app shell and icons. Apps Script data request
 ---
 
 ## Changelog
+
+### v1.9.0 — 2026-06-25
+- Added a Tax Summary tab with date-range revenue, payout, COGS, expenses, mileage, net profit, and current inventory value
+- Added CSV exports for tax summary, sales detail with calculated COGS/profit, expenses detail, and inventory snapshot
+- Kept tax/export calculations client-side, so no Apps Script deployment change is required
 
 ### v1.8.0 — 2026-06-16
 - Added PWA manifest, app icons, and install metadata for iPhone/iPad/Mac/desktop browsers
