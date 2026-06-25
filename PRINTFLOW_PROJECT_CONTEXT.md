@@ -9,7 +9,7 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 
 **Live app:** https://centralcali3d.github.io/printflow/
 **GitHub repo:** https://github.com/centralcali3d/printflow
-**Current version:** v1.9.0
+**Current version:** v1.10.0
 
 ---
 
@@ -231,13 +231,13 @@ PWA cache behavior:
 - If the live app appears stale after a push, hard refresh or remove/re-add the Home Screen app so iOS picks up the latest manifest/service worker.
 
 Recommended next starting point:
-1. Improve pricing tools for Mini Building Blocks and unpriced Heartbeat product.
+1. Use the Pricing tab to set actual prices for Mini Building Blocks and the unpriced Heartbeat product.
 2. Start the Apple app track as a hybrid SwiftUI + `WKWebView` shell around the existing app, keeping the PWA as production until parity is proven.
 3. Add richer tax reporting if needed, such as monthly/quarterly breakdowns or Schedule C category mapping.
 
 Latest local update on 2026-06-25:
-- Added the Tax Summary tab in `index.html`.
-- Added CSV exports for summary, sales detail, expenses detail, and current inventory snapshot.
+- Added the Pricing tab in `index.html`.
+- Added channel-aware target price recommendations, loss checks, unpriced flags, and one-click sale price updates.
 - This was a frontend-only change; Apps Script tabs/headers/actions were not changed, so no new Apps Script deployment is required.
 
 ---
@@ -251,6 +251,7 @@ Latest local update on 2026-06-25:
 - [x] **v1.5-v1.7 fixes verified on GitHub main** — duplicate inventory row prevention, Save button double-click protection, and filament auto-deduction are already present in `origin/main:index.html`
 - [x] **PWA conversion** — added manifest, service worker, icon set, and mobile install polish for iPhone/iPad/Mac
 - [x] **Tax Summary and CSV exports** — date-range rollups for sales, COGS, fees, mileage, expenses, inventory value, and net profit
+- [x] **Pricing review tools** — target-margin recommendations and flags for unpriced/losing/below-target products
 
 ### Completed This Session
 - [x] Imported Claude handoff package into Codex working repo
@@ -269,6 +270,7 @@ Latest local update on 2026-06-25:
 - [x] Updated README with v1.3 and v1.4 changelogs
 - [x] Added PWA manifest, service worker, and install icons
 - [x] Added Tax Summary tab and CSV exports
+- [x] Added Pricing tab with target margin recommendations
 
 ### Future Ideas Discussed
 - Native app path: current first step is complete as an installable PWA; evaluate wrapping or rebuilding once workflows stabilize

@@ -57,7 +57,7 @@
   .kpi-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
   .kpi-value { font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); }
   .kpi-value.green { color: var(--green); } .kpi-value.yellow { color: var(--yellow); }
-  .kpi-value.red { color: var(--red); } .kpi-value.blue { color: var(--accent3); }
+  .kpi-value.red { color: var(--red); } .kpi-value.blue { color: var(--accent3); } .kpi-value.orange { color: var(--orange); }
   .btn { padding: 8px 16px; border-radius: var(--radius-sm); border: none; font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all .2s; letter-spacing: 0.03em; }
   .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { background: #5a52e0; }
   .btn-secondary { background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); } .btn-secondary:hover { background: var(--border); }
@@ -155,6 +155,7 @@
     <button class="nav-btn active" onclick="showTab('filament', this)">Filament</button>
     <button class="nav-btn" onclick="showTab('supplies', this)">Supplies</button>
     <button class="nav-btn" onclick="showTab('products', this)">Products</button>
+    <button class="nav-btn" onclick="showTab('pricing', this)">Pricing</button>
     <button class="nav-btn" onclick="showTab('inventory', this)">Inventory</button>
     <button class="nav-btn" onclick="showTab('queue', this)">Queue</button>
     <button class="nav-btn" onclick="showTab('sales', this)">Sales</button>
@@ -225,6 +226,37 @@
             <th>Price</th><th>TikTok</th><th>Profit</th><th>Margin</th><th></th>
           </tr></thead>
           <tbody id="products-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ PRICING ═══ -->
+    <div class="tab-panel" id="tab-pricing">
+      <div class="page-header">
+        <div><div class="page-title">Pricing</div><div class="page-subtitle">Target margins · Repricing · Loss checks</div></div>
+        <div class="header-actions">
+          <label style="font-size:.78rem;color:var(--text3);">Channel:</label>
+          <select class="filter-input" id="pricing-channel" onchange="renderPricing()" style="width:auto;min-width:130px;">
+            <option value="TikTok" selected>TikTok</option>
+            <option value="In-Person">In-Person</option>
+          </select>
+          <label style="font-size:.78rem;color:var(--text3);">Target:</label>
+          <select class="filter-input" id="pricing-margin" onchange="renderPricing()" style="width:auto;min-width:110px;">
+            <option value="25">25%</option>
+            <option value="35" selected>35%</option>
+            <option value="45">45%</option>
+            <option value="55">55%</option>
+          </select>
+        </div>
+      </div>
+      <div class="kpi-row" id="pricing-kpis"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Product</th><th>Cost</th><th>Current</th><th>Fee</th><th>Profit</th><th>Margin</th>
+            <th>Target Price</th><th>Change</th><th>Flag</th><th></th>
+          </tr></thead>
+          <tbody id="pricing-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -789,7 +821,7 @@ async function saveSettings() {
     await api({ action: 'updateSetting', key: 'post_office_miles',       value: poMiles.toString() });
     if (urlVal && urlVal !== SCRIPT_URL) { SCRIPT_URL = urlVal; localStorage.setItem('pf_script_url', urlVal); }
     setSyncStatus('ok', 'Saved');
-    renderProducts(); renderSales(); renderInventory(); renderTax();
+    renderProducts(); renderPricing(); renderSales(); renderInventory(); renderTax();
     alert('Settings saved!');
   } catch(e) { setSyncStatus('error', 'Save failed'); alert('Error: ' + e.message); }
 }
@@ -855,6 +887,7 @@ function showTab(id, btn) {
   document.getElementById('tab-' + id).classList.add('active');
   btn.classList.add('active');
   if (id==='tax') renderTax();
+  if (id==='pricing') renderPricing();
   if (id==='settings') {
     document.getElementById('setting-electricity-rate').value = SETTINGS.electricity_rate_per_hr;
     document.getElementById('setting-labor-rate').value       = SETTINGS.labor_rate_per_hr;
@@ -874,7 +907,7 @@ async function connectScript() {
 }
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function renderAll() { renderFilament(); renderSupplies(); renderProducts(); renderInventory(); renderQueue(); renderSales(); renderExpenses(); renderTax(); }
+function renderAll() { renderFilament(); renderSupplies(); renderProducts(); renderPricing(); renderInventory(); renderQueue(); renderSales(); renderExpenses(); renderTax(); }
 
 // ═══ COST CALC ═══
 function filCostPerKg(type) {
@@ -909,6 +942,14 @@ function saleCost(s) {
   // If sale has explicit packaging cost recorded, use it; otherwise use product default * qty
   const pkgAdjust = salePkg && salePkgCost > 0 ? (salePkgCost - (prod ? (PACKAGING_COSTS[prod['Packaging']] || 1.25) * qty : 0)) : 0;
   return prodTotal + pkgAdjust + affiliateCost + shippingCost;
+}
+
+function recommendedPrice(totalCost, feePct, targetMarginPct) {
+  const feeRate = (parseFloat(feePct) || 0) / 100;
+  const marginRate = (parseFloat(targetMarginPct) || 0) / 100;
+  const denom = 1 - feeRate - marginRate;
+  if (denom <= 0) return 0;
+  return Math.ceil((totalCost / denom) * 100) / 100;
 }
 
 // ═══ FILAMENT ═══
@@ -981,7 +1022,7 @@ async function saveFilament() {
     'Swatch Hex': document.getElementById('fil-swatch').value,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Filament', row });
-  closeModal('filament-modal'); await loadTab('filament','Filament'); renderFilament();
+  closeModal('filament-modal'); await loadTab('filament','Filament'); renderFilament(); renderProducts(); renderPricing(); renderInventory(); renderSales(); renderTax();
 }
 
 // ═══ SUPPLIES ═══
@@ -1073,6 +1114,81 @@ function renderProducts() {
   }).join('') || '<tr><td colspan="15"><div class="empty-state"><div class="icon">📦</div><p>No products yet</p></div></td></tr>';
 }
 
+// ═══ PRICING ═══
+function renderPricing() {
+  if (!document.getElementById('pricing-tbody')) return;
+  const channel = document.getElementById('pricing-channel').value;
+  const targetMargin = parseFloat(document.getElementById('pricing-margin').value) || 35;
+  let lossCount = 0, underTargetCount = 0, unpricedCount = 0, totalLift = 0;
+
+  const rows = DB.products.map(p => {
+    const costs = productCost(p);
+    const currentPrice = parseFloat(p['Sale Price ($)']) || 0;
+    const feePct = channel === 'TikTok' ? (parseFloat(p['TikTok Fee (%)']) || SETTINGS.tiktok_default_fee_pct || 0) : 0;
+    const fee = currentPrice * (feePct / 100);
+    const profit = currentPrice - fee - costs.total;
+    const margin = currentPrice > 0 ? (profit / currentPrice) * 100 : 0;
+    const targetPrice = recommendedPrice(costs.total, feePct, targetMargin);
+    const delta = targetPrice - currentPrice;
+    let flag = 'On Target';
+    let badge = 'badge-green';
+
+    if (currentPrice <= 0) {
+      flag = 'Unpriced';
+      badge = 'badge-orange';
+      unpricedCount++;
+    } else if (profit < 0) {
+      flag = 'Losing Money';
+      badge = 'badge-red';
+      lossCount++;
+    } else if (margin < targetMargin) {
+      flag = 'Below Target';
+      badge = 'badge-yellow';
+      underTargetCount++;
+    }
+    if (delta > 0) totalLift += delta;
+
+    return `<tr>
+      <td style="font-weight:600">${p['Product Name']}<br><small style="color:var(--text3)">${p['Filament Type'] || ''} · ${p['Packaging'] || 'Small Box'}</small></td>
+      <td class="mono">${fmt$(costs.total)}</td>
+      <td class="mono">${fmt$(currentPrice)}</td>
+      <td class="mono" style="color:var(--text3)">${feePct.toFixed(1)}%</td>
+      <td class="mono ${profit>=0?'profit-pos':'profit-neg'}" style="font-weight:700">${fmt$(profit)}</td>
+      <td class="mono" style="color:${margin>=targetMargin?'var(--green)':margin>0?'var(--yellow)':'var(--red)'}">${currentPrice > 0 ? margin.toFixed(1) + '%' : '—'}</td>
+      <td class="mono" style="font-weight:700;color:var(--accent3)">${fmt$(targetPrice)}</td>
+      <td class="mono ${delta<=0?'profit-pos':'profit-neg'}">${delta > 0 ? '+' : ''}${fmt$(delta)}</td>
+      <td><span class="badge ${badge}">${flag}</span></td>
+      <td><button class="btn btn-secondary btn-xs" onclick="applyRecommendedPrice('${p['ID']}', ${targetPrice})" ${targetPrice <= 0 || Math.abs(delta) < 0.01 ? 'disabled' : ''}>Apply</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pricing-kpis').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Target Margin</div><div class="kpi-value blue">${targetMargin.toFixed(0)}%</div></div>
+    <div class="kpi"><div class="kpi-label">Losing Money</div><div class="kpi-value ${lossCount?'red':'green'}">${lossCount}</div></div>
+    <div class="kpi"><div class="kpi-label">Below Target</div><div class="kpi-value ${underTargetCount?'yellow':'green'}">${underTargetCount}</div></div>
+    <div class="kpi"><div class="kpi-label">Unpriced</div><div class="kpi-value ${unpricedCount?'orange':'green'}">${unpricedCount}</div></div>
+    <div class="kpi"><div class="kpi-label">Total Price Lift</div><div class="kpi-value">${fmt$(totalLift)}</div></div>
+  `;
+  document.getElementById('pricing-tbody').innerHTML = rows || '<tr><td colspan="10"><div class="empty-state"><div class="icon">📦</div><p>No products yet</p></div></td></tr>';
+}
+
+async function applyRecommendedPrice(id, price) {
+  const product = DB.products.find(p => p['ID'] === id);
+  if (!product) return;
+  if (!confirm(`Update "${product['Product Name']}" sale price to ${fmt$(price)}?`)) return;
+  const row = Object.assign({}, product, { 'Sale Price ($)': price });
+  setSyncStatus('loading', 'Saving…');
+  try {
+    await api({ action: 'update', tab: 'Products', row });
+    await loadTab('products','Products');
+    renderProducts(); renderPricing(); renderInventory(); renderSales(); renderTax();
+    setSyncStatus('ok', 'Synced');
+  } catch(e) {
+    setSyncStatus('error', 'Save failed');
+    alert('Error: ' + e.message);
+  }
+}
+
 function updateCostPreview() {
   const filG     = parseFloat(document.getElementById('prod-fil-g').value)   || 0;
   const time     = parseFloat(document.getElementById('prod-time').value)     || 0;
@@ -1147,7 +1263,7 @@ async function saveProduct() {
     'TikTok Fee (%)':  parseFloat(document.getElementById('prod-tiktok').value)   || 0,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Products', row });
-  closeModal('product-modal'); await loadTab('products','Products'); renderProducts(); renderInventory(); renderSales(); renderTax();
+  closeModal('product-modal'); await loadTab('products','Products'); renderProducts(); renderPricing(); renderInventory(); renderSales(); renderTax();
 }
 
 // ═══ INVENTORY ═══
@@ -1950,7 +2066,9 @@ async function deleteItem(key, tab, id) {
   if (key==='sales')     renderSales();
   if (key==='queue')     renderQueue();
   if (key==='expenses')  renderExpenses();
-  if (['products','inventory','sales','expenses'].includes(key)) renderTax();
+  if (key==='products')  renderPricing();
+  if (key==='filament')  { renderProducts(); renderPricing(); renderInventory(); renderSales(); }
+  if (['filament','products','inventory','sales','expenses'].includes(key)) renderTax();
 }
 
 // ═══ BOOT ═══

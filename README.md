@@ -4,7 +4,7 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 
 **Live app:** https://centralcali3d.github.io/printflow/
 
-**Current version:** v1.9.0
+**Current version:** v1.10.0
 
 ---
 
@@ -13,6 +13,7 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 - **Filament** — Track every spool by type, color, cost, and quantity on hand.
 - **Supplies** — Manage hardware, hotends, bed plates, consumables, and printers.
 - **Products** — Full cost breakdown: filament, electricity, labor (prep time), and packaging. Profit and margin shown for TikTok and in-person.
+- **Pricing** — Target-margin recommendations, loss checks, and quick sale-price updates.
 - **Inventory** — Stock levels with build-to targets, velocity, and days-remaining estimates.
 - **Print Queue** — Auto-generated from inventory needs or manually added.
 - **Sales** — TikTok, In-Person, and Sample channels. Affiliate/creator fees, packaging costs, and shipping trip tracking per order.
@@ -167,6 +168,11 @@ The service worker caches only the app shell and icons. Apps Script data request
 ---
 
 ## Changelog
+
+### v1.10.0 — 2026-06-25
+- Added a Pricing tab with channel-aware target price recommendations
+- Added loss, below-target, and unpriced product flags for quick repricing review
+- Added one-click recommended price updates through the existing Products API
 
 ### v1.9.0 — 2026-06-25
 - Added a Tax Summary tab with date-range revenue, payout, COGS, expenses, mileage, net profit, and current inventory value
