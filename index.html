@@ -931,6 +931,9 @@ function productCost(p) {
 }
 
 function saleCost(s) {
+  const storedTotal = parseFloat(s['Total Cost ($)']);
+  if (s['Total Cost ($)'] !== undefined && s['Total Cost ($)'] !== '' && !Number.isNaN(storedTotal)) return storedTotal;
+
   const prod = DB.products.find(p => p['Product Name'] === s['Product Name']);
   const qty  = parseFloat(s['Qty']) || 1;
   const prodTotal = prod ? productCost(prod).total * qty : 0;
@@ -942,6 +945,20 @@ function saleCost(s) {
   // If sale has explicit packaging cost recorded, use it; otherwise use product default * qty
   const pkgAdjust = salePkg && salePkgCost > 0 ? (salePkgCost - (prod ? (PACKAGING_COSTS[prod['Packaging']] || 1.25) * qty : 0)) : 0;
   return prodTotal + pkgAdjust + affiliateCost + shippingCost;
+}
+
+function saleSnapshot(s) {
+  const totalCost = saleCost(s);
+  const qty = parseFloat(s['Qty']) || 1;
+  const payout = parseFloat(s['Payout ($)']) || 0;
+  const profit = payout - totalCost;
+  const margin = payout > 0 ? (profit / payout) * 100 : 0;
+  return {
+    unitCost: qty > 0 ? totalCost / qty : 0,
+    totalCost,
+    profit,
+    margin,
+  };
 }
 
 function recommendedPrice(totalCost, feePct, targetMarginPct) {
@@ -1750,6 +1767,11 @@ async function saveSale() {
     'Shipping Trip':    shippingTrip ? 'Yes' : 'No',
     'Notes':            document.getElementById('sale-notes').value,
   };
+  const snapshot = saleSnapshot(row);
+  row['Unit Cost ($)'] = Math.round(snapshot.unitCost * 100) / 100;
+  row['Total Cost ($)'] = Math.round(snapshot.totalCost * 100) / 100;
+  row['Profit ($)'] = Math.round(snapshot.profit * 100) / 100;
+  row['Margin (%)'] = Math.round(snapshot.margin * 10) / 10;
   await api({ action: id ? 'update' : 'write', tab: 'Sales', row });
   closeModal('sale-modal'); await loadTab('sales','Sales'); renderSales(); renderTax();
 }
@@ -1956,18 +1978,19 @@ function taxFileSuffix() {
 function exportTaxSales() {
   const t = buildTaxSummary();
   const rows = t.sales.map(s => {
-    const cogs = saleCost(s);
+    const snap = saleSnapshot(s);
     const payout = parseFloat(s['Payout ($)']) || 0;
     return {
       'Date': s['Date'], 'Order / Ref #': s['Order / Ref #'], 'Channel': s['Channel'],
       'Product Name': s['Product Name'], 'Color': s['Color'], 'Qty': s['Qty'],
       'Subtotal ($)': s['Subtotal ($)'], 'Payout ($)': payout.toFixed(2),
-      'COGS ($)': cogs.toFixed(2), 'Profit ($)': (payout - cogs).toFixed(2),
+      'Unit Cost ($)': snap.unitCost.toFixed(2), 'COGS ($)': snap.totalCost.toFixed(2),
+      'Profit ($)': snap.profit.toFixed(2), 'Margin (%)': snap.margin.toFixed(1),
       'Affiliate Fee ($)': s['Affiliate Fee ($)'] || 0, 'Packaging Cost ($)': s['Packaging Cost ($)'] || 0,
       'Status': s['Status'], 'Notes': s['Notes'] || '',
     };
   });
-  const headers = ['Date','Order / Ref #','Channel','Product Name','Color','Qty','Subtotal ($)','Payout ($)','COGS ($)','Profit ($)','Affiliate Fee ($)','Packaging Cost ($)','Status','Notes'];
+  const headers = ['Date','Order / Ref #','Channel','Product Name','Color','Qty','Subtotal ($)','Payout ($)','Unit Cost ($)','COGS ($)','Profit ($)','Margin (%)','Affiliate Fee ($)','Packaging Cost ($)','Status','Notes'];
   downloadCSV('printflow_sales_' + taxFileSuffix() + '.csv', headers, rows);
 }
 

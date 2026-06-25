@@ -194,6 +194,8 @@ Body:
 - `Filament (g)` is grams per print, not kilograms.
 - `Print Time (hr)` is machine time.
 - `Prep Time (hr)` is labor time.
+- Sales rows include cost/profit snapshot fields appended after `Notes`: `Unit Cost ($)`, `Total Cost ($)`, `Profit ($)`, and `Margin (%)`.
+- Reports should prefer Sales snapshot fields when present, then fall back to recalculating from current Products/Filament/Settings for older rows.
 
 ## Native App Implications
 

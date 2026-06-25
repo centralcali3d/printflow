@@ -9,7 +9,7 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 
 **Live app:** https://centralcali3d.github.io/printflow/
 **GitHub repo:** https://github.com/centralcali3d/printflow
-**Current version:** v1.10.0
+**Current version:** v1.11.0
 
 ---
 
@@ -55,7 +55,7 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 `ID | Product Name | Filament Type | Color | Qty Available | Qty Sold | On Loan | Build To`
 
 ### Sales
-`ID | Date | Order / Ref # | Channel | Product Name | Filament Type | Color | Qty | Sale Price ($) | Subtotal ($) | Payout ($) | Status | Affiliate Fee (%) | Affiliate Fee ($) | Packaging | Packaging Cost ($) | Shipping Trip | Notes`
+`ID | Date | Order / Ref # | Channel | Product Name | Filament Type | Color | Qty | Sale Price ($) | Subtotal ($) | Payout ($) | Status | Affiliate Fee (%) | Affiliate Fee ($) | Packaging | Packaging Cost ($) | Shipping Trip | Notes | Unit Cost ($) | Total Cost ($) | Profit ($) | Margin (%)`
 
 ### Queue
 `ID | Product Name | Filament Type | Color | Qty | Est. Print Time (hr) | Priority | Status | Notes | Date Added | Auto Generated`
@@ -236,9 +236,9 @@ Recommended next starting point:
 3. Add richer tax reporting if needed, such as monthly/quarterly breakdowns or Schedule C category mapping.
 
 Latest local update on 2026-06-25:
-- Added the Pricing tab in `index.html`.
-- Added channel-aware target price recommendations, loss checks, unpriced flags, and one-click sale price updates.
-- This was a frontend-only change; Apps Script tabs/headers/actions were not changed, so no new Apps Script deployment is required.
+- Added sale-level cost, profit, and margin snapshots in `index.html`.
+- Updated `PrintFlow_AppsScript.js` Sales headers and made `init` append missing headers to existing sheets.
+- This changes the Sales sheet structure. Deploy a new Apps Script version, update the app's backend URL, then run `?action=init`.
 
 ---
 
@@ -252,6 +252,7 @@ Latest local update on 2026-06-25:
 - [x] **PWA conversion** — added manifest, service worker, icon set, and mobile install polish for iPhone/iPad/Mac
 - [x] **Tax Summary and CSV exports** — date-range rollups for sales, COGS, fees, mileage, expenses, inventory value, and net profit
 - [x] **Pricing review tools** — target-margin recommendations and flags for unpriced/losing/below-target products
+- [x] **Sale profit snapshots** — new sales store unit cost, total cost, profit, and margin so historical promo profit/loss stays fixed
 
 ### Completed This Session
 - [x] Imported Claude handoff package into Codex working repo
@@ -271,6 +272,7 @@ Latest local update on 2026-06-25:
 - [x] Added PWA manifest, service worker, and install icons
 - [x] Added Tax Summary tab and CSV exports
 - [x] Added Pricing tab with target margin recommendations
+- [x] Added sale-level cost/profit snapshots
 
 ### Future Ideas Discussed
 - Native app path: current first step is complete as an installable PWA; evaluate wrapping or rebuilding once workflows stabilize

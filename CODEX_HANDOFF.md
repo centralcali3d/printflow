@@ -130,7 +130,7 @@ https://raw.githubusercontent.com/centralcali3d/printflow/main/PrintFlow_AppsScr
 `ID | Product Name | Filament Type | Color | Qty Available | Qty Sold | On Loan | Build To`
 
 ### Sales
-`ID | Date | Order / Ref # | Channel | Product Name | Filament Type | Color | Qty | Sale Price ($) | Subtotal ($) | Payout ($) | Status | Affiliate Fee (%) | Affiliate Fee ($) | Packaging | Packaging Cost ($) | Shipping Trip | Notes`
+`ID | Date | Order / Ref # | Channel | Product Name | Filament Type | Color | Qty | Sale Price ($) | Subtotal ($) | Payout ($) | Status | Affiliate Fee (%) | Affiliate Fee ($) | Packaging | Packaging Cost ($) | Shipping Trip | Notes | Unit Cost ($) | Total Cost ($) | Profit ($) | Margin (%)`
 
 ### Queue
 `ID | Product Name | Filament Type | Color | Qty | Est. Print Time (hr) | Priority | Status | Notes | Date Added | Auto Generated`

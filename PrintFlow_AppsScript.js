@@ -1,6 +1,6 @@
 // =====================================================================
 // PrintFlow — Google Apps Script Backend
-// Version: 1.3  |  Date: 2026-05-29
+// Version: 1.4  |  Date: 2026-06-25
 // ---------------------------------------------------------------------
 // SETUP INSTRUCTIONS:
 //   1. In your PrintFlow DB spreadsheet, go to:
@@ -25,6 +25,8 @@
 // 2026-05-29  v1.3  Added Expenses tab, updated Products/Sales headers
 //                   for prep time, packaging, affiliate fees, samples,
 //                   mileage logging. Added logTrip action.
+// 2026-06-25  v1.4  Added Sales cost/profit snapshot columns and
+//                   idempotent missing-header append during init.
 // =====================================================================
 
 const SHEET_ID = '14QXzXNVTDpCrmgaEutLsTFu-FIKR9PrLNw44XeN1mLs';
@@ -54,7 +56,8 @@ const TABS = {
     'Subtotal ($)', 'Payout ($)', 'Status',
     'Affiliate Fee (%)', 'Affiliate Fee ($)',
     'Packaging', 'Packaging Cost ($)',
-    'Shipping Trip', 'Notes'
+    'Shipping Trip', 'Notes',
+    'Unit Cost ($)', 'Total Cost ($)', 'Profit ($)', 'Margin (%)'
   ],
   Queue: [
     'ID', 'Product Name', 'Filament Type', 'Color', 'Qty',
@@ -143,6 +146,8 @@ function initSheets() {
       headerRange.setFontSize(10);
       sheet.setFrozenRows(1);
       sheet.autoResizeColumns(1, headers.length);
+    } else {
+      appendMissingHeaders(sheet, headers);
     }
   });
 
@@ -156,6 +161,23 @@ function initSheets() {
   }
 
   return { ok: true, created, message: 'Sheets initialized' };
+}
+
+function appendMissingHeaders(sheet, expectedHeaders) {
+  const lastCol = Math.max(sheet.getLastColumn(), 1);
+  const existing = sheet.getRange(1, 1, 1, lastCol).getValues()[0].filter(String);
+  const missing = expectedHeaders.filter(h => existing.indexOf(h) === -1);
+  if (!missing.length) return;
+
+  const startCol = existing.length + 1;
+  sheet.getRange(1, startCol, 1, missing.length).setValues([missing]);
+  const headerRange = sheet.getRange(1, startCol, 1, missing.length);
+  headerRange.setBackground('#1e2028');
+  headerRange.setFontColor('#a78bfa');
+  headerRange.setFontWeight('bold');
+  headerRange.setFontSize(10);
+  sheet.setFrozenRows(1);
+  sheet.autoResizeColumns(startCol, missing.length);
 }
 
 function initSettingsTab(ss, created) {

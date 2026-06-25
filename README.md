@@ -4,7 +4,7 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 
 **Live app:** https://centralcali3d.github.io/printflow/
 
-**Current version:** v1.10.0
+**Current version:** v1.11.0
 
 ---
 
@@ -77,6 +77,10 @@ Profit              = Payout − Total Cost
 | Packaging Cost ($) | Cost of packaging |
 | Shipping Trip | "Yes" if this order was included in a post office trip log |
 | Notes | Free text |
+| Unit Cost ($) | Cost snapshot per unit at the time the sale is saved |
+| Total Cost ($) | Total cost snapshot for this sale |
+| Profit ($) | Profit/loss snapshot using the sale's actual payout |
+| Margin (%) | Profit margin snapshot at the time the sale is saved |
 
 ---
 
@@ -168,6 +172,11 @@ The service worker caches only the app shell and icons. Apps Script data request
 ---
 
 ## Changelog
+
+### v1.11.0 — 2026-06-25
+- Added sale-level cost, profit, and margin snapshots so historical profit/loss stays tied to the sale price and costs at save time
+- Updated Sales and Tax reporting to prefer stored sale snapshots, with fallback calculations for older sales
+- Updated Apps Script Sales headers; deploy a new Apps Script version and run `?action=init` to append the new columns
 
 ### v1.10.0 — 2026-06-25
 - Added a Pricing tab with channel-aware target price recommendations
