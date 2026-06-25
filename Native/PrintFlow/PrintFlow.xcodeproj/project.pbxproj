@@ -11,6 +11,7 @@
 		1A2B3C4D5E6F700000000003 /* PrintFlowWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000103 /* PrintFlowWebView.swift */; };
 		1A2B3C4D5E6F700000000004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000104 /* Assets.xcassets */; };
 		1A2B3C4D5E6F700000000005 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000106 /* AppConfig.swift */; };
+		1A2B3C4D5E6F700000000006 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F700000000107 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +21,7 @@
 		1A2B3C4D5E6F700000000104 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1A2B3C4D5E6F700000000105 /* PrintFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PrintFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A2B3C4D5E6F700000000106 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F700000000107 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +48,7 @@
 				1A2B3C4D5E6F700000000101 /* PrintFlowApp.swift */,
 				1A2B3C4D5E6F700000000106 /* AppConfig.swift */,
 				1A2B3C4D5E6F700000000102 /* ContentView.swift */,
+				1A2B3C4D5E6F700000000107 /* SettingsView.swift */,
 				1A2B3C4D5E6F700000000103 /* PrintFlowWebView.swift */,
 				1A2B3C4D5E6F700000000104 /* Assets.xcassets */,
 			);
@@ -127,6 +130,7 @@
 				1A2B3C4D5E6F700000000001 /* PrintFlowApp.swift in Sources */,
 				1A2B3C4D5E6F700000000005 /* AppConfig.swift in Sources */,
 				1A2B3C4D5E6F700000000002 /* ContentView.swift in Sources */,
+				1A2B3C4D5E6F700000000006 /* SettingsView.swift in Sources */,
 				1A2B3C4D5E6F700000000003 /* PrintFlowWebView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

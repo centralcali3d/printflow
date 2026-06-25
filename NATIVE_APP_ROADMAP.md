@@ -101,7 +101,8 @@ Current progress:
 - Added loading/error overlay states
 - Verified compile with `xcodebuild` against `iphonesimulator26.5`
 - Verified interactive launch on iPhone 17 Pro Simulator
-- Prefills the current Apps Script `/exec` URL on first launch so the hosted app can sync immediately
+- Added native settings for viewing/updating the Apps Script `/exec` URL
+- Injects the saved Apps Script URL on launch/reload so the hosted app can sync immediately
 
 ### Phase 2: Native enhancements
 
@@ -109,7 +110,6 @@ Target:
 - make the app feel better than a wrapper
 
 Work:
-- native settings screen
 - native network status and retry UX
 - file export/share support
 - optional barcode/label/photo workflows if needed later
@@ -166,9 +166,9 @@ Recommended structure:
 ## Immediate Next Work
 
 The next practical tasks are:
-- add native settings for viewing/updating the Apps Script URL
 - add native share/export hooks for CSV files
 - test the shell on iPad and Mac targets
+- add native sync-health/status checks around the hosted app
 
 ## Decision
 

@@ -1,17 +1,42 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("scriptURL") private var scriptURL = AppConfig.defaultScriptURL
+
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var isSettingsPresented = false
+    @State private var reloadToken = UUID()
 
     var body: some View {
         ZStack {
             PrintFlowWebView(
                 url: AppConfig.printFlowURL,
-                defaultScriptURL: AppConfig.defaultScriptURL,
+                scriptURL: scriptURL,
                 isLoading: $isLoading,
                 errorMessage: $errorMessage
             )
+            .id(reloadToken)
+
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button {
+                        isSettingsPresented = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 48, height: 48)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .overlay(Circle().strokeBorder(.white.opacity(0.18)))
+                            .shadow(radius: 10, y: 3)
+                    }
+                    .accessibilityLabel("Native settings")
+                    .padding(18)
+                }
+            }
 
             if isLoading {
                 LoadingOverlay()
@@ -24,6 +49,17 @@ struct ContentView: View {
                 }
             }
         }
+        .sheet(isPresented: $isSettingsPresented) {
+            SettingsView(scriptURL: $scriptURL) {
+                reloadWebView()
+            }
+        }
+    }
+
+    private func reloadWebView() {
+        errorMessage = nil
+        isLoading = true
+        reloadToken = UUID()
     }
 }
 

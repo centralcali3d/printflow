@@ -3,7 +3,7 @@ import WebKit
 
 struct PrintFlowWebView: UIViewRepresentable {
     let url: URL
-    let defaultScriptURL: String
+    let scriptURL: String
     @Binding var isLoading: Bool
     @Binding var errorMessage: String?
 
@@ -15,7 +15,7 @@ struct PrintFlowWebView: UIViewRepresentable {
         let configuration = WKWebViewConfiguration()
         configuration.allowsInlineMediaPlayback = true
         configuration.websiteDataStore = .default()
-        configuration.userContentController.addUserScript(defaultScriptURLScript())
+        configuration.userContentController.addUserScript(scriptURLInjectionScript())
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
@@ -25,14 +25,12 @@ struct PrintFlowWebView: UIViewRepresentable {
         return webView
     }
 
-    private func defaultScriptURLScript() -> WKUserScript {
-        let escaped = defaultScriptURL
+    private func scriptURLInjectionScript() -> WKUserScript {
+        let escaped = scriptURL
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "'", with: "\\'")
         let source = """
-        if (!window.localStorage.getItem('pf_script_url')) {
-          window.localStorage.setItem('pf_script_url', '\(escaped)');
-        }
+        window.localStorage.setItem('pf_script_url', '\(escaped)');
         """
         return WKUserScript(source: source, injectionTime: .atDocumentStart, forMainFrameOnly: true)
     }
