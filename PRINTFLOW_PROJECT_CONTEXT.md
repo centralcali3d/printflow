@@ -220,6 +220,17 @@ Current Git state at handoff:
 - Latest pushed commit: `5df80e3 Add PWA install support`
 - Previous handoff commit: `917346a Document Codex handoff`
 
+Git sync workflow for every future PrintFlow session:
+1. Before editing, sync to GitHub first because the live app is published from `origin/main`.
+2. Run `git fetch origin`
+3. Run `git status --short --branch`
+4. Run `git pull --rebase origin main`
+5. Confirm the repo is clean before editing `index.html` or `PrintFlow_AppsScript.js`.
+6. Make the change locally and do a quick verification pass such as `git diff` plus a syntax/manual sanity check.
+7. Commit the change in a focused commit and push it the same session so GitHub Pages picks it up quickly.
+8. If push is rejected, fetch again and rebase instead of force-pushing `main`.
+9. Because this app is mostly a single-file frontend, assume small concurrent edits can conflict and always prefer rebase-first sync over parallel local drift.
+
 What was verified in the Codex takeover:
 - The GitHub `main` branch already contained the v1.5-v1.7 inventory fixes, including duplicate-row prevention, Save button double-click protection, `deductFilament()`, and filament auto-deduction.
 - The PWA pass added install metadata, service worker shell caching, and generated icons.
