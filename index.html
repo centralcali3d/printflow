@@ -830,8 +830,7 @@ function uniqueSorted(values) {
 
 function getFilamentTypes(extra = []) {
   const liveTypes = uniqueSorted(DB.filament.map(f => f['Type']));
-  const fallback  = liveTypes.length ? [] : DEFAULT_FILAMENT_TYPES;
-  return uniqueSorted([...fallback, ...liveTypes, ...extra]);
+  return uniqueSorted([...DEFAULT_FILAMENT_TYPES, ...liveTypes, ...extra]);
 }
 
 function setSelectOptions(selectId, options, selectedValue = '', placeholder = '') {
