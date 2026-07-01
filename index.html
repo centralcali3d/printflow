@@ -174,13 +174,7 @@
       </div>
       <div class="filters">
         <input class="filter-input" type="text" id="fil-search" placeholder="⌕" oninput="renderFilament()" style="max-width:180px;">
-        <select class="filter-input" id="fil-type-filter" onchange="renderFilament()">
-          <option value="">All Types</option>
-          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
-          <option>PLA Translucent</option><option>PLA Wood</option>
-          <option>PETG HF</option><option>PETG, SunLu</option><option>ABS</option>
-          <option>TPU for AMS</option><option>Elegoo</option>
-        </select>
+        <select class="filter-input" id="fil-type-filter" onchange="renderFilament()"></select>
         <select class="filter-input" id="fil-status-filter" onchange="renderFilament()">
           <option value="">All</option><option>In Stock</option><option>Low</option><option>Out</option><option>Ordered</option>
         </select>
@@ -448,11 +442,8 @@
     <input type="hidden" id="fil-edit-id">
     <div class="form-grid">
       <div class="form-group full"><label>Type</label>
-        <select id="fil-type">
-          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
-          <option>PLA Translucent</option><option>PLA Wood</option><option>PETG HF</option>
-          <option>PETG, SunLu</option><option>ABS</option><option>TPU for AMS</option><option>Elegoo</option><option>Other</option>
-        </select>
+        <input type="text" id="fil-type" list="fil-type-options" placeholder="Type a filament type">
+        <datalist id="fil-type-options"></datalist>
       </div>
       <div class="form-group full"><label>Color Name</label><input type="text" id="fil-color"></div>
       <div class="form-group"><label>On Hand (kg)</label><input type="number" step="0.1" id="fil-onhand"></div>
@@ -503,10 +494,7 @@
       <div class="form-group"><label>Weight (lb)</label><input type="number" step="0.01" id="prod-wt"></div>
       <div class="form-group"><label>Filament (g)</label><input type="number" step="1" id="prod-fil-g" oninput="updateCostPreview()"></div>
       <div class="form-group"><label>Filament Type</label>
-        <select id="prod-fil-type" onchange="updateCostPreview()">
-          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
-          <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
-        </select>
+        <select id="prod-fil-type" onchange="updateCostPreview()"></select>
       </div>
       <div class="form-group"><label>Print Time (hr)</label><input type="number" step="0.01" id="prod-time" oninput="updateCostPreview()"></div>
       <div class="form-group"><label>Prep Time (hr)</label><input type="number" step="0.01" id="prod-prep" oninput="updateCostPreview()"></div>
@@ -549,10 +537,7 @@
     <div class="form-grid">
       <div class="form-group full"><label>Product</label><select id="inv-product"></select></div>
       <div class="form-group"><label>Filament Type</label>
-        <select id="inv-fil-type" onchange="updateInvColors()">
-          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
-          <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
-        </select>
+        <select id="inv-fil-type" onchange="updateInvColors()"></select>
       </div>
       <div class="form-group full"><label>Color</label><select id="inv-color"></select></div>
       <div class="form-group"><label>Qty Available</label><input type="number" id="inv-qty" value="0"></div>
@@ -703,10 +688,7 @@
       <div class="form-group full"><label>Product</label><select id="q-product"></select></div>
       <div class="form-group"><label>Qty to Print</label><input type="number" id="q-qty" value="1"></div>
       <div class="form-group"><label>Filament Type</label>
-        <select id="q-filtype">
-          <option>PLA Basic</option><option>PLA Basic Matte</option><option>PLA Silk+</option>
-          <option>PLA Translucent</option><option>PETG HF</option><option>ABS</option><option>TPU for AMS</option>
-        </select>
+        <select id="q-filtype"></select>
       </div>
       <div class="form-group full"><label>Color</label><input type="text" id="q-color"></div>
       <div class="form-group full"><label>Priority</label>
@@ -725,6 +707,7 @@
 // ═══ STATE ═══
 const DB = { filament:[], supplies:[], products:[], inventory:[], sales:[], queue:[], expenses:[] };
 let SCRIPT_URL = localStorage.getItem('pf_script_url') || '';
+const DEFAULT_FILAMENT_TYPES = ['PLA Basic', 'PLA Basic Matte', 'PLA Silk+', 'PLA Translucent', 'PLA Wood', 'PETG Basic', 'PETG HF', 'PETG, SunLu', 'ABS', 'TPU for AMS', 'Elegoo'];
 
 let SETTINGS = {
   electricity_rate_per_hr: 0.17,
@@ -738,6 +721,7 @@ const PACKAGING_COSTS = { 'Small Box': 1.25, 'Medium Box': 1.75, 'Large Box': 2.
 
 // ═══ INIT ═══
 async function initApp() {
+  refreshFilamentTypeInputs();
   const savedUrl = localStorage.getItem('pf_script_url');
   if (savedUrl) {
     SCRIPT_URL = savedUrl;
@@ -840,6 +824,43 @@ function fmtG(n)  { return (+n||0).toFixed(0) + ' g'; }
 function todayISO() { return new Date().toISOString().slice(0,10); }
 function startOfYearISO() { return new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0,10); }
 
+function uniqueSorted(values) {
+  return [...new Set(values.filter(Boolean).map(v => String(v).trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
+function getFilamentTypes(extra = []) {
+  const liveTypes = uniqueSorted(DB.filament.map(f => f['Type']));
+  const fallback  = liveTypes.length ? [] : DEFAULT_FILAMENT_TYPES;
+  return uniqueSorted([...fallback, ...liveTypes, ...extra]);
+}
+
+function setSelectOptions(selectId, options, selectedValue = '', placeholder = '') {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const allOptions = uniqueSorted([selectedValue, ...options]);
+  sel.innerHTML = [
+    placeholder ? `<option value="">${placeholder}</option>` : '',
+    ...allOptions.map(opt => `<option>${opt}</option>`)
+  ].join('');
+  sel.value = selectedValue && allOptions.includes(selectedValue) ? selectedValue : (placeholder ? '' : (allOptions[0] || ''));
+}
+
+function setDatalistOptions(listId, options) {
+  const list = document.getElementById(listId);
+  if (!list) return;
+  list.innerHTML = uniqueSorted(options).map(opt => `<option value="${opt}"></option>`).join('');
+}
+
+function refreshFilamentTypeInputs() {
+  const types = getFilamentTypes();
+  setSelectOptions('fil-type-filter', types, document.getElementById('fil-type-filter')?.value || '', 'All Types');
+  setSelectOptions('prod-fil-type', types, document.getElementById('prod-fil-type')?.value || '');
+  setSelectOptions('inv-fil-type', types, document.getElementById('inv-fil-type')?.value || '');
+  setSelectOptions('q-filtype', types, document.getElementById('q-filtype')?.value || '');
+  setSelectOptions('sale-filtype', types, document.getElementById('sale-filtype')?.value || '');
+  setDatalistOptions('fil-type-options', types);
+}
+
 function pkgCost(pkgLabel, customVal) {
   if (pkgLabel === 'Other') return parseFloat(customVal) || 0;
   return PACKAGING_COSTS[pkgLabel] || 1.25;
@@ -907,7 +928,7 @@ async function connectScript() {
 }
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function renderAll() { renderFilament(); renderSupplies(); renderProducts(); renderPricing(); renderInventory(); renderQueue(); renderSales(); renderExpenses(); renderTax(); }
+function renderAll() { refreshFilamentTypeInputs(); renderFilament(); renderSupplies(); renderProducts(); renderPricing(); renderInventory(); renderQueue(); renderSales(); renderExpenses(); renderTax(); }
 
 // ═══ COST CALC ═══
 function filCostPerKg(type) {
@@ -1004,6 +1025,7 @@ function renderFilament() {
 }
 
 function openFilamentModal(id) {
+  refreshFilamentTypeInputs();
   document.getElementById('filament-modal-title').textContent = id ? 'Edit Filament' : 'Add Filament';
   document.getElementById('fil-edit-id').value = id || '';
   if (id) {
@@ -1019,6 +1041,7 @@ function openFilamentModal(id) {
       document.getElementById('fil-swatch').value  = f['Swatch Hex'] || '#ffffff';
     }
   } else {
+    document.getElementById('fil-type').value = '';
     document.getElementById('fil-color').value = '';
     document.getElementById('fil-onhand').value = '';
     document.getElementById('fil-cost').value = '';
@@ -1028,10 +1051,12 @@ function openFilamentModal(id) {
 
 async function saveFilament() {
   const id    = document.getElementById('fil-edit-id').value;
+  const type  = document.getElementById('fil-type').value.trim();
   const color = document.getElementById('fil-color').value.trim();
+  if (!type) { alert('Filament type required'); return; }
   if (!color) { alert('Color name required'); return; }
   const row = {
-    'ID': id || 'fil_' + Date.now(), 'Type': document.getElementById('fil-type').value,
+    'ID': id || 'fil_' + Date.now(), 'Type': type,
     'Color': color, 'On Hand (kg)': parseFloat(document.getElementById('fil-onhand').value)||0,
     'Cost per Spool ($)': parseFloat(document.getElementById('fil-cost').value)||0,
     'Build To (spools)': parseInt(document.getElementById('fil-buildto').value)||0,
@@ -1039,7 +1064,7 @@ async function saveFilament() {
     'Swatch Hex': document.getElementById('fil-swatch').value,
   };
   await api({ action: id ? 'update' : 'write', tab: 'Filament', row });
-  closeModal('filament-modal'); await loadTab('filament','Filament'); renderFilament(); renderProducts(); renderPricing(); renderInventory(); renderSales(); renderTax();
+  closeModal('filament-modal'); await loadTab('filament','Filament'); refreshFilamentTypeInputs(); renderFilament(); renderProducts(); renderPricing(); renderInventory(); renderSales(); renderTax();
 }
 
 // ═══ SUPPLIES ═══
@@ -1239,6 +1264,7 @@ function openProductModal(id) {
   if (id) {
     const p = DB.products.find(x => x['ID'] === id);
     if (p) {
+      setSelectOptions('prod-fil-type', getFilamentTypes([p['Filament Type'] || '']), p['Filament Type'] || '');
       document.getElementById('prod-name').value     = p['Product Name'];
       document.getElementById('prod-w').value        = p['Width (in)'];
       document.getElementById('prod-d').value        = p['Depth (in)'];
@@ -1253,6 +1279,7 @@ function openProductModal(id) {
       document.getElementById('prod-tiktok').value   = p['TikTok Fee (%)'];
     }
   } else {
+    refreshFilamentTypeInputs();
     ['prod-name','prod-w','prod-d','prod-h','prod-wt','prod-fil-g','prod-time','prod-prep','prod-price'].forEach(i => document.getElementById(i).value='');
     document.getElementById('prod-tiktok').value = '10';
     document.getElementById('prod-packaging').value = 'Small Box';
@@ -1339,11 +1366,12 @@ function renderInventory() {
   }).join('') || '<tr><td colspan="11"><div class="empty-state"><div class="icon">📊</div><p>No inventory records</p></div></td></tr>';
 }
 
-function updateInvColors() {
+function updateInvColors(selectedColor = '') {
   const type   = document.getElementById('inv-fil-type').value;
-  const colors = DB.filament.filter(f => f['Type'] === type).map(f => f['Color']).sort();
+  const colors = uniqueSorted(DB.filament.filter(f => f['Type'] === type).map(f => f['Color']));
   const sel    = document.getElementById('inv-color');
   sel.innerHTML = colors.map(c => `<option>${c}</option>`).join('');
+  sel.value = selectedColor && colors.includes(selectedColor) ? selectedColor : (colors[0] || '');
 }
 
 function openInventoryModal(id) {
@@ -1354,16 +1382,17 @@ function openInventoryModal(id) {
   if (id) {
     const inv = DB.inventory.find(x => x['ID'] === id);
     if (inv) {
+      setSelectOptions('inv-fil-type', getFilamentTypes([inv['Filament Type'] || '']), inv['Filament Type'] || '');
       document.getElementById('inv-product').value  = inv['Product Name'];
       document.getElementById('inv-fil-type').value = inv['Filament Type'];
-      updateInvColors();
-      if (inv['Color']) document.getElementById('inv-color').value = inv['Color'];
+      updateInvColors(inv['Color'] || '');
       document.getElementById('inv-qty').value      = inv['Qty Available'];
       document.getElementById('inv-sold').value     = inv['Qty Sold'];
       document.getElementById('inv-loan').value     = inv['On Loan'];
       document.getElementById('inv-buildto').value  = inv['Build To'];
     }
   } else {
+    refreshFilamentTypeInputs();
     updateInvColors();
     document.getElementById('inv-qty').value='0';
     document.getElementById('inv-sold').value='0'; document.getElementById('inv-loan').value='0';
@@ -1488,6 +1517,7 @@ async function deductFilament(productName, filType, color, qty) {
   const updatedFil = Object.assign({}, filRow, { 'On Hand (kg)': Math.round(newKg * 1000) / 1000 });
   await api({ action: 'update', tab: 'Filament', row: updatedFil });
   await loadTab('filament', 'Filament');
+  refreshFilamentTypeInputs();
   renderFilament();
   return true;
 }
@@ -1513,7 +1543,10 @@ function renderQueue() {
     </div>`).join('') || '<div class="empty-state"><div class="icon">🖨️</div><p>Queue is empty — refresh from Inventory or add a manual job</p></div>';
 }
 
-function openManualQueueModal() { openModal('queue-modal'); }
+function openManualQueueModal() {
+  refreshFilamentTypeInputs();
+  openModal('queue-modal');
+}
 async function completeQueueJob(id) { await deleteItem('queue','Queue',id); }
 
 async function saveQueueJob() {
@@ -1698,10 +1731,9 @@ function onSaleProductChange() { updateSaleFilaments(); }
 function updateSaleFilaments() {
   const name  = document.getElementById('sale-product').value;
   const prod  = DB.products.find(p => p['Product Name'] === name);
-  const types = [...new Set(DB.filament.map(f => f['Type']))].sort();
-  const sel   = document.getElementById('sale-filtype');
-  sel.innerHTML = types.map(t => `<option>${t}</option>`).join('');
-  if (prod && prod['Filament Type']) sel.value = prod['Filament Type'];
+  const currentType = document.getElementById('sale-filtype').value;
+  const selectedType = (prod && prod['Filament Type']) || currentType;
+  setSelectOptions('sale-filtype', getFilamentTypes(selectedType ? [selectedType] : []), selectedType);
   if (prod) {
     document.getElementById('sale-price').value = prod['Sale Price ($)'];
     document.getElementById('sale-packaging').value = prod['Packaging'] || 'Small Box';
@@ -1711,8 +1743,10 @@ function updateSaleFilaments() {
 
 function updateSaleColors() {
   const type   = document.getElementById('sale-filtype').value;
-  const colors = DB.filament.filter(f => f['Type'] === type).map(f => f['Color']).sort();
+  const currentColor = document.getElementById('sale-color').value;
+  const colors = uniqueSorted(DB.filament.filter(f => f['Type'] === type).map(f => f['Color']));
   document.getElementById('sale-color').innerHTML = colors.map(c => `<option>${c}</option>`).join('');
+  document.getElementById('sale-color').value = currentColor && colors.includes(currentColor) ? currentColor : (colors[0] || '');
   updatePayoutPreview();
 }
 
@@ -2082,7 +2116,7 @@ async function deleteItem(key, tab, id) {
   if (!confirm('Delete this item?')) return;
   await api({ action: 'delete', tab, id });
   await loadTab(key, tab);
-  if (key==='filament')  renderFilament();
+  if (key==='filament') { refreshFilamentTypeInputs(); renderFilament(); }
   if (key==='supplies')  renderSupplies();
   if (key==='products')  renderProducts();
   if (key==='inventory') renderInventory();
