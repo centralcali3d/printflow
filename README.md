@@ -16,7 +16,7 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 - **Pricing** — Target-margin recommendations, loss checks, and quick sale-price updates.
 - **Inventory** — Stock levels with build-to targets, velocity, and days-remaining estimates.
 - **Print Queue** — Auto-generated from inventory needs or manually added.
-- **Sales** — TikTok, In-Person, and Sample channels. Affiliate/creator fees, packaging costs, and shipping trip tracking per order.
+- **Sales** — TikTok, In-Person, and Sample channels. Affiliate/creator fees, packaging costs, and automatic post-office mileage logging for shipped TikTok orders.
 - **Expenses** — Log hardware, marketing, software, mileage, and other overhead. IRS-compliant post office trip logger built in.
 - **Tax Summary** — Date-range rollups for sales, COGS, expenses, mileage, net profit, inventory value, and CSV exports.
 - **Settings** — Electricity rate, labor rate, mileage rate, and post office miles — all synced to the spreadsheet.
@@ -75,7 +75,7 @@ Profit              = Payout − Total Cost
 | Affiliate Fee ($) | Calculated dollar amount |
 | Packaging | Box type used for this order |
 | Packaging Cost ($) | Cost of packaging |
-| Shipping Trip | "Yes" if this order was included in a post office trip log |
+| Shipping Trip | "Yes" if saving this sale should create a post office mileage expense |
 | Notes | Free text |
 | Unit Cost ($) | Cost snapshot per unit at the time the sale is saved |
 | Total Cost ($) | Total cost snapshot for this sale |
@@ -93,6 +93,8 @@ Categories: Hardware, Hotends, Bed Plates, Consumables, Marketing, Video/Editing
 ### Post Office Trip Logger
 
 The 🚗 **Log Post Office Trip** button on the Sales tab creates an IRS-compliant mileage entry in the Expenses tab automatically. It records: date, destination (USPS Post Office), business purpose (Shipping customer orders), round-trip miles, and cost at the IRS rate.
+
+When saving a TikTok sale, checking **Include in next post office trip log** now creates that mileage expense automatically using the sale date and the configured round-trip post office mileage. The expense includes the order / ref number in the description, and if the order / ref field is blank the app prompts for it before saving.
 
 ---
 
@@ -173,6 +175,11 @@ The service worker caches only the app shell and icons. Apps Script data request
 ---
 
 ## Changelog
+
+### v1.11.1 — 2026-07-05
+- Saving a sale with **Include in next post office trip log** now auto-creates the mileage expense instead of only marking the sale
+- The mileage expense includes the sale's order / ref number in the description
+- If the order / ref field is blank when shipping is checked, the app prompts for it before saving
 
 ### v1.11.0 — 2026-06-25
 - Added sale-level cost, profit, and margin snapshots so historical profit/loss stays tied to the sale price and costs at save time
