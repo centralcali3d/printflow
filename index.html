@@ -982,6 +982,103 @@ function saleSnapshot(s) {
   };
 }
 
+function normalizeInventoryText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function describeSaleInventory(saleLike) {
+  return [
+    saleLike?.['Product Name'] || 'Unknown product',
+    saleLike?.['Filament Type'] || 'Unknown type',
+    saleLike?.['Color'] || 'Unknown color',
+  ].join(' / ');
+}
+
+function findInventoryRowForSale(saleLike) {
+  if (!saleLike) return null;
+  const productName = normalizeInventoryText(saleLike['Product Name']);
+  const filamentType = normalizeInventoryText(saleLike['Filament Type']);
+  const color = normalizeInventoryText(saleLike['Color']);
+  if (!productName || !filamentType || !color) return null;
+  return DB.inventory.find(inv =>
+    normalizeInventoryText(inv['Product Name']) === productName &&
+    normalizeInventoryText(inv['Filament Type']) === filamentType &&
+    normalizeInventoryText(inv['Color']) === color
+  ) || null;
+}
+
+function buildSaleInventoryPlan(previousSale, nextSale) {
+  const changes = new Map();
+  const issues = [];
+
+  const register = (saleLike, availDelta, soldDelta, mode) => {
+    if (!saleLike) return;
+    const qty = parseInt(saleLike['Qty']) || 0;
+    if (qty <= 0) return;
+
+    const row = findInventoryRowForSale(saleLike);
+    if (!row) {
+      const label = describeSaleInventory(saleLike);
+      if (mode === 'deduct') {
+        issues.push(`No inventory row exists for ${label}. Add inventory for that exact product/type/color first.`);
+      } else {
+        issues.push(`The original inventory row for ${label} no longer exists, so this sale cannot restore stock automatically.`);
+      }
+      return;
+    }
+
+    const existing = changes.get(row['ID']) || {
+      before: row,
+      availDelta: 0,
+      soldDelta: 0,
+    };
+    existing.availDelta += availDelta * qty;
+    existing.soldDelta += soldDelta * qty;
+    changes.set(row['ID'], existing);
+  };
+
+  register(previousSale, 1, -1, 'restore');
+  register(nextSale, -1, 1, 'deduct');
+
+  const updates = [];
+  changes.forEach(({ before, availDelta, soldDelta }) => {
+    if (!availDelta && !soldDelta) return;
+    const nextAvailable = (parseInt(before['Qty Available']) || 0) + availDelta;
+    const nextSold = (parseInt(before['Qty Sold']) || 0) + soldDelta;
+    if (nextAvailable < 0) {
+      issues.push(`Not enough inventory for ${describeSaleInventory(before)}. Available: ${before['Qty Available'] || 0}, needed: ${Math.abs(availDelta)}.`);
+      return;
+    }
+    if (nextSold < 0) {
+      issues.push(`Qty Sold would go negative for ${describeSaleInventory(before)}. Please check that inventory row before changing this sale.`);
+      return;
+    }
+    updates.push({
+      before,
+      after: Object.assign({}, before, {
+        'Qty Available': nextAvailable,
+        'Qty Sold': nextSold,
+      }),
+    });
+  });
+
+  if (issues.length) {
+    return { ok: false, message: issues.join('\n\n') };
+  }
+
+  return { ok: true, updates };
+}
+
+async function applyInventoryPlan(plan, direction = 'forward') {
+  const steps = direction === 'rollback'
+    ? [...plan.updates].reverse().map(update => update.before)
+    : plan.updates.map(update => update.after);
+
+  for (const row of steps) {
+    await api({ action: 'update', tab: 'Inventory', row });
+  }
+}
+
 function recommendedPrice(totalCost, feePct, targetMarginPct) {
   const feeRate = (parseFloat(feePct) || 0) / 100;
   const marginRate = (parseFloat(targetMarginPct) || 0) / 100;
@@ -1823,13 +1920,35 @@ async function saveSale() {
   row['Total Cost ($)'] = Math.round(snapshot.totalCost * 100) / 100;
   row['Profit ($)'] = Math.round(snapshot.profit * 100) / 100;
   row['Margin (%)'] = Math.round(snapshot.margin * 10) / 10;
-  await api({ action: id ? 'update' : 'write', tab: 'Sales', row });
-  if (shippingTrip && !originalShippingTrip) {
-    await api({ action: 'logTrip', date: row['Date'], orderCount: qty, orderRefs: orderRef });
-    await loadTab('expenses','Expenses');
-    renderExpenses();
+  const previousSale = id ? DB.sales.find(x => x['ID'] === id) : null;
+  const inventoryPlan = buildSaleInventoryPlan(previousSale, row);
+  if (!inventoryPlan.ok) {
+    alert(inventoryPlan.message);
+    return;
   }
-  closeModal('sale-modal'); await loadTab('sales','Sales'); renderSales(); renderTax();
+
+  let inventoryApplied = false;
+  try {
+    await applyInventoryPlan(inventoryPlan);
+    inventoryApplied = true;
+    await api({ action: id ? 'update' : 'write', tab: 'Sales', row });
+    if (shippingTrip && !originalShippingTrip) {
+      await api({ action: 'logTrip', date: row['Date'], orderCount: qty, orderRefs: orderRef });
+      await loadTab('expenses','Expenses');
+      renderExpenses();
+    }
+  } catch (e) {
+    if (inventoryApplied) {
+      try {
+        await applyInventoryPlan(inventoryPlan, 'rollback');
+      } catch (rollbackError) {
+        console.error('Inventory rollback failed after sale save error', rollbackError);
+      }
+    }
+    throw e;
+  }
+  await loadTab('inventory', 'Inventory');
+  closeModal('sale-modal'); await loadTab('sales','Sales'); renderSales(); renderInventory(); renderTax();
 }
 
 // ═══ POST OFFICE TRIP ═══
@@ -2136,13 +2255,41 @@ async function saveExpense() {
 // ═══ DELETE ═══
 async function deleteItem(key, tab, id) {
   if (!confirm('Delete this item?')) return;
-  await api({ action: 'delete', tab, id });
+  let inventoryPlan = null;
+  let inventoryApplied = false;
+  if (key === 'sales') {
+    const existingSale = DB.sales.find(row => row['ID'] === id);
+    inventoryPlan = buildSaleInventoryPlan(existingSale, null);
+    if (!inventoryPlan.ok) {
+      alert(inventoryPlan.message);
+      return;
+    }
+  }
+
+  try {
+    if (inventoryPlan) {
+      await applyInventoryPlan(inventoryPlan);
+      inventoryApplied = true;
+    }
+    await api({ action: 'delete', tab, id });
+  } catch (e) {
+    if (inventoryApplied && inventoryPlan) {
+      try {
+        await applyInventoryPlan(inventoryPlan, 'rollback');
+      } catch (rollbackError) {
+        console.error('Inventory rollback failed after delete error', rollbackError);
+      }
+    }
+    throw e;
+  }
+
+  if (key === 'sales') await loadTab('inventory', 'Inventory');
   await loadTab(key, tab);
   if (key==='filament') { refreshFilamentTypeInputs(); renderFilament(); }
   if (key==='supplies')  renderSupplies();
   if (key==='products')  renderProducts();
   if (key==='inventory') renderInventory();
-  if (key==='sales')     renderSales();
+  if (key==='sales')     { renderSales(); renderInventory(); }
   if (key==='queue')     renderQueue();
   if (key==='expenses')  renderExpenses();
   if (key==='products')  renderPricing();

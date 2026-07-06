@@ -1,5 +1,5 @@
 # PrintFlow — Project Context & Continuity Document
-*Last updated: 2026-06-25*
+*Last updated: 2026-07-06*
 
 ---
 
@@ -9,7 +9,7 @@ A single-file web app for managing a 3D printing business. Built for one user ru
 
 **Live app:** https://centralcali3d.github.io/printflow/
 **GitHub repo:** https://github.com/centralcali3d/printflow
-**Current version:** v1.11.0
+**Current version:** v1.11.2
 
 ---
 
@@ -267,6 +267,7 @@ Latest local update on 2026-06-25:
 - [x] **Tax Summary and CSV exports** — date-range rollups for sales, COGS, fees, mileage, expenses, inventory value, and net profit
 - [x] **Pricing review tools** — target-margin recommendations and flags for unpriced/losing/below-target products
 - [x] **Sale profit snapshots** — new sales store unit cost, total cost, profit, and margin so historical promo profit/loss stays fixed
+- [x] **Sale-driven inventory deduction** — saving, editing, and deleting a sale now reconciles the matching inventory row and blocks oversells
 - [x] **Native app shell scaffold** — SwiftUI + `WKWebView` project added under `Native/PrintFlow`
 - [x] **Native backend settings** — iOS settings sheet can save/reset the Apps Script deployment URL
 - [x] **Native icon and settings polish** — CC3D icon asset added and gear button reduced

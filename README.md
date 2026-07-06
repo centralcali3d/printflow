@@ -4,7 +4,7 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 
 **Live app:** https://centralcali3d.github.io/printflow/
 
-**Current version:** v1.11.0
+**Current version:** v1.11.2
 
 ---
 
@@ -16,7 +16,7 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 - **Pricing** — Target-margin recommendations, loss checks, and quick sale-price updates.
 - **Inventory** — Stock levels with build-to targets, velocity, and days-remaining estimates.
 - **Print Queue** — Auto-generated from inventory needs or manually added.
-- **Sales** — TikTok, In-Person, and Sample channels. Affiliate/creator fees, packaging costs, and automatic post-office mileage logging for shipped TikTok orders.
+- **Sales** — TikTok, In-Person, and Sample channels. Affiliate/creator fees, packaging costs, automatic inventory deduction by product/type/color, and post-office mileage logging for shipped TikTok orders.
 - **Expenses** — Log hardware, marketing, software, mileage, and other overhead. IRS-compliant post office trip logger built in.
 - **Tax Summary** — Date-range rollups for sales, COGS, expenses, mileage, net profit, inventory value, and CSV exports.
 - **Settings** — Electricity rate, labor rate, mileage rate, and post office miles — all synced to the spreadsheet.
@@ -175,6 +175,12 @@ The service worker caches only the app shell and icons. Apps Script data request
 ---
 
 ## Changelog
+
+### v1.11.2 — 2026-07-06
+- Saving a sale now deducts the matching inventory row automatically using the selected product, filament type, and color
+- The same save also increases `Qty Sold`, and warns before saving if there is not enough stock on hand
+- Editing or deleting a sale now reverses and reapplies the related inventory movement so stock stays aligned
+- Bumped the PWA service-worker cache name so deployed clients refresh to the new sale/inventory behavior
 
 ### v1.11.1 — 2026-07-05
 - Saving a sale with **Include in next post office trip log** now auto-creates the mileage expense instead of only marking the sale

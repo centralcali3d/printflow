@@ -45,8 +45,11 @@ The owner (Tony) runs a small 3D printing business selling on TikTok Shop and in
 
 | File | Description |
 |------|-------------|
-| `index.html` | Entire frontend — HTML, CSS, JS all in one file (~1580 lines) |
+| `index.html` | Entire frontend — HTML, CSS, JS all in one file |
 | `PrintFlow_AppsScript.js` | Google Apps Script backend (v1.3) |
+| `manifest.json` | PWA install metadata |
+| `sw.js` | Service worker for app-shell caching |
+| `assets/` | PWA icons and install assets |
 | `README.md` | User-facing docs with setup instructions and changelog |
 | `PRINTFLOW_PROJECT_CONTEXT.md` | Detailed project context for AI assistants |
 | `CODEX_HANDOFF.md` | This file |
@@ -55,7 +58,7 @@ The owner (Tony) runs a small 3D printing business selling on TikTok Shop and in
 
 ## Current State
 
-### What's deployed and working (v1.4 on GitHub Pages)
+### What's deployed and working (v1.11.2 on GitHub Pages)
 - Filament inventory tracking (type, color, cost, swatch colors, vendor, reorder status)
 - Supplies management (hardware, hotends, bed plates, consumables)
 - Products catalog with full cost breakdown (filament, electricity, labor, packaging)
@@ -63,25 +66,15 @@ The owner (Tony) runs a small 3D printing business selling on TikTok Shop and in
 - Inventory Value KPIs (cost basis for taxes, retail value, potential profit)
 - Print Queue (auto-generated from inventory needs + manual jobs)
 - Sales recording (TikTok, In-Person, Sample channels) with profit calculation
+- Sales now auto-deduct matching inventory by product, filament type, and color
+- Sales now increase `Qty Sold`, and oversells are blocked with a warning before save
+- Editing or deleting a sale now restores and reapplies the related inventory movement
 - Affiliate/creator fee tracking on TikTok sales
 - Packaging cost tracking (Small $1.25, Medium $1.75, Large $2.00, Custom)
 - Expenses tab (full CRUD) with category filtering
 - Post Office Trip Logger (IRS-compliant mileage expense auto-generation)
 - Settings synced to spreadsheet (electricity rate, labor rate, mileage rate, PO miles)
-
-### v1.5 → v1.7 GitHub Status
-The original handoff believed these changes were not pushed. During Codex takeover on 2026-06-16, `origin/main:index.html` was checked and these fixes were already present in GitHub:
-
-- **v1.7 fixes:**
-  - Fixed duplicate inventory rows when adding stock
-  - Fixed Save button spam (double-click protection)
-  - Refactored `deductFilament()` helper that handles both new-row and merge-into-existing paths
-  - Auto-deducts filament usage from the Filament tab when adding stock (with confirmation dialogs for edge cases)
-
-- **PWA conversion (discussed, not implemented):**
-  - `manifest.json`, service worker, cache strategy, icon meta tags
-  - Goal: make it feel more native on Tony's Apple devices (iPhone, iPad, MacBook Pro M1 Max)
-  - Tony was going to provide an icon image — may not have done so yet
+- PWA shell is active with `manifest.json`, `sw.js`, and install icons under `assets/`
 
 ---
 
@@ -106,10 +99,21 @@ The Google Drive connector (if connected) is read-only. All writes to the Google
 
 ### File Reading
 The most reliable way to read the current codebase is from files uploaded directly to the conversation or fetched from GitHub raw:
-```
+``` 
 https://raw.githubusercontent.com/centralcali3d/printflow/main/index.html
 https://raw.githubusercontent.com/centralcali3d/printflow/main/PrintFlow_AppsScript.js
 ```
+
+### GitHub Pages / PWA Workflow
+For this repo, GitHub `main` is the source of truth because the live app is served from GitHub Pages. Safe session flow:
+1. `git fetch origin`
+2. `git status --short --branch`
+3. `git pull --rebase origin main`
+4. Confirm the repo is clean before editing
+5. Verify changes locally
+6. Commit and push in the same session
+
+If a live UI change is still not visible after push, check `sw.js` cache versioning and refresh the installed PWA/browser shell.
 
 ---
 

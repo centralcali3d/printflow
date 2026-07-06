@@ -1,4 +1,4 @@
-const CACHE_NAME = 'printflow-shell-v1.8.2';
+const CACHE_NAME = 'printflow-shell-v1.11.2';
 const APP_SHELL = [
   './',
   './index.html',
