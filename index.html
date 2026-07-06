@@ -557,6 +557,7 @@
   <div class="modal">
     <h2 id="sale-modal-title">Record Sale</h2>
     <input type="hidden" id="sale-edit-id">
+    <input type="hidden" id="sale-original-shipping-trip" value="No">
     <div class="form-grid">
       <div class="form-group"><label>Date</label><input type="date" id="sale-date"></div>
       <div class="form-group"><label>Channel</label>
@@ -1671,6 +1672,7 @@ function openSaleModal(id) {
   document.getElementById('sale-product').innerHTML = names.map(n=>`<option>${n}</option>`).join('');
   document.getElementById('sale-modal-title').textContent = id ? 'Edit Sale' : 'Record Sale';
   document.getElementById('sale-edit-id').value = id || '';
+  document.getElementById('sale-original-shipping-trip').value = 'No';
   // Reset conditional fields
   document.getElementById('sale-has-affiliate').checked = false;
   document.getElementById('affiliate-pct-group').style.display = 'none';
@@ -1695,6 +1697,7 @@ function openSaleModal(id) {
       document.getElementById('sale-status').value    = s['Status'];
       document.getElementById('sale-packaging').value = s['Packaging'] || 'Small Box';
       document.getElementById('sale-shipping-trip').checked = s['Shipping Trip'] === 'Yes';
+      document.getElementById('sale-original-shipping-trip').value = s['Shipping Trip'] || 'No';
       document.getElementById('sale-notes').value     = s['Notes'] || '';
       if (s['Affiliate Fee (%)'] && parseFloat(s['Affiliate Fee (%)']) > 0) {
         document.getElementById('sale-has-affiliate').checked = true;
@@ -1718,6 +1721,7 @@ function openSaleModal(id) {
     document.getElementById('sale-price').value  = '';
     document.getElementById('sale-payout').value = '';
     document.getElementById('sale-shipping-trip').checked = false;
+    document.getElementById('sale-original-shipping-trip').value = 'No';
     document.getElementById('sale-notes').value  = '';
     document.getElementById('sale-packaging').value = 'Small Box';
     updateSaleFilaments();
@@ -1780,10 +1784,24 @@ async function saveSale() {
   const affPct = hasAffiliate ? parseFloat(document.getElementById('sale-affiliate-pct').value)||0 : 0;
   const affAmt = hasAffiliate ? parseFloat(document.getElementById('sale-affiliate-amt').value)||0 : 0;
   const shippingTrip = document.getElementById('sale-shipping-trip').checked;
+  const originalShippingTrip = document.getElementById('sale-original-shipping-trip').value === 'Yes';
+  const orderInput = document.getElementById('sale-order');
+  let orderRef = orderInput.value.trim();
+  if (shippingTrip && !orderRef) {
+    const promptedOrderRef = window.prompt('Enter the TikTok order / ref # to include in the post office mileage expense:');
+    if (promptedOrderRef === null) return;
+    orderRef = promptedOrderRef.trim();
+    if (!orderRef) {
+      alert('Order / Ref # is required when creating a post office mileage expense.');
+      orderInput.focus();
+      return;
+    }
+    orderInput.value = orderRef;
+  }
   const row = {
     'ID':               id || 'sale_' + Date.now(),
     'Date':             document.getElementById('sale-date').value,
-    'Order / Ref #':    document.getElementById('sale-order').value,
+    'Order / Ref #':    orderRef,
     'Channel':          document.getElementById('sale-channel').value,
     'Product Name':     document.getElementById('sale-product').value,
     'Filament Type':    document.getElementById('sale-filtype').value,
@@ -1806,6 +1824,11 @@ async function saveSale() {
   row['Profit ($)'] = Math.round(snapshot.profit * 100) / 100;
   row['Margin (%)'] = Math.round(snapshot.margin * 10) / 10;
   await api({ action: id ? 'update' : 'write', tab: 'Sales', row });
+  if (shippingTrip && !originalShippingTrip) {
+    await api({ action: 'logTrip', date: row['Date'], orderCount: qty, orderRefs: orderRef });
+    await loadTab('expenses','Expenses');
+    renderExpenses();
+  }
   closeModal('sale-modal'); await loadTab('sales','Sales'); renderSales(); renderTax();
 }
 
