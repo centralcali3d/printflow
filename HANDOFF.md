@@ -164,23 +164,33 @@ priced this way" has an answer. `settings` deliberately holds no cost rates.
 | 4 | **Real packaging size per product** (12 products, one pass). Because of defect 1 this was never written to the sheet, so it cannot be migrated — only re-entered. | Task 2.3 |
 | 5 | Q5 — accept the three intentional cost deltas | Task 1.8, once the delta report exists |
 
-## 9. Uncommitted — read before you start
+## 9. Git state
 
-**22 new files sit in the working tree on `main`, uncommitted** (plus 3 modified: `.gitignore`, `README.md`, `PRINTFLOW_PROJECT_CONTEXT.md`). HEAD is still
-`8b6bcd5 Configure native app icon asset`.
+Stage 0 is committed on branch **`feat/printflow-2-foundation`**, three commits,
+branched from `8b6bcd5`:
 
-Nothing sensitive is tracked (verified with `git check-ignore`): `*.xcconfig` is
-ignored except the example, `fixtures/legacy/*.csv` is ignored because it will
-hold real business data, and `.build/` is ignored.
+| Commit | Contents |
+|--------|----------|
+| `52cd9bd` | Plan and handoff docs, README/context redirects, `.gitignore` |
+| `170c556` | 7 migrations, RLS, report views, 72-assertion verification suite |
+| `45ba4d8` | `PrintFlowCore` scaffold, CI workflow, repo layout placeholders |
 
-Recommended first action — branch, don't commit Stage 0 straight to `main`:
+Working tree is clean. **Nothing has been pushed** — no remote branch, and CI
+has therefore never run.
+
+Verified before committing: nothing sensitive is tracked (`*.xcconfig` ignored
+except the example, `fixtures/legacy/*.csv` ignored, `.build/` ignored), and
+`git archive HEAD` produces a tree where `PrintFlowCore` builds and the layout
+placeholders survive — so a fresh clone works rather than depending on an
+ignored local file.
+
+To pick up:
 
 ```bash
-git checkout -b feat/printflow-2-foundation && git add -A && git status
+git checkout feat/printflow-2-foundation && ./supabase/tests/run.sh
 ```
 
-Then review and commit. Suggested split: migrations + tests as one commit,
-`PrintFlowCore` scaffold + CI as a second.
+Push when ready. Expect the first CI run to need a fix — it has never executed.
 
 ## 10. What was deliberately not done
 
