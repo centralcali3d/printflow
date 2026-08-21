@@ -1,0 +1,3 @@
+Stage 2: throwaway Node scripts that import the live Google Sheet into
+Supabase and produce the reconciliation report (tasks 2.1-2.9).
+Throwaway by design -- these run once at cutover and are not app code.

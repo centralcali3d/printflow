@@ -1,0 +1,60 @@
+# PrintFlow 2.0 CI (plan task 0.15)
+#
+# Two independent jobs, because they fail for different reasons and one
+# should not mask the other:
+#   database — migrations apply from zero, and the schema verification suite
+#              proves each §1 defect fix still holds
+#   core     — PrintFlowCore builds under Swift 6 and its tests pass
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  database:
+    name: Schema + verification suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Proves migrations apply from nothing -- the Stage 0 exit criterion.
+      - name: Start local stack
+        run: supabase start
+
+      - name: Lint schema
+        run: supabase db lint --level warning
+
+      # Owns its own reset, so this is the whole gate.
+      - name: Schema verification
+        run: ./supabase/tests/run.sh
+
+      - name: Confirm migrations are reproducible from zero
+        run: supabase db reset
+
+  core:
+    name: PrintFlowCore
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Build
+        working-directory: Packages/PrintFlowCore
+        run: swift build -v
+
+      - name: Test
+        working-directory: Packages/PrintFlowCore
+        run: swift test
