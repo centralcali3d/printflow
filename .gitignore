@@ -6,3 +6,21 @@ printflow-handoff/
 DerivedData/
 *.xcuserstate
 xcuserdata/
+
+# ── PrintFlow 2.0 ─────────────────────────────────────────────
+# Supabase keys and local env (task 0.1)
+*.xcconfig
+!Native/PrintFlow/Config/Secrets.example.xcconfig
+.env
+.env.local
+supabase/.temp/
+supabase/.branches/
+
+# Live-data fixtures: real business data, never committed
+fixtures/legacy/*.csv
+fixtures/legacy/*.json
+!fixtures/legacy/.gitkeep
+
+# Swift
+.swiftpm/
+Packages/*/.build/

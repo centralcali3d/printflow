@@ -144,8 +144,12 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 | `PrintFlow_AppsScript.js` | Google Apps Script backend |
 | `Native/PrintFlow` | SwiftUI + WKWebView Apple app shell |
 | `README.md` | This file |
-| `PRINTFLOW_PROJECT_CONTEXT.md` | Project continuity notes for future AI/dev sessions |
+| `PRINTFLOW_PROJECT_CONTEXT.md` | Project continuity notes for v1.11.0 (the current PWA) |
 | `CODEX_HANDOFF.md` | Original Claude-to-Codex handoff notes |
+| `HANDOFF.md` | **PrintFlow 2.0 — start here.** Current rebuild status and next steps |
+| `MODERNIZATION_PLAN.md` | PrintFlow 2.0 architecture, decisions, and the 95-task build plan |
+| `supabase/` | PrintFlow 2.0 Postgres schema, RLS, report views, verification suite |
+| `Packages/PrintFlowCore` | PrintFlow 2.0 cost engine (Swift package) |
 
 ---
 

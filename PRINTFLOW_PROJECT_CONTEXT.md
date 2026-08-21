@@ -1,5 +1,24 @@
 # PrintFlow — Project Context & Continuity Document
-*Last updated: 2026-06-25*
+*Last updated: 2026-08-20*
+
+---
+
+> ## ⚠️ Active work has moved
+>
+> As of **2026-08-20** PrintFlow is being rebuilt as a **native SwiftUI app for
+> iPhone and iPad on Supabase** (plus a read-only web reporting page). If you
+> are picking this project up, start with these instead of this file:
+>
+> | Doc | What it is |
+> |-----|------------|
+> | [`HANDOFF.md`](HANDOFF.md) | **Start here.** Current status, environment gotchas, exactly what to do next |
+> | [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) | Architecture, decisions on record, all 95 build tasks |
+> | [`supabase/README.md`](supabase/README.md) | Database layer and how to run it |
+>
+> This document remains accurate as the **v1.11.0 history and rationale** for
+> the current PWA — which is still the production path and is untouched by the
+> rebuild. `NATIVE_APP_ROADMAP.md`'s Phase 1 hybrid-shell direction is
+> superseded by `MODERNIZATION_PLAN.md` §2.
 
 ---
 
