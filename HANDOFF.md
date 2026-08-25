@@ -59,7 +59,7 @@ is not started.
 | 0.3 CLI + local dev | ✅ | Supabase CLI 2.115.0, migrations versioned |
 | 0.4–0.10 Migrations | ✅ | 7 migrations, 1,569 lines → 21 tables, 5 views, 10 report functions, 43 RLS policies |
 | 0.11 Generated types | ✅ | `packages/db-types` — 2,279 generated lines, a compile-time schema contract, and a CI freshness gate. **Drift detection proven** by renaming a column and confirming both layers fail. |
-| 0.12 Expo skeleton | 🟡 **web done, native boot blocked** | `apps/printflow` — Expo SDK 57. Web verified end to end. Native boot needs an iOS simulator runtime + CocoaPods (see §8). |
+| 0.12 Expo skeleton | 🟡 **web done; native launch blocked upstream** | `apps/printflow` — Expo SDK 57. Web verified end to end. iOS builds, signs, and installs; it cannot *launch* on Xcode 27 beta (see §8 item 1b). |
 | 0.13 TanStack Query + connection state | ⬜ **next** | Much smaller than the old GRDB task |
 | 0.14 Reproducible from zero | 🟡 | `supabase db reset` verified repeatedly; web boots. iOS/iPad boot pending a simulator runtime. |
 | 0.15 CI | ✅ | Retargeted to ubuntu/Node. **Never executed** — nothing pushed. |
@@ -69,6 +69,35 @@ integer-cents money handling plus the v1.11.0 rate constants. There is
 deliberately **no formula** in it; Stage 1 writes those against golden files.
 
 `packages/db-types` passes 40 tests plus the compile-time contract.
+
+## 2b. The repo moved (2026-08-24)
+
+**Working copy is now `~/Developer/PrintFlow`.** Build and run from there.
+
+The Google Drive folder is still a real, browsable checkout that updates on
+push — not a bare repo — so the docs stay readable from Drive on any device:
+
+```bash
+git push drive feat/printflow-2-foundation
+```
+
+Remotes: `origin` → GitHub, `drive` → the Drive folder (which has
+`receive.denyCurrentBranch=updateInstead`, the setting that lets a non-bare repo
+accept a push and update its working tree).
+
+**Why:** iOS code signing rejects files carrying extended attributes, and Google
+Drive's file provider stamps `com.apple.FinderInfo` on everything it syncs —
+`ExpoModulesJSI.framework: resource fork, Finder information, or similar
+detritus not allowed`. Stripping the attributes did not hold; Drive re-applied
+them mid-build and the identical failure recurred. Drive was also syncing
+**46,266** generated files (`node_modules` 36,806, generated `ios/` 9,434), which
+is why they came back within seconds. Those are removed from the Drive copy —
+it now holds 92 working files. **Never run `pnpm install` in the Drive copy.**
+
+Moving fixed it completely: the same build then compiled, signed, and installed
+with zero errors.
+
+---
 
 ## 3. Environment (things that will waste your time otherwise)
 
@@ -207,8 +236,7 @@ priced this way" has an answer. `settings` deliberately holds no cost rates.
 | # | What | Blocks |
 |---|------|--------|
 | 1 | Create the Supabase cloud dev + prod projects | Task 0.1 only. Local dev needs nothing. |
-| 1b | **Install an iOS simulator runtime** — none is installed, so no device can boot. `xcodebuild -downloadPlatform iOS` (multi-GB). The iOS 27 *SDK* is present, so building works; only booting is blocked. | Finishing 0.12 and 0.14 |
-| 1c | **Install CocoaPods** — `brew install cocoapods`. Needed for any native build. | Native builds |
+| 1b | **Install stable Xcode 26** and `sudo xcode-select -s /Applications/Xcode.app`. The only Xcode here is **27 beta**, whose iOS 27 SDK refuses to launch apps that have not adopted the UIScene lifecycle — and Expo SDK 57 / RN 0.86 have not. Verified: no `UIWindowSceneDelegate` anywhere in expo or react-native, and declaring `UIApplicationSceneManifest` without a scene delegate does **not** satisfy it. The app builds, signs, and installs fine; it dies at launch with *"UIScene life cycle is required for apps built with this SDK"*. Nothing in our code can fix this. | Finishing 0.12 and 0.14 |
 | 2 | **Mileage rate: 0.70 or 0.725?** `index.html` and the Apps Script both default to 0.70; `README.md`'s settings table documents 0.725. Seeded 0.70 to match the code; Stage 2 imports the sheet's real value over it. Worth confirming for this tax year. | Nothing yet — correctness later |
 | 3 | Confirm the 0.12 target decision (§5) | Task 0.12 |
 | 4 | **Real packaging size per product** (12 products, one pass). Because of defect 1 this was never written to the sheet, so it cannot be migrated — only re-entered. | Task 2.3 |
