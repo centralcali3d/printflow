@@ -1,0 +1,15 @@
+{
+  "name": "printflow",
+  "private": true,
+  "description": "PrintFlow 2.0 — 3D print business manager for iPhone, iPad, and web",
+  "scripts": {
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "db:types": "supabase gen types typescript --local > packages/cost-engine/src/database.types.ts",
+    "db:reset": "supabase db reset",
+    "db:verify": "./supabase/tests/run.sh"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": { "node": ">=20" }
+}

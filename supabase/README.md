@@ -44,10 +44,14 @@ would recreate exactly the drift this schema exists to prevent.
 
 **2. Reports contain no cost logic.**
 Every `report_*` function aggregates over the snapshot columns
-(`unit_cost`, `total_cost`, `profit`, `margin_pct`) that PrintFlowCore wrote at
-save time. There is one cost engine, in Swift. This is what lets the web
-reporting page be a static file, and it is why task 2.5 backfills snapshots
+(`unit_cost`, `total_cost`, `profit`, `margin_pct`) that `packages/cost-engine`
+computed at save time. There is one cost engine, in TypeScript, shared by
+mobile, web, and the Stage 2 importer. It is why task 2.5 backfills snapshots
 onto migrated rows instead of porting the fallback recalculation to SQL.
+
+`record_sale` **stores** the client-computed snapshot and asserts its internal
+consistency; it does not recompute, because recomputing in SQL would be a
+second engine.
 
 **3. RLS needs grants too.**
 A policy only filters rows the role already has DML privilege on. This

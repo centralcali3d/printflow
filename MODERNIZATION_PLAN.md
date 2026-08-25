@@ -1,29 +1,47 @@
 # PrintFlow 2.0 — Modernization Plan
-*Created: 2026-08-20 · Architecture decided: 2026-08-20*
+*Created: 2026-08-20 · Architecture revised: 2026-08-21*
 *Supersedes the Phase 1 hybrid-shell direction in `NATIVE_APP_ROADMAP.md`*
 
-Target: a polished **native SwiftUI app for iPhone and iPad**, backed by
-Supabase instead of Google Sheets, fully configurable without code changes,
-with a **thin read-only web reporting page** for browser access.
+Target: one product from **one codebase**, running as a real app on **iPhone**
+and **iPad** and as a **full web app** — backed by Supabase instead of Google
+Sheets, fully configurable without code changes, with CSV/PDF reporting.
 
 Constraints carried forward from the current app:
 1. **Lose nothing.** Every existing feature, formula, and historical row survives.
 2. **Configurable.** Rates, categories, channels, packaging, promotions, and printers are data, not code.
-3. **Exportable.** CSVs, real reports, and a full backup — shared straight from the device.
+3. **Exportable.** CSVs, real reports, and a full backup.
 
 ### Decisions on record
 
-| # | Decision | Choice |
-|---|----------|--------|
-| Q1 | Client stack | **Native SwiftUI, iPhone + iPad.** One multiplatform target. |
-| Q2 | Tenancy | **Build `workspaces` now.** Cheap now, expensive to retrofit. |
-| Q3 | Distribution | **Deferred to Stage 8.** Nothing in Stages 0–7 depends on it. |
-| Q4 | Web app role | **Read-only reporting page.** Reports computed in Postgres. |
-| Q5 | Cost deltas | Open — decided at task 1.8, once the delta report exists. |
-| Q6 | Sheet after cutover | Open — decided at Stage 8. |
+| # | Decision | Choice | Decided |
+|---|----------|--------|---------|
+| Q1 | Client stack | **Expo (React Native + Expo Router), one codebase → iPhone, iPad, web** | 2026-08-21 |
+| Q2 | Tenancy | **Build `workspaces` now.** Cheap now, expensive to retrofit. | 2026-08-20 |
+| Q3 | Distribution | **Deferred to Stage 8.** Nothing in Stages 0–7 depends on it. | — |
+| Q4 | Web app role | **Full peer of the mobile app.** Everything works everywhere. | 2026-08-21 |
+| Q5 | Cost deltas | Open — decided at task 1.8, once the delta report exists. | — |
+| Q6 | Sheet after cutover | Open — decided at Stage 8. | — |
+| Q7 | Offline | **Not local-first.** Cached reads and graceful degradation only. | 2026-08-21 |
 
-Mac is **not** a target, but SwiftUI multiplatform means adding one later is a
-new target rather than a rewrite. Task 8.9 keeps that door open.
+#### Why Q1 was revisited
+
+Native SwiftUI was chosen on 2026-08-20 *because* browser access was scoped to
+read-only reporting. That premise changed on 2026-08-21: the web app is now a
+full peer.
+
+The moment a browser can record a sale, it needs to compute a live profit
+preview and write the cost snapshot — which means a cost engine in the browser.
+Keeping native then forces one of two bad outcomes: two cost engines (the exact
+failure this rebuild exists to prevent), or moving engine authority into
+PL/pgSQL and maintaining two complete frontends indefinitely. One shared
+TypeScript codebase avoids both, and restores OTA updates — the real cost that
+going native had imposed.
+
+Everything built in Stage 0 is stack-independent and survives unchanged: the
+schema, RLS, report views, and the 72-assertion verification suite would be
+identical under any client. Only the `PrintFlowCore` Swift scaffold was
+discarded (recoverable at commit `45ba4d8`), and it contained no formula — this
+was the cheapest possible moment to change course.
 
 ---
 
@@ -66,50 +84,59 @@ class. That is the actual argument for Supabase — not "it's more modern."
 
 ## 2. Stack
 
-**Native SwiftUI for iPhone and iPad, on Supabase, with reports computed in Postgres.**
+**Expo (React Native + Expo Router) on Supabase. One codebase, three targets.**
 
 | Layer | Choice | Why |
 |-------|--------|-----|
-| App | SwiftUI, one multiplatform target, iOS/iPadOS 17+ | Best possible feel on Apple devices. Reuses the existing `Native/PrintFlow` Xcode project. |
-| Language | Swift 6, strict concurrency | Compile-time data-race safety on a data-heavy app. |
-| Tables | SwiftUI `Table` (iPad) / `List` (iPhone) | Sortable native columns on iPad — better tables than the current web app has. |
-| Charts | Swift Charts | First-party, and enough for dashboard trends. |
-| Data | Supabase Postgres + `supabase-swift` | Typed schema, foreign keys, constraints, RLS, transactions. |
-| Local store | **GRDB (SQLite)** mirror + outbox | Local-first reads and queued writes. Chosen over SwiftData: explicit SQL control matters when mirroring a Postgres schema, and it's far more battle-tested for sync. |
-| Auth | Sign in with Apple + email magic link | Native `ASAuthorizationController`; magic link covers the web reporting page. |
+| App | Expo SDK 54+, React Native, TypeScript | One codebase → iPhone, iPad, web via `react-native-web`. |
+| Routing | Expo Router (file-based) | Real web URLs and deep links for free — which matters now that web is a peer, not a viewer. |
+| Build/ship | EAS Build + EAS Update | OTA JS updates preserve the current push-and-it's-live workflow. Native rebuild only for native changes. |
+| Data | Supabase Postgres + `supabase-js` | Typed schema, foreign keys, constraints, RLS, transactions. |
+| Types | `supabase gen types typescript` | **Schema drift becomes a compile error.** No hand-written models and no custom drift test — this is what kills defect class 4, the root cause of defect 1. |
 | Writes | Postgres functions (RPC) | Atomic multi-table writes — see §3. |
-| Reports | Postgres views + `report_*` functions | Computed once, in SQL, consumed by both the app and the web page. |
-| Cost engine | `PrintFlowCore` Swift package — pure, no I/O | One implementation, unit tested against golden files. |
-| Export | `ShareLink`, `.fileExporter`, PDF via `ImageRenderer` | Native share sheet → Files, AirDrop, Mail to the CPA. |
-| Web reports | Static page, `supabase-js`, no framework | Reads the same SQL views over PostgREST. Deploys to GitHub Pages, keeping that path alive. |
-| CI | GitHub Actions on a macOS runner | `xcodebuild test`, SwiftLint, `supabase db lint`. |
+| Reports | Postgres views + `report_*` functions | Computed once, in SQL, consumed identically by every client. |
+| Cost engine | `packages/cost-engine` — pure TypeScript, zero I/O | One implementation, shared by mobile and web, unit tested against golden files. |
+| Client state | TanStack Query + persisted cache | Caching and optimistic updates. Not a sync engine — see §9. |
+| Lists | FlashList | Keeps dense data smooth on a phone. |
+| Charts | Victory Native (mobile) / the same API on web | Trends on the dashboard. |
+| Export | Web download + `expo-sharing` on device | Files, AirDrop, Mail to the CPA, or a plain browser download. |
+| Web deploy | Expo web export → GitHub Pages | Keeps the existing distribution path, replacing the current app at that URL. |
+| CI | GitHub Actions (ubuntu) | Typecheck, lint, tests, `supabase db lint`, and the schema verification suite. |
 
-### Why this beats the Expo option here
+### The trade-off, stated plainly
 
-The dense-table problem that would have pushed React Native toward card lists on
-phone is simply not a problem natively — `Table` and `NavigationSplitView` on
-iPad are exactly the right tools for this app. Offline is also stronger: a GRDB
-local mirror with an outbox is more capable than a persisted query cache.
+React Native is weaker than the web at **dense spreadsheet-style tables**, which
+the current app uses on every tab. Rather than fight it, the redesign uses
+responsive layouts that are better UX anyway:
 
-### What you're giving up, on the record
+- **iPhone** — card/row lists with swipe actions. An eleven-column horizontally-scrolling table is already bad on a phone.
+- **iPad and web** — these now converge on the same sidebar + split-view layout with real multi-column tables, which is a simplification over maintaining separate iPad and web experiences.
 
-1. **No OTA updates.** Today you push to GitHub and it's live in two minutes. Native means a build and a reinstall — or App Review — for every change. This is the real cost of the decision, and it's the reason Stage 5 (Settings) matters so much: the more that's configurable at runtime, the less often you need to ship a build to change behavior.
-2. **No full web app.** Browser access is read-only reporting. No data entry from a Chromebook or a Windows PC.
-3. **Thinner ecosystem.** `supabase-swift` is official and solid, but has fewer examples than `supabase-js`.
-4. **Mac needs its own pass** if you ever want it — menus, windows, `NSSavePanel`. Deferred to 8.9.
+Also given up versus native: Swift Charts, native gesture polish, and SwiftUI's
+sortable `Table`. A web-style table on iPad is genuinely fine, and still an
+improvement on today's horizontally-scrolling PWA.
 
-### The architectural move that makes the web page nearly free
+### One engine, and where the snapshot comes from
 
-There is exactly **one** cost engine, in Swift, and reports never reimplement it:
+`packages/cost-engine` is pure TypeScript with no I/O, imported by the mobile
+app, the web app, and the tests. Because both clients share it, the **client
+computes the snapshot and passes it to `record_sale`**, which stores it
+atomically alongside the inventory decrement.
 
-- **`PrintFlowCore` (Swift)** computes live previews and writes the cost/profit/margin snapshot at save time. It must be client-side — the Record Sale preview has to be instant and work offline.
-- **Postgres `report_*` views** aggregate over those **stored snapshots**. Pure summation, no cost logic.
-- **Stage 2 backfills snapshots onto every migrated row** (task 2.5), so no report ever needs the fallback recalculation path. That removes the engine-drift risk entirely, and it's why the web page can be a static file that just renders query results.
+The RPC does not recompute — recomputing in SQL would be a second engine. It
+does assert internal consistency (`profit = payout − total_cost − shipping`,
+`margin` agrees with `profit/payout`) so a malformed payload is rejected rather
+than silently stored. For a single-operator business behind RLS, a
+client-computed snapshot is an acceptable trust boundary; the consistency check
+is there to catch bugs, not adversaries.
+
+Reports still contain **no cost logic at all** — they aggregate over stored
+snapshots (§3). That rule is unchanged and non-negotiable.
 
 ### Alternatives rejected
 
-- **Expo / React Native** — full web parity and OTA updates, but a less-native feel and weaker tables on phone. Rejected once browser access was scoped to reporting only.
-- **Native iOS + a full separate React web app** — two codebases and two cost engines. Never acceptable.
+- **Native SwiftUI (iPhone/iPad) + separate web app** — best iOS feel, but two complete frontends for one person to maintain, no OTA updates, and engine authority forced into PL/pgSQL. Held for one day; reversed when web became a full peer.
+- **Native iOS + a full separate React web app sharing nothing** — two cost engines. Never acceptable.
 - **Keep the `WKWebView` shell** — leaves every defect in §1 in place. Stays available as the fallback production path during the transition.
 
 ---
@@ -250,7 +277,7 @@ numbers cannot disagree.
 
 One exception worth naming: `report_inventory_snapshot` needs the *current*
 cost of on-hand stock, which has no sale to snapshot against. Rather than
-reimplement the engine in SQL, task 3.4 has `PrintFlowCore` maintain a
+reimplement the engine in SQL, task 3.4 has the cost engine maintain a
 `product_cost_cache` column. Until then that report returns placeholder zeros
 and says so in its `COMMENT`, so it cannot ship silently wrong.
 
@@ -275,9 +302,10 @@ Multi-table writes become single atomic calls, closing defect 5:
 
 The single highest-risk part of the migration. Rules:
 
-1. **One module** — `PrintFlowCore`, a pure Swift package with zero I/O, imported by the app and the tests. Never reimplemented. Reports aggregate over its stored snapshots in SQL rather than recomputing (§2), so there is no second implementation to drift.
-2. **Golden-file tests first.** Before any UI work: export every current product and sale from the live sheet, run today's formulas *by lifting the literal existing code out of `index.html`*, snapshot the outputs, and assert `PrintFlowCore` reproduces them to the cent. Any intentional difference (the packaging fix, per-lot filament cost, spool weight) is an explicitly recorded, explained delta — not a surprise.
+1. **One module** — `packages/cost-engine`, pure TypeScript with zero I/O, imported by the mobile app, the web app, and the tests. Never reimplemented. Reports aggregate over its stored snapshots in SQL rather than recomputing (§2), so there is no second implementation to drift.
+2. **Golden-file tests first.** Before any UI work: export every current product and sale from the live sheet, run today's formulas *by lifting the literal existing code out of `index.html`* — more faithful than reimplementing them — snapshot the outputs, and assert the engine reproduces them to the cent. Any intentional difference (the packaging fix, per-lot filament cost, spool weight) is an explicitly recorded, explained delta — not a surprise.
 3. **Snapshots stay authoritative.** Reports read stored `total_cost`/`profit`/`margin` only. Task 2.5 backfills them onto every migrated row, which lets the fallback recalculation path — the fragile part of today's `saleCost()` — be deleted outright rather than ported.
+4. **Money is never a JavaScript number.** Integer cents or `decimal.js` throughout. Binary floating point cannot represent `0.10`, and this module decides what the business believes it earned.
 
 ### Formula, carried forward and extended
 
@@ -341,11 +369,17 @@ Two things get elevated because they are the daily reality of the business:
 finishing a print and recording a sale. Both should be reachable in one tap
 and completable in under fifteen seconds.
 
-### iPad / web — sidebar + split view
+### iPad and web — one responsive layout
 
-Persistent sidebar with all sections; list-detail split; the dense tables the
-web app has today, on a screen that can hold them. Keyboard shortcuts (`⌘N`
-new sale, `⌘F` search, `⌘E` export). Multi-select and bulk edit.
+Now that web is a full peer (Q4), iPad and desktop converge on the same layout
+rather than being designed twice: a persistent sidebar with every section,
+list-detail split, and real multi-column tables where the screen can hold them.
+Keyboard shortcuts (`⌘/Ctrl+N` new sale, `⌘/Ctrl+F` search, `⌘/Ctrl+E` export),
+multi-select, and bulk edit.
+
+Expo Router gives the web build real URLs, so a specific report or sale is
+linkable — which is how the CPA gets sent something precise rather than "log in
+and click around."
 
 ### Flows worth designing carefully
 
@@ -475,15 +509,21 @@ natural later addition.
 
 ---
 
-## 9. Offline and sync
+## 9. Connectivity
 
-The realistic use case is standing at a printer in a garage with bad wifi. The
-native stack allows a genuinely local-first design rather than a cache.
+**Decision Q7: not local-first.** You are usually connected, so the app targets
+graceful degradation rather than offline-first sync. This removes a large amount
+of machinery — a local SQLite mirror, a write outbox, conflict resolution, and
+delta replay — that would otherwise have been most of Stage 7.
 
-- **GRDB SQLite mirror.** The local database is the app's read source, always. Every screen works offline with no special-casing, and no loading spinner on a cold launch.
-- **Outbox pattern for writes.** Mutations write locally and enqueue; a background flusher calls the Supabase RPCs and reconciles. A queued sale is a real sale on your device immediately.
-- **Conflict policy.** Single-user-per-workspace in practice, so last-write-wins on scalar fields is sufficient — except `inventory_items`, where quantity changes must replay as `inventory_moves` deltas rather than overwrite a total. This is exactly why the move ledger exists.
-- **Visible sync state** in the header, with a pending-change count and manual retry. Today's sync dot was the right instinct; this gives it something real to report.
+- **Persisted query cache.** TanStack Query keeps the last successful read, so a cold launch on a flaky connection shows real data immediately instead of a spinner, and brief drops go unnoticed.
+- **Honest write behaviour.** Writes require a connection. A failed write says so plainly and offers retry — it never silently queues, and never reports success it cannot back. Quietly accepting a sale that did not save would be worse than any spinner.
+- **Visible connection state** in the header, the way today's sync dot works. That was the right instinct and is worth keeping.
+- **The move ledger stays.** `inventory_moves` is no longer needed for offline delta replay, but it remains the audit trail that answers "where did that unit go" — always its stronger justification.
+
+If real usage later proves offline matters after all, the upgrade path is
+PowerSync or WatermelonDB. Nothing here forecloses it, and the schema is already
+shaped correctly for it because of the move ledger.
 
 ---
 
@@ -516,7 +556,7 @@ preview in 5.4 needs the report views to already exist.
 | # | Task |
 |---|------|
 | 0.1 | Create Supabase projects (dev + prod); keys in a gitignored `.xcconfig`, never in source |
-| 0.2 | Repo layout: `Native/PrintFlow` (app), `Packages/PrintFlowCore` (SPM), `supabase/` (migrations), `web-reports/`, `tools/` (migration scripts) |
+| 0.2 | Repo layout: pnpm workspaces — `apps/printflow` (Expo), `packages/cost-engine`, `supabase/` (migrations), `tools/migration/` |
 | 0.3 | Supabase CLI local dev running (`supabase start`), migrations under version control |
 | 0.4 | Migration 001 — `workspaces`, `workspace_members`, signup trigger that auto-creates a workspace |
 | 0.5 | Migration 002 — config tables: `packaging_options`, `sales_channels`, `expense_categories`, `promotions`, `promo_applications`, `settings`, `cost_model_versions`, `printers`, `filament_types` |
@@ -525,23 +565,23 @@ preview in 5.4 needs the report views to already exist.
 | 0.8 | Migration 005 — seed defaults that exactly match today's constants: packaging $1.25/$1.75/$2.00, channels TikTok 10% / In-Person / Sample, the ten expense categories, the five settings rows |
 | 0.9 | Migration 006 — audit triggers and the soft-delete convention |
 | 0.10 | Migration 007 — the `report_*` views from §3 |
-| 0.11 | Add `supabase-swift`; write `Codable` models and a schema-drift test that fails when Postgres and Swift disagree |
-| 0.12 | SwiftUI skeleton: `TabView` on iPhone, `NavigationSplitView` on iPad, session provider, Supabase client |
-| 0.13 | GRDB local schema mirroring Postgres, with its own migration runner |
-| 0.14 | Verify `supabase db reset` works from zero, and the app boots on both iPhone **and** iPad simulators |
-| 0.15 | CI: GitHub Actions on a macOS runner — `xcodebuild test`, SwiftLint, `supabase db lint` |
+| 0.11 | Wire `supabase gen types typescript` into a pnpm script and commit the generated types. This *is* the drift test — a rename becomes a compile error, no hand-written models needed |
+| 0.12 | Expo skeleton: Expo Router, tab layout on phone and sidebar layout on large screens, session provider, Supabase client |
+| 0.13 | TanStack Query with a persisted cache, plus the connection-state indicator (see §9 — no local mirror, no outbox) |
+| 0.14 | Verify `supabase db reset` works from zero, and the app boots on iPhone, iPad, **and** `expo start --web` |
+| 0.15 | CI: GitHub Actions on ubuntu — typecheck, lint, `vitest`, `supabase db lint`, and the schema verification suite |
 
-**Gate:** schema reproducible from scratch; app boots on both simulators.
+**Gate:** schema reproducible from scratch; app boots on phone, tablet, and web.
 
 ### Stage 1 — Cost engine and parity proof  🔒 *hard gate*
 
 | # | Task |
 |---|------|
 | 1.1 | Export all 8 live sheet tabs to CSV; commit under `fixtures/legacy/` as the immutable source of truth |
-| 1.2 | Extract today's formulas verbatim out of `index.html` into a throwaway Node script — reusing the literal existing code is more faithful than reimplementing it |
+| 1.2 | Extract today's formulas verbatim out of `index.html` into a reference module — reusing the literal existing code is more faithful than reimplementing it |
 | 1.3 | Run that script across every product and sale; commit the output as golden JSON |
-| 1.4 | Implement `PrintFlowCore` — `productCost`, `saleCost`, `saleSnapshot`, `payout`, `recommendedPrice`; all extensions off by default |
-| 1.5 | Parity test: `PrintFlowCore` in legacy-compatible mode reproduces the golden files **to the cent** |
+| 1.4 | Implement `packages/cost-engine` — `productCost`, `saleCost`, `saleSnapshot`, `payout`, `recommendedPrice`; money in integer cents; all extensions off by default |
+| 1.5 | Parity test: the engine in legacy-compatible mode reproduces the golden files **to the cent** |
 | 1.6 | Enable the three fixes behind flags; generate a delta report — which products and sales change, by how much, and why |
 | 1.7 | Unit tests for every extension: waste %, batch size, metered electricity, machine rate, overhead, promotions, `absorbed_by` |
 | 1.8 | **Review the delta report together and sign off** — this closes decision Q5 |
@@ -552,11 +592,11 @@ preview in 5.4 needs the report views to already exist.
 
 | # | Task |
 |---|------|
-| 2.1 | Importer script (Node, throwaway) — reads fixtures, maps to schema, preserves original IDs in `legacy_id`, idempotent and re-runnable |
+| 2.1 | Importer script — reads fixtures, maps to schema, preserves original IDs in `legacy_id`, idempotent and re-runnable. Shares `packages/cost-engine`, so the importer and the app agree by construction |
 | 2.2 | Filament mapping: Type + Color → `filament_types` + `filament_lots`; infer `spool_weight_g` (default 1000, flag each for review) |
 | 2.3 | Packaging mapping: strings → `packaging_options` FKs. **Needs your input** — since defect 1 means the real box per product was never stored, you'll confirm each one |
 | 2.4 | Sales import: existing snapshots copied **verbatim**; channel strings → `sales_channels` FKs |
-| 2.5 | **Backfill snapshots** onto every migrated row that lacks them, using `PrintFlowCore` in legacy-compatible mode — so reports only ever read snapshots and the fallback recalculation path can be deleted |
+| 2.5 | **Backfill snapshots** onto every migrated row that lacks them, using the cost engine in legacy-compatible mode — so reports only ever read snapshots and the fallback recalculation path can be deleted |
 | 2.6 | Derive `inventory_moves` history from sales and inventory so the ledger isn't born empty |
 | 2.7 | Reconciliation report: row counts per table, plus YTD revenue, payout, COGS, expenses, mileage, net profit, inventory value — old vs new, with per-row diffs |
 | 2.8 | Run it; resolve every discrepancy to zero-or-explained |
@@ -568,12 +608,12 @@ preview in 5.4 needs the report views to already exist.
 
 | # | Task |
 |---|------|
-| 3.1 | Auth: Sign in with Apple + email magic link, Keychain session, first-run onboarding wizard |
-| 3.2 | Repository layer: GRDB local reads, Supabase sync, outbox scaffolding |
+| 3.1 | Auth: Sign in with Apple (native) + email magic link (both platforms), secure session storage, first-run onboarding wizard |
+| 3.2 | Data layer: TanStack Query hooks per table, generated types, normalized error envelope |
 | 3.3 | Filament: list, add/edit lot, archive, swatch picker, low-stock indicator |
-| 3.4 | Products: list, add/edit, live cost breakdown preview, packaging FK, batch size, waste %. Also maintains a `product_cost_cache` column via `PrintFlowCore` on every product/rate change — inventory valuation is the one figure no report can derive from a sale snapshot, because on-hand stock has no sale to snapshot against. This keeps the single-engine rule intact instead of reimplementing cost in SQL. `report_inventory_snapshot` returns placeholder zeros until this lands. |
+| 3.4 | Products: list, add/edit, live cost breakdown preview, packaging FK, batch size, waste %. Also maintains a `product_cost_cache` column via the cost engine on every product/rate change — inventory valuation is the one figure no report can derive from a sale snapshot, because on-hand stock has no sale to snapshot against. This keeps the single-engine rule intact instead of reimplementing cost in SQL. `report_inventory_snapshot` returns placeholder zeros until this lands. |
 | 3.5 | Supplies: list, add/edit, archive — straight parity, the simplest screen |
-| 3.6 | SQL RPCs implemented and tested: `add_stock`, `record_sale`, `complete_print_job`, `refresh_print_queue`, `log_shipping_trip` |
+| 3.6 | SQL RPCs implemented and tested: `add_stock`, `record_sale`, `complete_print_job`, `refresh_print_queue`, `log_shipping_trip`. `record_sale` stores the client-computed snapshot and asserts its internal consistency (§2) rather than recomputing |
 | 3.7 | Inventory: list, add stock via RPC, edit, build-to, velocity and days-remaining, the five value KPIs |
 | 3.8 | Sales: filterable list, Record Sale sheet (channel-driven form, live payout/cost/profit preview, loss warning, promo picker), edit, soft delete — **decrements inventory** |
 | 3.9 | Queue: grouped list, start / complete-with-actuals / fail, drag to reprioritize, deduped refresh-from-inventory |
@@ -581,26 +621,26 @@ preview in 5.4 needs the report views to already exist.
 | 3.11 | Shipping trip logger, IRS fields intact |
 | 3.12 | Pricing screen: recommended price, loss / below-target / unpriced flags, one-tap apply |
 | 3.13 | Tax screen reading `report_tax_summary`, matching today's KPIs exactly |
-| 3.14 | **Parity checklist walkthrough** — every v1.11.0 feature ticked or explicitly deferred |
+| 3.14 | **Parity checklist walkthrough** — every v1.11.0 feature ticked or explicitly deferred, **verified on both mobile and web** |
 
 **Gate:** the parity checklist is complete.
 
-### Stage 4 — Reports, exports, and the web page
+### Stage 4 — Reports and exports
 
 | # | Task |
 |---|------|
 | 4.1 | Finalize the `report_*` views and add SQL tests asserting they match the golden totals |
-| 4.2 | CSV writer in Swift, matching today's escaping behavior exactly |
+| 4.2 | Shared CSV writer, matching today's escaping behaviour exactly |
 | 4.3 | Port the four existing exports; **diff old vs new byte-for-byte** on identical data |
-| 4.4 | `ShareLink` and `.fileExporter` integration for every export |
-| 4.5 | PDF rendering via `ImageRenderer` for P&L, Schedule C, and the mileage log |
+| 4.4 | Export delivery: `expo-sharing` on device, plain file download on web |
+| 4.5 | PDF rendering for P&L, Schedule C, and the mileage log |
 | 4.6 | New reports: P&L by period, Schedule C worksheet, sales by channel, sales by product, filament consumption, mileage log, price review, promo performance |
 | 4.7 | Full JSON backup and restore |
 | 4.8 | Report picker with date-range presets: today, MTD, QTD, YTD, last year, custom |
-| 4.9 | **Web reporting page** — static HTML + `supabase-js`, magic-link auth, reads the same views, CSV download |
-| 4.10 | Deploy the web page to GitHub Pages, replacing the current app at that URL |
+| 4.9 | Verify every report renders and exports identically on mobile and web |
+| 4.10 | Deploy the Expo web export to GitHub Pages, replacing the current app at that URL |
 
-**Gate:** existing exports diff clean; the web page and the app agree on every number.
+**Gate:** existing exports diff clean; mobile and web agree on every number.
 
 ### Stage 5 — The Settings app
 
@@ -627,41 +667,44 @@ preview in 5.4 needs the report views to already exist.
 
 | # | Task |
 |---|------|
-| 6.1 | Theme file from the PrintFlow palette — light and dark, shared by the app and the web page |
-| 6.2 | Type scale: Syne + DM Mono, `monospacedDigit()` everywhere digits align |
+| 6.1 | Theme tokens from the PrintFlow palette — light and dark, one source shared by every target |
+| 6.2 | Type scale: Syne + DM Mono, tabular numerals everywhere digits align |
 | 6.3 | Component library: KPI card, data row, chip, sheet, toast, empty state, redacted placeholder, alert banner |
-| 6.4 | Home dashboard: KPI grid, alert list, Swift Charts trend, quick actions |
-| 6.5 | iPad: `NavigationSplitView`, sortable `Table`, keyboard shortcuts, multi-select |
+| 6.4 | Home dashboard: KPI grid, alert list, trend chart, quick actions |
+| 6.5 | Large-screen layout (iPad + desktop web): sidebar, split view, sortable tables, keyboard shortcuts, multi-select |
 | 6.6 | Replace every `alert()`/`confirm()` equivalent with native dialogs and non-blocking toasts |
-| 6.7 | Haptics, swipe actions, context menus, `.refreshable`, large titles |
+| 6.7 | Haptics, swipe actions, context menus, pull-to-refresh on mobile; hover and focus states on web |
 | 6.8 | Empty / loading / error / offline states on every screen |
 | 6.9 | App icon set and launch screen from the CC3D mark |
 | 6.10 | Accessibility audit: contrast, Dynamic Type, VoiceOver labels, 44pt targets |
 
-### Stage 7 — Offline and hardening
+### Stage 7 — Hardening
+
+Much smaller than originally planned: decision Q7 removed the local mirror, the
+write outbox, conflict resolution, and delta replay.
 
 | # | Task |
 |---|------|
-| 7.1 | GRDB local-first reads verified with the network fully off |
-| 7.2 | Outbox write queue with retry, plus `inventory_moves` delta replay for quantity conflicts |
-| 7.3 | Sync status UI: pending-change count, manual retry, last-synced timestamp |
-| 7.4 | Error reporting and structured logging on Edge Functions |
-| 7.5 | Airplane-mode test pass across every flow |
-| 7.6 | Performance pass: lazy loading on long lists, query batching, Postgres index review |
+| 7.1 | Persisted query cache verified — cold launch on a flaky connection shows cached data, not a spinner |
+| 7.2 | Write failures surface honestly with retry, and never report success they cannot back |
+| 7.3 | Connection-state indicator wired to real network state |
+| 7.4 | Error reporting (Sentry) and structured logging on Edge Functions |
+| 7.5 | Performance pass: FlashList on long lists, query batching, Postgres index review |
+| 7.6 | Web-specific pass: bundle size, first paint, deep-link/refresh behaviour on every route |
 
 ### Stage 8 — Ship
 
 | # | Task |
 |---|------|
-| 8.1 | Apple Developer account, bundle ID, Sign in with Apple capability, provisioning |
-| 8.2 | Release pipeline and version/build numbering |
+| 8.1 | Apple Developer account, bundle ID, Sign in with Apple capability, provisioning via EAS |
+| 8.2 | EAS Build profiles (dev/preview/prod) and EAS Update channels — OTA updates for JS-only changes |
 | 8.3 | Privacy policy, App Privacy questionnaire, support URL |
 | 8.4 | TestFlight build; a full week of real business use on iPhone and iPad |
 | 8.5 | **Decide App Store vs TestFlight-only** — this closes deferred decision Q3 |
 | 8.6 | App Store listing: iPhone and iPad screenshots, description, keywords |
 | 8.7 | Submit for review — keep the old PWA live until approved |
 | 8.8 | **Decide the Sheet's fate** — archive or one-way export. This closes Q6 |
-| 8.9 | Post-launch: monitoring, scheduled backups via `pg_cron`. Optionally add a Mac target — same codebase, new target |
+| 8.9 | Post-launch: monitoring, scheduled backups via `pg_cron` |
 
 ---
 
@@ -681,8 +724,8 @@ Open items from the existing docs that this rewrite makes easy:
 
 ## 13. Open decisions
 
-Q1, Q2, and Q4 are decided and recorded at the top of this document. Two remain,
-and both are deliberately deferred to the point where there's real information
+Q1, Q2, Q4, and Q7 are decided and recorded at the top of this document. Three
+remain, all deliberately deferred to the point where there is real information
 to decide with:
 
 | # | Question | Decided at |
@@ -691,10 +734,12 @@ to decide with:
 | Q3 | App Store, or TestFlight only? | **Task 8.5**, after a week of real use |
 | Q6 | Archive the Sheet, or keep a one-way export into it? | **Task 8.8**, at cutover |
 
-One input needed earlier than any of these: **task 2.3** needs you to confirm the
-real packaging size per product. Because of defect 1 that data was never actually
-stored, so it can't be migrated — only re-entered.
+One input is needed earlier than any of these: **task 2.3** needs you to confirm
+the real packaging size per product. Because of defect 1 that data was never
+actually stored, so it cannot be migrated — only re-entered.
 
 ### Next action
 
-Stage 0, task 0.1. Nothing in Stage 0 depends on any open decision.
+Stage 0, task 0.2 — re-scaffold the repo as a pnpm workspace with the Expo app
+and the TypeScript cost engine. The database half of Stage 0 (0.4–0.10, 0.14)
+is complete and unaffected by the Q1 revision.

@@ -21,6 +21,10 @@ fixtures/legacy/*.csv
 fixtures/legacy/*.json
 !fixtures/legacy/.gitkeep
 
-# Swift
-.swiftpm/
-Packages/*/.build/
+
+# Node / pnpm
+node_modules/
+.expo/
+dist/
+web-build/
+*.tsbuildinfo

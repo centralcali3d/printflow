@@ -4,7 +4,7 @@
 # should not mask the other:
 #   database — migrations apply from zero, and the schema verification suite
 #              proves each §1 defect fix still holds
-#   core     — PrintFlowCore builds under Swift 6 and its tests pass
+#   core     — the shared cost engine typechecks and its tests pass
 name: CI
 
 on:
@@ -43,18 +43,25 @@ jobs:
         run: supabase db reset
 
   core:
-    name: PrintFlowCore
-    runs-on: macos-15
+    name: cost-engine
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show toolchain
-        run: swift --version
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-      - name: Build
-        working-directory: Packages/PrintFlowCore
-        run: swift build -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
 
       - name: Test
-        working-directory: Packages/PrintFlowCore
-        run: swift test
+        run: pnpm test

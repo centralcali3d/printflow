@@ -1,8 +1,31 @@
 # PrintFlow 2.0 — Session Handoff
-*Written 2026-08-20 · Stage 0 (database half complete) → next up: Stage 0 tasks 0.11–0.13*
+*Written 2026-08-20 · Revised 2026-08-21 (stack changed, see §0) · Stage 0 database half complete*
 
-Cold-start doc. Read §1–§4, run one command to confirm the ground is still
+Cold-start doc. Read §0–§4, run one command to confirm the ground is still
 solid, then start at §5.
+
+---
+
+## 0. The stack changed on 2026-08-21
+
+**We are no longer building native SwiftUI.** The web app was promoted from
+read-only reporting to a **full peer**, which reopened Q1 and reversed it.
+
+Why: once a browser can record a sale, it needs a live profit preview and must
+write the cost snapshot — meaning a cost engine in the browser. Keeping native
+would have forced either two cost engines (the exact failure this rebuild
+exists to prevent) or two complete frontends maintained by one person. One
+shared TypeScript codebase avoids both and restores OTA updates.
+
+Now: **Expo (React Native + Expo Router) → iPhone, iPad, web from one
+codebase.** Offline was also downgraded (Q7) — you're usually connected, so
+cached reads and honest write failures replace local-first sync. That deleted
+GRDB, the outbox, conflict resolution, and most of Stage 7.
+
+**Everything from the database half of Stage 0 survived unchanged** — schema,
+RLS, report views, all 72 assertions. It was always stack-independent. The
+Swift scaffold was discarded (recoverable at commit `45ba4d8`); it had no
+formula in it, which is why this was the cheapest possible moment to switch.
 
 **Canonical references** — this file is *status*; those are *truth*:
 - [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) — architecture, decisions, all 95 tasks
@@ -16,47 +39,46 @@ PrintFlow today is a single-file PWA (`index.html`, 2,111 lines) talking to
 Google Apps Script over a Google Sheet. It works and it is **still the
 production path** — nothing in this rebuild has touched it.
 
-We are rebuilding it as a **native SwiftUI app for iPhone and iPad on
-Supabase**, plus a thin read-only web reporting page. That decision is made and
-recorded; don't re-open it. The short version of why native won: browser access
-was scoped to reporting only, which removed React Native's main advantage and
-left SwiftUI's `Table`/`NavigationSplitView` as the better fit for dense data.
+We are rebuilding it as **one Expo codebase serving iPhone, iPad, and web**,
+backed by Supabase. See §0 for why this reversed from native SwiftUI on day two.
 
-The accepted cost is **no OTA updates** — a real regression from today's
-push-to-GitHub-Pages workflow. That is why runtime configurability (Stage 5,
-Settings) is load-bearing rather than a nice-to-have: every setting that's
-editable in-app is one fewer reason to ship a build.
+The thing to internalise: **the database is the product's spine.** Seven
+migrations already close, structurally, defects that the current app can only
+avoid by careful client code. The frontend is a view over that; the schema is
+where correctness lives.
 
 ## 2. Where we are
 
-Stage 0 is the foundation. Its database half is done and verified; the Swift
-half is not started.
+Stage 0 is the foundation. Its database half is done and verified; the app half
+is not started.
 
 | Task | Status | Notes |
 |------|--------|-------|
 | 0.1 Supabase projects | ⚠️ **blocked on Tony** | Local dev fully working. Creating the *cloud* dev/prod projects needs his account. Nothing else is blocked by it. |
-| 0.2 Repo layout | ✅ | `Packages/PrintFlowCore`, `supabase/`, `web-reports/`, `tools/migration/`, `fixtures/legacy/` |
-| 0.3 CLI + local dev | ✅ | Supabase CLI 2.115.0 via brew, migrations versioned |
+| 0.2 Repo layout | ✅ | pnpm workspace: `packages/cost-engine`, `supabase/`, `tools/migration/`. `apps/printflow` not yet created — that's 0.12. |
+| 0.3 CLI + local dev | ✅ | Supabase CLI 2.115.0, migrations versioned |
 | 0.4–0.10 Migrations | ✅ | 7 migrations, 1,569 lines → 21 tables, 5 views, 10 report functions, 43 RLS policies |
-| 0.11 supabase-swift + Codable models + drift test | ⬜ **next** | |
-| 0.12 SwiftUI skeleton | ⬜ | |
-| 0.13 GRDB local mirror | ⬜ | |
-| 0.14 Reproducible from zero | ✅ (db) | `supabase db reset` verified repeatedly. "Boots on both simulators" waits on 0.12. |
-| 0.15 CI | ✅ | `.github/workflows/ci.yml` — written but **never executed**, nothing pushed yet |
+| 0.11 Generated types | ⬜ **next** | `pnpm db:types` script exists; needs running + committing. This *is* the drift test. |
+| 0.12 Expo skeleton | ⬜ | `apps/printflow` |
+| 0.13 TanStack Query + connection state | ⬜ | Much smaller than the old GRDB task |
+| 0.14 Reproducible from zero | ✅ (db) | `supabase db reset` verified repeatedly. "Boots on all three targets" waits on 0.12. |
+| 0.15 CI | ✅ | Retargeted to ubuntu/Node. **Never executed** — nothing pushed. |
 
-`PrintFlowCore` builds under Swift 6 strict concurrency with 4 tests green. It
-is **scaffold only** — `CostModel`, `CostBreakdown`, `SaleSnapshot` fix the
-shape Stage 1 will assert against. There is no formula in it yet, deliberately.
+`packages/cost-engine` builds, typechecks, and passes 15 tests. It is
+**scaffold only** — integer-cents money handling plus the v1.11.0 rate
+constants. There is deliberately **no formula** in it; Stage 1 writes those
+against golden files.
 
 ## 3. Environment (things that will waste your time otherwise)
 
 - Docker runtime is **OrbStack**, not Docker Desktop. `open -a Docker` fails; use `open -a OrbStack`. Check with `docker info` before any supabase command.
-- `xcodebuild -version` works; `xcodebuild --version` errors. Xcode 27 beta at `/Applications/Xcode-beta.app`.
+- Xcode 27 beta is installed and will be needed again for EAS/native builds, but not for day-to-day work. Note `xcodebuild -version` works; `--version` errors.
+- **macOS is case-insensitive; CI is not.** The workspace dir is `packages/` (lowercase). A `mkdir packages` next to an existing `Packages` silently merges locally and breaks on Linux. Verify casing with `python3 -c "import os; print('packages' in os.listdir('.'))"`.
 - **`psql` is not installed on the host.** Reach the database through the container:
   ```bash
   docker exec -i supabase_db_PrintFlow psql -U postgres -d postgres
   ```
-- Swift 6.4, Node 26, Supabase CLI 2.115.0, Postgres 17.6.
+- Node 26, pnpm 9.15.0, Supabase CLI 2.115.0, Postgres 17.6.
 - Local containers may still be running from last night. `supabase stop` to free them, `supabase start` to bring them back.
 
 ## 4. Confirm the ground is solid
@@ -74,48 +96,56 @@ standing between us and silently wrong money.
 The suite is **not idempotent** (fixed test emails, exact row counts), which is
 why the runner resets rather than trusting you to have done it.
 
+And the engine side:
+
+```bash
+pnpm install && pnpm typecheck && pnpm test
+```
+
+Expect 15 tests passing in `packages/cost-engine`.
+
 ## 5. Next up — Stage 0 tasks 0.11–0.13
 
-### 0.11 — supabase-swift, Codable models, drift test
+### 0.11 — Generated database types
 
-Add `supabase-swift` **v2.55.1** (latest as of 2026-08-13) to the Xcode project.
+```bash
+pnpm db:types    # supabase gen types typescript --local
+```
 
-Write `Codable` structs mirroring the 21 tables. Then the part that matters: a
-test that **fails when Postgres and Swift disagree**. This is what kills defect
-class 4 (schema drift), which is the root cause of defect 1 — so it is worth
-more than it looks. Suggested approach: query
-`information_schema.columns` and assert the column set matches each struct's
-`CodingKeys`. Cheap to write, catches every future rename.
+Commit the output. This replaces what was going to be hand-written Swift
+`Codable` models plus a custom drift test — with generated types, **a column
+rename becomes a compile error for free**. That closes defect class 4, which is
+the root cause of defect 1 (the packaging column that silently vanished). It is
+the single highest value-per-effort task in Stage 0.
 
-Only the **publishable/anon** key ever goes in the app. See
-`Native/PrintFlow/Config/Secrets.example.xcconfig` — copy to `Secrets.xcconfig`
-(gitignored) and wire it up in Build Settings. The template documents the
-xcconfig `//` gotcha that silently truncates URLs.
+Wire it into CI so a schema change that outruns the committed types fails the
+build.
 
-### 0.12 — SwiftUI skeleton
+### 0.12 — Expo skeleton
 
-`TabView` on iPhone, `NavigationSplitView` on iPad, session provider, Supabase
-client. Five tabs per plan §5: Home / Queue / Sell / Stock / More.
+Create `apps/printflow`. Expo Router, session provider, Supabase client reading
+`EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
 
-**One decision to make here, flagged rather than pre-decided:** the existing
-`Native/PrintFlow` target is the `WKWebView` shell. Does the native app take
-over that target, or become a second one?
+Only ever the **publishable/anon** key. It is safe in a client precisely
+because RLS (migration 004) is what enforces access — the key identifies the
+project, it does not grant permission. The `service_role` key bypasses RLS
+entirely and must never reach a bundle.
 
-Recommendation: **take over the target.** The shell's value was always as a
-transitional fallback, and the real fallback is the PWA in Safari, which is
-unaffected. Keeping a second target alive costs maintenance for a path nobody
-will use. Tony should confirm, since it means the shell stops being installable
-once he takes a new build.
+Layout per plan §5: five tabs on phone (Home / Queue / Sell / Stock / More),
+sidebar + split view on iPad and desktop — **one responsive layout now**, since
+web is a peer rather than a separate reporting surface.
 
-### 0.13 — GRDB local mirror
+Exit criterion is all three targets booting: iOS simulator, iPad simulator, and
+`expo start --web`.
 
-Add **GRDB v7.11.1**. Mirror the Postgres schema locally; local DB is the read
-source *always*, so screens work offline with no special-casing.
+### 0.13 — TanStack Query + connection state
 
-Full local-first mechanics are Stage 7 — 0.13 is just the schema and migration
-runner. One thing to get right even in the skeleton, because retrofitting it is
-painful: **quantity conflicts must replay as `inventory_moves` deltas, never
-overwrite a total.** That is the reason the move ledger exists.
+Persisted cache so a cold launch on a flaky connection shows real data instead
+of a spinner. Plus the connection indicator in the header.
+
+Deliberately **not** a sync engine. Per Q7 writes require a connection and fail
+honestly with retry — they never silently queue. Quietly accepting a sale that
+did not save is worse than any spinner.
 
 ## 6. Traps already found — do not reintroduce
 
@@ -139,8 +169,8 @@ switched first.
 Breaking either silently corrupts historical business numbers. Everything else
 is negotiable; these are not.
 
-**One cost engine, in Swift.** `Packages/PrintFlowCore` is the only place cost
-is computed. Reports never recompute — every `report_*` function aggregates over
+**One cost engine, in TypeScript.** `packages/cost-engine` is the only place
+cost is computed, shared by mobile, web, and the Stage 2 importer. Reports never recompute — every `report_*` function aggregates over
 the snapshot columns (`unit_cost`, `total_cost`, `profit`, `margin_pct`) written
 at save time. This is what lets the web reporting page be a static file.
 
@@ -196,7 +226,7 @@ Push when ready. Expect the first CI run to need a fix — it has never executed
 
 So you don't go looking for it or assume it was missed:
 
-- **No cost formula in `PrintFlowCore`.** Stage 1 tasks 1.2–1.5 build it against golden files lifted from the live sheet. Writing it before the parity harness exists is how you end up with plausible-but-wrong numbers.
+- **No cost formula in `packages/cost-engine`.** Stage 1 tasks 1.2–1.5 build it against golden files lifted from the live sheet. Writing it before the parity harness exists is how you end up with plausible-but-wrong numbers. The package today is money handling plus the v1.11.0 rate constants.
 - **No CI run.** The workflow is written but nothing has been pushed, so it has never executed. Expect to fix something on first run.
-- **`web-reports/` and `tools/migration/` hold only a `.gitkeep`** describing what goes there. Stage 4 and Stage 2 respectively. (Git does not track empty directories, so the placeholders are what make the repo layout survive a clone.)
+- **`tools/migration/` holds only a `.gitkeep`** describing what goes there. Stage 2. (Git does not track empty directories, so the placeholder is what makes the layout survive a clone.) `web-reports/` is gone — the web app is now `apps/printflow`, the same codebase as mobile.
 - **`index.html`, `PrintFlow_AppsScript.js`, and the `WKWebView` shell are untouched.** Production keeps working throughout.

@@ -149,7 +149,7 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 | `HANDOFF.md` | **PrintFlow 2.0 — start here.** Current rebuild status and next steps |
 | `MODERNIZATION_PLAN.md` | PrintFlow 2.0 architecture, decisions, and the 95-task build plan |
 | `supabase/` | PrintFlow 2.0 Postgres schema, RLS, report views, verification suite |
-| `Packages/PrintFlowCore` | PrintFlow 2.0 cost engine (Swift package) |
+| `packages/cost-engine` | PrintFlow 2.0 cost engine (TypeScript, shared by mobile and web) |
 
 ---
 

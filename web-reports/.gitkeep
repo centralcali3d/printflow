@@ -1,4 +1,0 @@
-Stage 4 task 4.9: static read-only reporting page.
-Plain HTML + supabase-js, no framework. Reads the report_* views over
-PostgREST with magic-link auth. Deploys to GitHub Pages (task 4.10),
-replacing the current app at that URL.
