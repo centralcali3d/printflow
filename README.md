@@ -4,7 +4,35 @@ A single-file web app for managing a 3D printing business. Tracks filament inven
 
 **Live app:** https://centralcali3d.github.io/printflow/
 
-**Current version:** v1.11.0
+**Current version:** v1.11.0 (production) · **PrintFlow 2.0 in development**
+
+---
+
+> ## 🚧 PrintFlow 2.0 is being built on the `feat/printflow-2-foundation` branch
+>
+> A rebuild onto **Supabase**, shipping from one Expo codebase to **iPhone, iPad,
+> and web**. v1.11.0 above remains the production app and is untouched.
+>
+> | Doc | What it is |
+> |-----|------------|
+> | [`HANDOFF.md`](HANDOFF.md) | **Start here.** Status, environment gotchas, next steps |
+> | [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) | Architecture, decisions, all 95 build tasks |
+> | [`supabase/README.md`](supabase/README.md) | Database layer and how to run it |
+>
+> **Stage 0 (foundation) is nearly complete.** The database half is done and
+> verified: 7 migrations → 21 tables, 5 views, 10 report functions, 43 RLS
+> policies, proven by a 72-assertion suite. The app skeleton runs on web; native
+> iOS is blocked by an upstream Xcode 27 / Expo incompatibility (see HANDOFF §8).
+>
+> ```bash
+> pnpm install
+> pnpm typecheck && pnpm test        # 55 tests
+> ./supabase/tests/run.sh            # 72 schema assertions
+> pnpm --filter @printflow/app exec expo start --web
+> ```
+>
+> **Note:** develop from a local clone, **not** a Google Drive folder — Drive's
+> extended attributes break iOS code signing. See HANDOFF §2b.
 
 ---
 

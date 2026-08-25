@@ -1,8 +1,23 @@
 # PrintFlow 2.0 — Session Handoff
-*Written 2026-08-20 · Revised 2026-08-21 (stack changed, see §0) · Stage 0 database half complete*
+*Written 2026-08-20 · Last session 2026-08-24 · Stage 0: database done, app skeleton on web, native blocked upstream*
 
 Cold-start doc. Read §0–§4, run one command to confirm the ground is still
 solid, then start at §5.
+
+---
+
+## Where the last session ended (2026-08-24)
+
+Everything below is current. The short version:
+
+- **Repo moved out of Google Drive** → `~/Developer/PrintFlow`. Drive is now a push-updated mirror. See §2b — this is the first thing to know.
+- **Task 0.11 done** — generated types + compile-time schema contract, drift detection proven.
+- **Task 0.12 partly done** — web verified end to end; iOS builds, signs, and installs but cannot launch on Xcode 27 beta. Upstream, not ours (§8 item 1b).
+- **Next: task 0.13** — TanStack Query + connection state. Needs none of the iOS toolchain.
+
+One loose end worth knowing: the Supabase containers were last started from the
+**old Drive path**. Run `supabase stop` then `supabase start` from
+`~/Developer/PrintFlow` before touching the database again.
 
 ---
 
