@@ -8,8 +8,9 @@
 name: CI
 
 on:
+  # All branches, not just main. Stage 0-8 is built on feature branches, so a
+  # main-only trigger would leave CI silent for the entire rebuild.
   push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
 
