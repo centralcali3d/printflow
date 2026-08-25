@@ -59,9 +59,9 @@ is not started.
 | 0.3 CLI + local dev | ✅ | Supabase CLI 2.115.0, migrations versioned |
 | 0.4–0.10 Migrations | ✅ | 7 migrations, 1,569 lines → 21 tables, 5 views, 10 report functions, 43 RLS policies |
 | 0.11 Generated types | ✅ | `packages/db-types` — 2,279 generated lines, a compile-time schema contract, and a CI freshness gate. **Drift detection proven** by renaming a column and confirming both layers fail. |
-| 0.12 Expo skeleton | ⬜ **next** | `apps/printflow` |
-| 0.13 TanStack Query + connection state | ⬜ | Much smaller than the old GRDB task |
-| 0.14 Reproducible from zero | ✅ (db) | `supabase db reset` verified repeatedly. "Boots on all three targets" waits on 0.12. |
+| 0.12 Expo skeleton | 🟡 **web done, native boot blocked** | `apps/printflow` — Expo SDK 57. Web verified end to end. Native boot needs an iOS simulator runtime + CocoaPods (see §8). |
+| 0.13 TanStack Query + connection state | ⬜ **next** | Much smaller than the old GRDB task |
+| 0.14 Reproducible from zero | 🟡 | `supabase db reset` verified repeatedly; web boots. iOS/iPad boot pending a simulator runtime. |
 | 0.15 CI | ✅ | Retargeted to ubuntu/Node. **Never executed** — nothing pushed. |
 
 `packages/cost-engine` typechecks and passes 15 tests. It is **scaffold only** —
@@ -106,6 +106,15 @@ pnpm test             # 15 cost-engine + 40 db-types
 pnpm db:types:check   # committed types still match the migrations
 ```
 
+To see the app:
+
+```bash
+pnpm --filter @printflow/app exec expo start --web
+```
+
+`apps/printflow/.env.local` must exist — copy `.env.example`, which is already
+filled in with the local Supabase defaults.
+
 `pnpm typecheck` is the one that matters most and the one a test run will not
 substitute for — vitest transpiles without typechecking, so the schema contract
 is only enforced by `tsc`.
@@ -124,22 +133,28 @@ Two things worth knowing before you touch it:
 
 Regenerate with `pnpm db:types` after any migration and commit the result.
 
-### 0.12 — Expo skeleton
+### 0.12 — Expo skeleton 🟡 *web done, native boot blocked*
 
-Create `apps/printflow`. Expo Router, session provider, Supabase client reading
-`EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+`apps/printflow` on Expo SDK 57 (React Native 0.86, React 19.2). Five routes —
+Home, Queue, Sell, Stock, More — with `src/app` as the router root.
 
-Only ever the **publishable/anon** key. It is safe in a client precisely
-because RLS (migration 004) is what enforces access — the key identifies the
-project, it does not grant permission. The `service_role` key bypasses RLS
-entirely and must never reach a bundle.
+**Verified working:** web bundles and boots, all five routes statically render,
+navigation updates real URLs, sidebar at ≥900px, bottom bar below it, session
+provider and typed Supabase client wired.
 
-Layout per plan §5: five tabs on phone (Home / Queue / Sell / Stock / More),
-sidebar + split view on iPad and desktop — **one responsive layout now**, since
-web is a peer rather than a separate reporting surface.
+**Not verified:** boot on iPhone/iPad simulators. Two prerequisites are missing
+from this machine, both listed in §8. The native *config* is verified — prebuild
+generates a project with the right bundle ID and `TARGETED_DEVICE_FAMILY = "1,2"`.
 
-Exit criterion is all three targets booting: iOS simulator, iPad simulator, and
-`expo start --web`.
+Three SDK 57 gotchas that cost time, in case you touch the nav:
+
+- **`TabList`/`TabSlot` must be DIRECT children of `Tabs`.** It discovers screens by inspecting them, so wrapping them in a `View` for layout throws *"Couldn't find any screens for the navigator"*. Put the flex direction on `Tabs` itself.
+- **`asChild` uses `cloneElement`, whose props override the child's.** An inline `<View style={...}>` inside `TabList asChild` is silently discarded. The surface must be a component that spreads props *first* and sets `style` last — see `SidebarSurface`.
+- **`ThemeProvider` now comes from `expo-router`**, not `@react-navigation/native`.
+
+Native uses `NativeTabs` (a real `UITabBar`); web uses headless
+`expo-router/ui`. Both read `nav-items.ts`, so a route cannot appear in one and
+not the other.
 
 ### 0.13 — TanStack Query + connection state
 
@@ -192,6 +207,8 @@ priced this way" has an answer. `settings` deliberately holds no cost rates.
 | # | What | Blocks |
 |---|------|--------|
 | 1 | Create the Supabase cloud dev + prod projects | Task 0.1 only. Local dev needs nothing. |
+| 1b | **Install an iOS simulator runtime** — none is installed, so no device can boot. `xcodebuild -downloadPlatform iOS` (multi-GB). The iOS 27 *SDK* is present, so building works; only booting is blocked. | Finishing 0.12 and 0.14 |
+| 1c | **Install CocoaPods** — `brew install cocoapods`. Needed for any native build. | Native builds |
 | 2 | **Mileage rate: 0.70 or 0.725?** `index.html` and the Apps Script both default to 0.70; `README.md`'s settings table documents 0.725. Seeded 0.70 to match the code; Stage 2 imports the sheet's real value over it. Worth confirming for this tax year. | Nothing yet — correctness later |
 | 3 | Confirm the 0.12 target decision (§5) | Task 0.12 |
 | 4 | **Real packaging size per product** (12 products, one pass). Because of defect 1 this was never written to the sheet, so it cannot be migrated — only re-entered. | Task 2.3 |

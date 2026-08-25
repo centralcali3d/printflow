@@ -151,6 +151,7 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 | `supabase/` | PrintFlow 2.0 Postgres schema, RLS, report views, verification suite |
 | `packages/cost-engine` | PrintFlow 2.0 cost engine (TypeScript, shared by mobile and web) |
 | `packages/db-types` | Generated Postgres types + compile-time schema contract |
+| `apps/printflow` | PrintFlow 2.0 app — Expo (iPhone, iPad, web from one codebase) |
 
 ---
 
