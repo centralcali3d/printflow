@@ -6,7 +6,8 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "lint": "pnpm -r --if-present lint",
     "test": "pnpm -r --if-present test",
-    "db:types": "supabase gen types typescript --local > packages/cost-engine/src/database.types.ts",
+    "db:types": "supabase gen types typescript --local > packages/db-types/src/database.types.ts",
+    "db:types:check": "supabase gen types typescript --local > /tmp/printflow-types-check.ts && diff -u packages/db-types/src/database.types.ts /tmp/printflow-types-check.ts && echo 'types are current'",
     "db:reset": "supabase db reset",
     "db:verify": "./supabase/tests/run.sh"
   },

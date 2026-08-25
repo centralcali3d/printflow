@@ -58,16 +58,17 @@ is not started.
 | 0.2 Repo layout | ✅ | pnpm workspace: `packages/cost-engine`, `supabase/`, `tools/migration/`. `apps/printflow` not yet created — that's 0.12. |
 | 0.3 CLI + local dev | ✅ | Supabase CLI 2.115.0, migrations versioned |
 | 0.4–0.10 Migrations | ✅ | 7 migrations, 1,569 lines → 21 tables, 5 views, 10 report functions, 43 RLS policies |
-| 0.11 Generated types | ⬜ **next** | `pnpm db:types` script exists; needs running + committing. This *is* the drift test. |
-| 0.12 Expo skeleton | ⬜ | `apps/printflow` |
+| 0.11 Generated types | ✅ | `packages/db-types` — 2,279 generated lines, a compile-time schema contract, and a CI freshness gate. **Drift detection proven** by renaming a column and confirming both layers fail. |
+| 0.12 Expo skeleton | ⬜ **next** | `apps/printflow` |
 | 0.13 TanStack Query + connection state | ⬜ | Much smaller than the old GRDB task |
 | 0.14 Reproducible from zero | ✅ (db) | `supabase db reset` verified repeatedly. "Boots on all three targets" waits on 0.12. |
 | 0.15 CI | ✅ | Retargeted to ubuntu/Node. **Never executed** — nothing pushed. |
 
-`packages/cost-engine` builds, typechecks, and passes 15 tests. It is
-**scaffold only** — integer-cents money handling plus the v1.11.0 rate
-constants. There is deliberately **no formula** in it; Stage 1 writes those
-against golden files.
+`packages/cost-engine` typechecks and passes 15 tests. It is **scaffold only** —
+integer-cents money handling plus the v1.11.0 rate constants. There is
+deliberately **no formula** in it; Stage 1 writes those against golden files.
+
+`packages/db-types` passes 40 tests plus the compile-time contract.
 
 ## 3. Environment (things that will waste your time otherwise)
 
@@ -96,30 +97,32 @@ standing between us and silently wrong money.
 The suite is **not idempotent** (fixed test emails, exact row counts), which is
 why the runner resets rather than trusting you to have done it.
 
-And the engine side:
+And the TypeScript side — four gates, all of which CI runs:
 
 ```bash
-pnpm install && pnpm typecheck && pnpm test
+pnpm install
+pnpm typecheck        # includes the compile-time schema contract
+pnpm test             # 15 cost-engine + 40 db-types
+pnpm db:types:check   # committed types still match the migrations
 ```
 
-Expect 15 tests passing in `packages/cost-engine`.
+`pnpm typecheck` is the one that matters most and the one a test run will not
+substitute for — vitest transpiles without typechecking, so the schema contract
+is only enforced by `tsc`.
 
 ## 5. Next up — Stage 0 tasks 0.11–0.13
 
-### 0.11 — Generated database types
+### 0.11 — Generated database types ✅ *done*
 
-```bash
-pnpm db:types    # supabase gen types typescript --local
-```
+`packages/db-types` holds the generated `Database` type plus ergonomic aliases
+(`Tables<'sales'>`, `Enums<'promo_absorber'>`, `FunctionRow<'report_pnl'>`).
 
-Commit the output. This replaces what was going to be hand-written Swift
-`Codable` models plus a custom drift test — with generated types, **a column
-rename becomes a compile error for free**. That closes defect class 4, which is
-the root cause of defect 1 (the packaging column that silently vanished). It is
-the single highest value-per-effort task in Stage 0.
+Two things worth knowing before you touch it:
 
-Wire it into CI so a schema change that outruns the committed types fails the
-build.
+- **`SafeInsert` / `SafeUpdate`, not `TablesInsert` / `TablesUpdate`.** The Supabase generator does *not* exclude `GENERATED ALWAYS` columns from insert shapes, so plain `TablesInsert<'filament_lots'>` will happily let you assign `cost_per_g`. Postgres then rejects it at runtime. `SafeInsert` omits them. Add to `GeneratedColumnMap` whenever a migration introduces a generated column.
+- **`FunctionRow`, not `FunctionReturns`, for reports.** Every `report_*` function is set-returning, so `Returns` is an array. Asking for a column on the array type silently yields `never` rather than erroring — which is how a contract test quietly stops testing.
+
+Regenerate with `pnpm db:types` after any migration and commit the result.
 
 ### 0.12 — Expo skeleton
 

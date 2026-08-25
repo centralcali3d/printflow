@@ -2,9 +2,9 @@
 #
 # Two independent jobs, because they fail for different reasons and one
 # should not mask the other:
-#   database — migrations apply from zero, and the schema verification suite
-#              proves each §1 defect fix still holds
-#   core     — the shared cost engine typechecks and its tests pass
+#   database — migrations apply from zero, the schema verification suite proves
+#              each §1 defect fix still holds, and the committed types match
+#   core     — the shared packages typecheck and their tests pass
 name: CI
 
 on:
@@ -38,6 +38,17 @@ jobs:
       # Owns its own reset, so this is the whole gate.
       - name: Schema verification
         run: ./supabase/tests/run.sh
+
+      # Committed types must match the migrations. Without this, a migration
+      # can land with stale types and the compile-time contract silently
+      # validates yesterday's schema.
+      - name: Generated types are current
+        run: |
+          supabase gen types typescript --local > /tmp/types-check.ts
+          if ! diff -u packages/db-types/src/database.types.ts /tmp/types-check.ts; then
+            echo "::error::Generated types are stale. Run 'pnpm db:types' and commit the result."
+            exit 1
+          fi
 
       - name: Confirm migrations are reproducible from zero
         run: supabase db reset

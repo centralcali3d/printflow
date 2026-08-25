@@ -59,6 +59,17 @@ project's default privileges give `authenticated` no DML at all, so
 migration 004 grants explicitly. Add a table, and you must add both a policy
 *and* a grant — the verification suite will catch you if you forget one.
 
+## After changing the schema
+
+```bash
+pnpm db:types    # regenerate packages/db-types, then commit it
+```
+
+CI fails if the committed types drift from the migrations. The compile-time
+contract in `packages/db-types/src/schema-contract.ts` pins the columns the rest
+of the system depends on — add an assertion there when something becomes
+load-bearing.
+
 ## Deletes
 
 Business tables have **no DELETE policy and no DELETE grant**. Removal is

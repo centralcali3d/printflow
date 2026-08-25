@@ -150,6 +150,7 @@ https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=init
 | `MODERNIZATION_PLAN.md` | PrintFlow 2.0 architecture, decisions, and the 95-task build plan |
 | `supabase/` | PrintFlow 2.0 Postgres schema, RLS, report views, verification suite |
 | `packages/cost-engine` | PrintFlow 2.0 cost engine (TypeScript, shared by mobile and web) |
+| `packages/db-types` | Generated Postgres types + compile-time schema contract |
 
 ---
 
