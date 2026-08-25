@@ -59,7 +59,7 @@ is not started.
 | 0.3 CLI + local dev | ✅ | Supabase CLI 2.115.0, migrations versioned |
 | 0.4–0.10 Migrations | ✅ | 7 migrations, 1,569 lines → 21 tables, 5 views, 10 report functions, 43 RLS policies |
 | 0.11 Generated types | ✅ | `packages/db-types` — 2,279 generated lines, a compile-time schema contract, and a CI freshness gate. **Drift detection proven** by renaming a column and confirming both layers fail. |
-| 0.12 Expo skeleton | 🟡 **web done; native launch blocked upstream** | `apps/printflow` — Expo SDK 57. Web verified end to end. iOS builds, signs, and installs; it cannot *launch* on Xcode 27 beta (see §8 item 1b). |
+| 0.12 Expo skeleton | 🟡 **web verified; native launch blocked upstream** | `apps/printflow` — Expo SDK 57. Web verified end to end. iOS builds, signs, and installs, but cannot *launch* on Xcode 27 beta. Expo Go is the workaround — see §5. |
 | 0.13 TanStack Query + connection state | ⬜ **next** | Much smaller than the old GRDB task |
 | 0.14 Reproducible from zero | 🟡 | `supabase db reset` verified repeatedly; web boots. iOS/iPad boot pending a simulator runtime. |
 | 0.15 CI | ✅ | Retargeted to ubuntu/Node. **Never executed** — nothing pushed. |
@@ -185,6 +185,30 @@ Native uses `NativeTabs` (a real `UITabBar`); web uses headless
 `expo-router/ui`. Both read `nav-items.ts`, so a route cannot appear in one and
 not the other.
 
+### Verifying on a simulator, given the Xcode 27 blocker
+
+Standalone builds install but will not launch (§8 item 1b). **Expo Go works**,
+because Expo ships it built against the iOS 26 SDK (`DTSDKName:
+iphonesimulator26.4`) and apps built pre-iOS-27 are exempt from the scene
+requirement. It is already installed on the iPhone 17 Pro simulator.
+
+```bash
+cd ~/Developer/PrintFlow/apps/printflow
+npx expo start --go
+# then press i, or:
+xcrun simctl openurl <udid> "exp://127.0.0.1:8081"
+```
+
+iOS shows an "Open in Expo Go?" confirmation that must be tapped. The simulator
+MCP tool's tap was non-functional during this session (it returned success while
+the dialog stayed put, and repeatedly reported "restarting after a crash"), and
+`xcrun simctl` has no touch-input command — so screenshots work headlessly but
+that one tap needs a human, or a working panel.
+
+**Still unverified on device:** `NativeTabs` rendering. Everything else in the
+navigation is shared with web and verified there. That is the one native-only
+piece of 0.12 with no evidence yet.
+
 ### 0.13 — TanStack Query + connection state
 
 Persisted cache so a cold launch on a flaky connection shows real data instead
@@ -236,7 +260,7 @@ priced this way" has an answer. `settings` deliberately holds no cost rates.
 | # | What | Blocks |
 |---|------|--------|
 | 1 | Create the Supabase cloud dev + prod projects | Task 0.1 only. Local dev needs nothing. |
-| 1b | **Install stable Xcode 26** and `sudo xcode-select -s /Applications/Xcode.app`. The only Xcode here is **27 beta**, whose iOS 27 SDK refuses to launch apps that have not adopted the UIScene lifecycle — and Expo SDK 57 / RN 0.86 have not. Verified: no `UIWindowSceneDelegate` anywhere in expo or react-native, and declaring `UIApplicationSceneManifest` without a scene delegate does **not** satisfy it. The app builds, signs, and installs fine; it dies at launch with *"UIScene life cycle is required for apps built with this SDK"*. Nothing in our code can fix this. | Finishing 0.12 and 0.14 |
+| 1b | **Standalone iOS builds cannot launch — no local fix.** macOS here is **27.0**, so Xcode 26 will not install and Xcode 27 beta is the only option. Its iOS 27 SDK refuses to launch apps that have not adopted the UIScene lifecycle, and Expo SDK 57 / RN 0.86 have not — verified: no `UIWindowSceneDelegate` anywhere in `expo` or `react-native`, and declaring `UIApplicationSceneManifest` without a scene delegate does **not** satisfy it (tested, reverted). The app builds, signs, and installs; it dies at launch with *"UIScene life cycle is required for apps built with this SDK"*. Use **Expo Go** meanwhile (§5); revisit when Expo ships iOS 27 support — SDK 58 canary exists (`58.0.0-canary-20260812`). | Standalone builds; Stage 8 |
 | 2 | **Mileage rate: 0.70 or 0.725?** `index.html` and the Apps Script both default to 0.70; `README.md`'s settings table documents 0.725. Seeded 0.70 to match the code; Stage 2 imports the sheet's real value over it. Worth confirming for this tax year. | Nothing yet — correctness later |
 | 3 | Confirm the 0.12 target decision (§5) | Task 0.12 |
 | 4 | **Real packaging size per product** (12 products, one pass). Because of defect 1 this was never written to the sheet, so it cannot be migrated — only re-entered. | Task 2.3 |
