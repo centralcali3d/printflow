@@ -196,31 +196,31 @@ priced this way" has an answer. `settings` deliberately holds no cost rates.
 
 ## 9. Git state
 
-Stage 0 is committed on branch **`feat/printflow-2-foundation`**, three commits,
-branched from `8b6bcd5`:
+All work is on branch **`feat/printflow-2-foundation`**, branched from `8b6bcd5`:
 
 | Commit | Contents |
 |--------|----------|
 | `52cd9bd` | Plan and handoff docs, README/context redirects, `.gitignore` |
 | `170c556` | 7 migrations, RLS, report views, 72-assertion verification suite |
-| `45ba4d8` | `PrintFlowCore` scaffold, CI workflow, repo layout placeholders |
+| `45ba4d8` | *(superseded)* Swift `PrintFlowCore` scaffold and macOS CI |
+| `dd3172a` | Handoff git-state section |
+| `a7610b3` | **Stack change to Expo.** Replaces the Swift scaffold with `packages/cost-engine`, retargets CI to Node, updates every doc |
+
+The Swift scaffold is recoverable at `45ba4d8` if the decision is ever revisited.
 
 Working tree is clean. **Nothing has been pushed** — no remote branch, and CI
 has therefore never run.
 
-Verified before committing: nothing sensitive is tracked (`*.xcconfig` ignored
-except the example, `fixtures/legacy/*.csv` ignored, `.build/` ignored), and
-`git archive HEAD` produces a tree where `PrintFlowCore` builds and the layout
-placeholders survive — so a fresh clone works rather than depending on an
-ignored local file.
-
 To pick up:
 
 ```bash
-git checkout feat/printflow-2-foundation && ./supabase/tests/run.sh
+git checkout feat/printflow-2-foundation
+pnpm install && pnpm test      # 15 tests, cost-engine
+./supabase/tests/run.sh        # 72 assertions, schema
 ```
 
-Push when ready. Expect the first CI run to need a fix — it has never executed.
+Push when ready. Expect the first CI run to need a fix — it has never executed,
+and it was rewritten from macOS/Swift to ubuntu/Node without being run.
 
 ## 10. What was deliberately not done
 
