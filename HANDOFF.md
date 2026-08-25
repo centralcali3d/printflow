@@ -208,6 +208,8 @@ All work is on branch **`feat/printflow-2-foundation`**, branched from `8b6bcd5`
 | `45ba4d8` | *(superseded)* Swift `PrintFlowCore` scaffold and macOS CI |
 | `dd3172a` | Handoff git-state section |
 | `a7610b3` | **Stack change to Expo.** Replaces the Swift scaffold with `packages/cost-engine`, retargets CI to Node, updates every doc |
+| `db45dae` | Handoff git-state section |
+| `83e2c88` | **Task 0.11.** `packages/db-types` — generated types, compile-time schema contract, CI freshness gate |
 
 The Swift scaffold is recoverable at `45ba4d8` if the decision is ever revisited.
 
@@ -218,7 +220,10 @@ To pick up:
 
 ```bash
 git checkout feat/printflow-2-foundation
-pnpm install && pnpm test      # 15 tests, cost-engine
+pnpm install
+pnpm typecheck                 # schema contract
+pnpm test                      # 55 tests across two packages
+pnpm db:types:check            # types match migrations
 ./supabase/tests/run.sh        # 72 assertions, schema
 ```
 
