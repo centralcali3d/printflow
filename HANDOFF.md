@@ -227,6 +227,7 @@ All work is on branch **`feat/printflow-2-foundation`**, branched from `8b6bcd5`
 | `a7610b3` | **Stack change to Expo.** Replaces the Swift scaffold with `packages/cost-engine`, retargets CI to Node, updates every doc |
 | `db45dae` | Handoff git-state section |
 | `83e2c88` | **Task 0.11.** `packages/db-types` — generated types, compile-time schema contract, CI freshness gate |
+| `01da972` | **Task 0.12.** `apps/printflow` — Expo SDK 57 skeleton, five routes, responsive nav. Web verified; native boot blocked |
 
 The Swift scaffold is recoverable at `45ba4d8` if the decision is ever revisited.
 
@@ -242,6 +243,7 @@ pnpm typecheck                 # schema contract
 pnpm test                      # 55 tests across two packages
 pnpm db:types:check            # types match migrations
 ./supabase/tests/run.sh        # 72 assertions, schema
+pnpm --filter @printflow/app exec expo start --web   # see the app
 ```
 
 Push when ready. Expect the first CI run to need a fix — it has never executed,
