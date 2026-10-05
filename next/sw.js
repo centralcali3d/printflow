@@ -27,7 +27,7 @@
  * the background, so a reload after a deploy gets the new build.
  */
 
-const CACHE = 'printflow-shell-v2';
+const CACHE = 'printflow-shell-v3';
 
 self.addEventListener('install', (event) => {
   // Nothing to pre-cache: the filenames are content-hashed and only the build
@@ -53,6 +53,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // `version.json` is how the About screen asks the server what is newest, so
+  // it must never be answered from the saved copy.
+  if (url.pathname.endsWith('/version.json')) return;
 
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {
